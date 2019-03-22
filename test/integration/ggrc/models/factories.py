@@ -473,6 +473,10 @@ class RiskFactory(TitledFactory):
   risk_type = "Some Type"
   description = factory.LazyAttribute(lambda _: random_str(length=100))
 
+  external_id = factory.LazyAttribute(lambda m:
+                                      SynchronizableExternalId.next())
+  external_slug = factory.LazyAttribute(lambda m: random_str())
+
 
 class ThreatFactory(TitledFactory):
   """Threat factory class"""

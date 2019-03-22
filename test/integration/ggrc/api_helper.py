@@ -14,6 +14,7 @@ latest etag needed for such requests.
 import logging
 from contextlib import contextmanager
 from email import utils as email_utils
+import json
 from urllib import urlencode
 
 import flask
@@ -82,12 +83,15 @@ class Api(object):
     db.session.commit()
     db.session.flush()
 
-  def login_as_external(self):
+  def login_as_external(self, external_user=None):
     """Login API client as external app user."""
     _, user_email = email_utils.parseaddr(settings.EXTERNAL_APP_USER)
     self.user_headers = {
         "X-GGRC-user": "{\"email\": \"%s\"}" % user_email
     }
+
+    if external_user:
+      self.user_headers["X-EXTERNAL-USER"] = json.dumps(external_user)
 
     self.client.get("/logout")
     self.client.get("/login", headers=self.user_headers)

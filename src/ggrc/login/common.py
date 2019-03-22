@@ -114,6 +114,5 @@ def create_external_user(app_user, external_user_email):
   if external_user and external_user.id is None:
     db.session.flush()
     log_event(db.session, external_user, app_user.id)
-    db.session.commit()
 
   return external_user

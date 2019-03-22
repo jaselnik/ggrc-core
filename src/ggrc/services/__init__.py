@@ -63,7 +63,7 @@ def contributed_services():
       service('revisions', models.Revision, common.ReadOnlyResource),
       service('requirements', models.Requirement),
       service('risk_assessments', models.RiskAssessment),
-      service('risks', models.Risk),
+      service('risks', models.Risk, external.ExternalResource),
       service('threats', models.Threat),
       service('systems_or_processes',
               models.SystemOrProcess,
