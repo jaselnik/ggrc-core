@@ -8,8 +8,7 @@ from sqlalchemy.orm import validates
 
 from ggrc import db
 from ggrc.fulltext.mixin import Indexed
-from ggrc.models import mixins
-from ggrc.models.comment import Commentable
+from ggrc.models import mixins, comment
 from ggrc.models.deferred import deferred
 from ggrc.models.mixins import synchronizable
 from ggrc.models.object_document import PublicDocumentable
@@ -24,7 +23,7 @@ class Risk(synchronizable.Synchronizable,
            Relatable,
            Personable,
            PublicDocumentable,
-           Commentable,
+           comment.ExternalCommentable,
            mixins.TestPlanned,
            mixins.LastDeprecatedTimeboxed,
            mixins.base.ContextRBAC,
