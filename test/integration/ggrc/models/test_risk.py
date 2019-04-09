@@ -5,6 +5,7 @@
 
 import datetime
 
+from ggrc import db
 from ggrc.models import all_models
 from integration.ggrc import TestCase
 from integration.ggrc import api_helper
@@ -74,6 +75,18 @@ class TestRiskGGRCQ(TestCase):
 
     return body
 
+  @staticmethod
+  def generate_comment_body():
+    """Generate JSON body for Risk comment."""
+    body = {
+        "external_id": 1,
+        "external_slug": factories.random_str(),
+        "description": "External comment",
+        "context": None,
+    }
+
+    return body
+
   def assert_instance(self, expected, risk):
     """Compare expected response body with actual."""
     risk_values = {}
@@ -116,3 +129,70 @@ class TestRiskGGRCQ(TestCase):
 
     risk = all_models.Risk.query.get(risk_id)
     self.assert_instance(new_values, risk)
+
+  def test_create_comments(self):
+    """Test external comments creation for risk."""
+    risk_body = self.generate_risk_body()
+    response = self.api.post(all_models.Risk, {
+        "risk": risk_body,
+    })
+    self.assertEqual(response.status_code, 201)
+
+    comment_body = self.generate_comment_body()
+    response = self.api.post(all_models.ExternalComment, {
+        "external_comment": comment_body,
+    })
+
+    self.assertEqual(response.status_code, 201)
+    comment = db.session.query(all_models.ExternalComment.description).one()
+    self.assertEqual(comment, (comment_body["description"],))
+
+    risk_id = db.session.query(all_models.Risk.id).one()[0]
+    comment_id = db.session.query(all_models.ExternalComment.id).one()[0]
+
+    response = self.api.post(all_models.Relationship, {
+        "relationship": {
+            "source": {"id": risk_id, "type": "Risk"},
+            "destination": {"id": comment_id, "type": "ExternalComment"},
+            "context": None,
+            "is_external": True
+        },
+    })
+    self.assertEqual(response.status_code, 201)
+    rels = all_models.Relationship.query.filter_by(
+        source_type="Risk",
+        source_id=risk_id,
+        destination_type="ExternalComment",
+        destination_id=comment_id
+    )
+    self.assertEqual(rels.count(), 1)
+
+  def test_get_risk_external_comment(self):
+    """Test query endpoint for risk ExternalComments."""
+    with factories.single_commit():
+      risk = factories.RiskFactory()
+      comment = factories.ExternalCommentFactory(description="comment")
+      factories.RelationshipFactory(source=risk, destination=comment)
+
+    request_data = [{
+        "filters": {
+            "expression": {
+                "object_name": "Risk",
+                "op": {
+                    "name": "relevant"
+                },
+                "ids": [risk.id]
+            },
+        },
+        "object_name":"ExternalComment",
+        "order_by": [{"name": "created_at", "desc": "true"}]
+    }]
+    response = self.api.send_request(
+        self.api.client.post,
+        data=request_data,
+        api_link="/query"
+    )
+    self.assert200(response)
+    response_data = response.json[0]["ExternalComment"]
+    self.assertEqual(response_data["count"], 1)
+    self.assertEqual(response_data["values"][0]["description"], "comment")

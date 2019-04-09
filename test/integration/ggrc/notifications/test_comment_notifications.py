@@ -170,7 +170,6 @@ class TestCommentNotification(TestCase):
       all_models.Regulation,
       all_models.Standard,
       all_models.Contract,
-      all_models.Risk,
       all_models.Threat,
       all_models.Metric,
       all_models.TechnologyEnvironment,
