@@ -472,9 +472,9 @@ class RiskFactory(TitledFactory):
 
   risk_type = "Some Type"
   description = factory.LazyAttribute(lambda _: random_str(length=100))
-
-  external_id = factory.LazyAttribute(lambda m:
+  external_id = factory.LazyAttribute(lambda _:
                                       SynchronizableExternalId.next())
+  created_by_id = factory.LazyAttribute(lambda _: PersonFactory().id)
   external_slug = factory.LazyAttribute(lambda m: random_str())
 
 

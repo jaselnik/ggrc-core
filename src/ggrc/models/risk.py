@@ -8,13 +8,14 @@ from sqlalchemy.orm import validates
 
 from ggrc import db
 from ggrc.fulltext.mixin import Indexed
-from ggrc.models import mixins, comment
+from ggrc.models import mixins, comment, utils
 from ggrc.models.deferred import deferred
 from ggrc.models.mixins import synchronizable
 from ggrc.models.object_document import PublicDocumentable
 from ggrc.models.object_person import Personable
 from ggrc.models.relationship import Relatable
 from ggrc.models import reflection
+from ggrc.utils import create_stub
 
 
 class Risk(synchronizable.Synchronizable,
@@ -33,6 +34,35 @@ class Risk(synchronizable.Synchronizable,
            db.Model):
   """Basic Risk model."""
   __tablename__ = 'risks'
+
+  # GGRCQ attributes
+  external_id = db.Column(db.Integer, nullable=False)
+  due_date = db.Column(db.Date, nullable=True)
+  created_by_id = db.Column(db.Integer, nullable=False)
+
+  # pylint: disable=no-self-argument
+  @declared_attr
+  def created_by(cls):
+    """Relationship to user referenced by created_by_id."""
+    return utils.person_relationship(cls.__name__, "created_by_id")
+
+  last_owner_review_date = db.Column(db.Date, nullable=True)
+  last_owner_reviewed_by_id = db.Column(db.Integer, nullable=True)
+
+  @declared_attr
+  def last_owner_reviewed_by(cls):
+    """Relationship to user referenced by last_owner_reviewed_by_id."""
+    return utils.person_relationship(cls.__name__,
+                                     "last_owner_reviewed_by_id")
+
+  last_compliance_reviewed_date = db.Column(db.Date, nullable=True)
+  last_compliance_reviewed_by_id = db.Column(db.Integer, nullable=True)
+
+  @declared_attr
+  def last_compliance_reviewed_by(cls):
+    """Relationship to user referenced by last_compliance_reviewed_by_id."""
+    return utils.person_relationship(cls.__name__,
+                                     "last_compliance_reviewed_by_id")
 
   # Overriding mixin to make mandatory
   @declared_attr
@@ -73,7 +103,18 @@ class Risk(synchronizable.Synchronizable,
       'risk_type',
       'threat_source',
       'threat_event',
-      'vulnerability'
+      'vulnerability',
+      'external_id',
+      'due_date',
+      reflection.ExternalUserAttribute('created_by',
+                                       force_create=True),
+      reflection.ExternalUserAttribute('last_owner_reviewed_by',
+                                       force_create=True),
+      reflection.ExternalUserAttribute('last_compliance_reviewed_by',
+                                       force_create=True),
+      'last_owner_review_date',
+      'last_compliance_reviewed_date',
+      'external_slug',
   )
 
   _aliases = {
@@ -105,3 +146,10 @@ class Risk(synchronizable.Synchronizable,
               mixins.BusinessObject.VALID_STATES))
       }
   }
+
+  def log_json(self):
+    res = super(Risk, self).log_json()
+    res["created_by"] = create_stub(self.created_by)
+    res["last_owner_reviewed_by"] = self.last_owner_reviewed_by
+    res["last_compliance_reviewed_by"] = self.last_compliance_reviewed_by
+    return res
