@@ -241,7 +241,7 @@ class TestRevisionHistory(TestCase):
        "fields": ['test_plan', 'status', 'notes',
                   'description', 'title', 'slug', 'folder']},
       {"factory": factories.RiskFactory,
-       "fields": ['test_plan', 'status', 'description',
+       "fields": ['test_plan', 'status', 'description', 'external_id',
                   'notes', 'title', 'slug', 'folder', 'risk_type']},
   )
   @ddt.unpack

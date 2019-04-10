@@ -85,6 +85,8 @@ class TestSnapshotQueryApi(TestCase):
       "attribute_object_id",
       "last_submitted_by_id",
       "last_verified_by_id",
+      "last_compliance_reviewed_by_id",
+      "last_owner_reviewed_by_id",
 
       # revisions require complete data for documents,
       # while api returns only basic data in stubs

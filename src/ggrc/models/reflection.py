@@ -76,15 +76,18 @@ class ExternalUserAttribute(SerializableAttribute):
 
     Creates non existing person if force_create attribute is True.
     """
-    from ggrc.utils import user_generator
+    if not value.get("email"):
+      try:
+        from ggrc.models.person import Person
+        id_ = value["id"]
+        return Person.query.get(id_)
+      except KeyError:
+        raise ValueError("Missing mandatory \"email\" field in %s attribute" %
+                         self.attr)
 
+    from ggrc.utils import user_generator
     email = value.get("email")
     name = value.get("name")
-
-    if not email:
-      raise ValueError("Missing mandatory \"email\" field in %s attribute" %
-                       self.attr)
-
     if self.force_create:
       return user_generator.find_or_create_external_user(email, name)
 
