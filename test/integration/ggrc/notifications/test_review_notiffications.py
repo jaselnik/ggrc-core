@@ -169,58 +169,6 @@ class TestReviewNotification(TestCase):
     ).all()
     self.assertEqual(expected_notifications, len(notyf_unreviewed_type))
 
-  @ddt.data(
-      (all_models.Review.NotificationTypes.EMAIL_TYPE, 0),
-      (all_models.Review.NotificationTypes.ISSUE_TRACKER, 0),
-  )
-  @ddt.unpack
-  def test_proposal_apply_review_status(self, notification_type,
-                                        num_notifications_expected):
-    """Change via proposal with ignorable attrs review status not change"""
-    with factories.single_commit():
-      risk = factories.RiskFactory()
-      review = factories.ReviewFactory(
-          status=all_models.Review.STATES.REVIEWED,
-          reviewable=risk,
-          notification_type=notification_type
-      )
-      review_id = review.id
-
-      user = factories.PersonFactory()
-      acl = factories.AccessControlListFactory(
-          ac_role=factories.AccessControlRoleFactory(object_type="Risk"),
-          object=risk
-      )
-
-      proposal_content = {
-          "access_control_list": {
-              acl.ac_role_id: {
-                  "added": [{"id": user.id, "email": user.email}],
-                  "deleted": []
-              }
-          }
-      }
-
-      proposal = factories.ProposalFactory(
-          instance=risk,
-          content=proposal_content,
-          agenda="agenda content"
-      )
-
-    self.api.modify_object(proposal, {"status": proposal.STATES.APPLIED})
-    review = all_models.Review.query.get(review_id)
-    self.assertEqual(review.status, all_models.Review.STATES.REVIEWED)
-
-    review_notif_types = all_models.Review.NotificationObjectTypes
-    notif_unreviewed_type = all_models.Notification.query.join(
-        all_models.NotificationType
-    ).filter(
-        all_models.NotificationType.name ==
-        review_notif_types.STATUS_UNREVIEWED
-    ).all()
-
-    self.assertEqual(num_notifications_expected, len(notif_unreviewed_type))
-
   @patch("google.appengine.api.mail.send_mail")
   def test_reviewer_notification_on_create_review(self, _):
     """Reviewer should receive email notification"""
@@ -393,17 +341,17 @@ class TestReviewNotification(TestCase):
     ).one().id
 
     with factories.single_commit():
-      risk_admin = factories.PersonFactory()
-      risk = factories.RiskFactory()
-      risk.add_person_with_role_name(risk_admin, "Admin")
+      program_manager = factories.PersonFactory()
+      program = factories.ProgramFactory()
+      program.add_person_with_role_name(program_manager, "Program managers")
 
     email_message = "email email_message"
     _, review = self.generator.generate_object(
         all_models.Review,
         {
             "reviewable": {
-                "type": risk.type,
-                "id": risk.id,
+                "type": program.type,
+                "id": program.id,
             },
             "context": None,
             "notification_type":

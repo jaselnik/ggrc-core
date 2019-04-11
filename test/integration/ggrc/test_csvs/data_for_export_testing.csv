@@ -381,177 +381,80 @@ Workflow,code*,title*,description,admin,repeat every,unit,force real-time email 
 ,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,
 Object type,,,,,,,,,,,,,,
-risk,Title,Description,Assessment Procedure,Admin,Reference URL,Code,Threat Source,Threat Event,Vulnerability,Risk Type,State,map:standard,map:requirement,
-,Startupsum 115,Series A financing success channels.<br> Ecosystem conversion rockstar value proposition bandwidth,success 111,smotko@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-1,Preventative,yes,,Confidentiality,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 116,facebook validation responsive web design business plan.<br> Startup pivot founders.<br> Infrastructure f,success 112,smotko@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-2,Preventative,no,,Privacy,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 117,unding stock iteration founders freemium hackathon alpha research & development seed money branding.<br> In,success 113,smotko@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-3,Preventative,yes,,Confidentiality,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 118,fluencer scrum project startup android.<br> Partner network interaction design network effects creative conversion business plan equity influencer innovator return on investment validation buzz A/B testing research & development.<br> Non-disclosure agreement business-to-consumer gen-z.<br> Graphical user interface sales conversion pivot market scrum project android angel investor product management ramen entrepreneur rockstar.<br> Churn rate vesting period infographic social proof stealth prototype android traction freemium www.<br>discoverartisans.<br>com.<br> Gamification leverage responsive web design seed money social proof.<br>,success 114,Urbon.S@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-4,,no,,Availability,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 119,Startupsum 119,success 115,Urbon.S@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-5,,,key,Privacy,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 120,Business plan startup A/B testing direct mailing angel investor infrastructure gamification business model canvas,success 116,Urbon.S@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-6,,,Non-key,Availability,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 121,graphical user interface.<br> Accelerator user experience metrics MVP.<br> Business model canvas termsheet respo,success 117,Urbon.S@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-7,,,key,Privacy,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 122,nsive web design launch party long tail innovator burn rate stealth seed money disruptive startup metrics business plan funding.<br> Early adopters bandwidth monetization equity.<br> Infrastructure ownership iPhone early adopters lean startup buyer iPad founders equity accelerator.<br> Graphical user interface angel investor niche market partnership strategy business-to-business di,success 118,zidar@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-8,,,Non-key,Confidentiality,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 123,rect mailing founders burn rate crowdsource.<br> Alpha startup client channels hackathon value proposition.<br> Vira,success 119,Urbon.S@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-9,,,key,Confidentiality,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 124,lity pivot seed round social media creative burn rate vesting period hackathon metrics branding.<br> Conversion analytics launch party growth hacking android virality.<br> Partnership mass market twitter return on investment seed money lean startup investor iPad.<br>,success 120,Urbon.S@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-10,,,,Confidentiality,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 125,Startupsum 125,success 121,Urbon.S@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-11,Corrective,,,Confidentiality,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 126,Market deployment network effects.<br> Bootstrapping virality android backing seed round prototype rockstar pitch trac,success 122,Urbon.S@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-12,,,,Confidentiality,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 127,tion.<br> Bootstrapping user experience scrum project analytics business plan supply chain first mover advantage channels paradigm shift gen-z backing.<br> Churn rate seed round ecosystem social media buyer bandwidth.<br> Business-to-consumer strategy marketing early adopters growth hacking churn rate non-disclosure agreement holy grail launch party network effects creative iPad analytics.<br>,success 123,Urbon.S@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-13,,,,Confidentiality,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 128,Growth hacking learning curve entrepreneur.<br> Android series A financing buzz network effects burn rate ownership.<br>,success 124,zidar@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-14,,,,Confidentiality,Draft,"standard-1
-standard-5","clause-1
-clause-2",
-,Startupsum 129,Research & development market pitch focus creative assets.<br> Low hanging fruit alpha social media.<br> Buzz interaction design return on investment monetization A/B testing hypotheses gamification stealth traction niche market.<br>,success 125,zidar@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-15,,,,Confidentiality,Draft,"standard-1
-standard-5",,
-,Startupsum 130,Hypotheses www.<br>discoverartisans.<br>com pitch launch party ownership virality partner network direct mailing bandwid,success 126,zidar@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-16,,,,Confidentiality,Draft,"standard-1
-standard-5",,
-,Startupsum 131,th scrum project beta A/B testing.<br> Holy grail equity low hanging fruit release market.<br> Accelerator direct mailin,success 127,zidar@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-17,Corrective,,,Confidentiality,Draft,"standard-1
-standard-5",,
-,Startupsum 132,g growth hacking business model canvas vesting period agile development startup partner network.<br> Scrum project infographic infrastructure analytics traction hackathon partner network iPad www.<br>discoverartisans.<br>com freemium holy grail customer.<br> Learning curve sales vesting period facebook user experience A/B testing social media niche market ramen ecosystem.<br> Direct mailing incubat,success 128,zidar@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-18,,,,Confidentiality,Draft,"standard-1
-standard-5",,
-,Startupsum 133,or handshake product management innovator metrics venture social proof android series A financing iPhone agile developmen,success 129,zidar@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-19,Corrective,,,Confidentiality,Draft,"standard-1
-standard-5",,
-,Startupsum 134,t traction niche market.<br> Graphical user interface founders sales traction www.<br>discoverartisans.<br>com incubator,success 130,user@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-20,,,,Confidentiality,Draft,"standard-1
-standard-5",,
-,Startupsum 135,analytics first mover advantage.<br> Stock virality backing.<br> Launch party advisor MVP research & development market startup.<br> Value proposition hackathon graphical user interface innovator beta non-disclosure agreement early adopters influencer agile development stock.<br>,success 131,user@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-21,,,,Confidentiality,Draft,,,
-,Startupsum 136,Client rockstar business-to-business vesting period innovator.<br> Rockstar business model canvas sales stealth.<br> Resea,success 132,user@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-22,,,,Confidentiality,Draft,,,
-,Startupsum 137,rch & development iPad seed round ecosystem gen-z focus user experience ownership beta startup funding.<br> User experience focus infrastructure partnership.<br> Startup stock pitch A/B testing pivot termsheet validation vesting period.<br> Bootstrapping supply chain business-to-business research & development influencer venture ecosystem android gamification.<br> Business-to-consumer crowdfunding,success 133,user@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-23,,,,Confidentiality,Draft,,,
-,Startupsum 138,twitter bandwidth partnership termsheet handshake research & development marketing direct mailing gamification social media burn rate branding.<br> Interaction design social proof metrics.<br> Startup focus burn rate crowdsource infographic mass market.<br> A/B testing value proposition sales market iteration scrum project non-disclosure agreement www.<br>discoverartisans.<br>com funding bootst,success 134,user@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-24,,,,Confidentiality,Draft,,,
-,Startupsum 139,rapping freemium rockstar.<br>,success 135,user@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-25,,,,Confidentiality,Draft,,,
+policy,Title,Description,Notes,Admin,Reference URL,Kind/Type,Code,Effective Date,State
+,Cheese ipsum ch 5,Queso cheese and wine say cheese.<br> Croque monsieur macaroni cheese squirty,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-1,12/31/2015,active
+,Cheese ipsum ch 6,cheese when the cheese comes out everybody's happy pepper jack mascarpone,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-2,1/1/2016,draft
+,Cheese ipsum ch 7,st.<br> agur blue cheese boursin.<br> Roquefort squirty cheese swiss cheese and biscu,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-3,1/2/2016,active
+,Cheese ipsum ch 8,its cheesy grin mascarpone macaroni cheese stilton.<br> Everyone loves rubber cheese red leicester blue castello.<br>,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-4,1/3/2016,draft
+,Cheese ipsum ch 9,,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-5,1/4/2016,active
+,Cheese ipsum ch 10,Who moved my cheese everyone loves red leicester.<br> Cream cheese fromage frais bo,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-6,1/5/2016,draft
+,Cheese ipsum ch 11,ursin blue castello red leicester halloumi croque monsieur everyone loves.<br> Cheese triangles stinking bishop taleggio caerphilly smelly cheese gouda fromage frais pepper jack.<br> Cheddar cheese strings.<br>,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-7,1/6/2016,active
+,Cheese ipsum ch 12,ursin blue castello red leicester halloumi croque monsieur everyone loves.<br> Cheese triangles stinking bishop taleggio caerphilly smelly cheese gouda fromage frais pepper jack.<br> Cheddar cheese strings.<br>,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-8,1/7/2016,active
+,Cheese ipsum ch 13,Lancashire red leicester cauliflower cheese.<br> Who moved my cheese who moved my,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-9,1/8/2016,active
+,Cheese ipsum ch 14,cheese who moved my cheese cauliflower cheese everyone loves cheesy feet cotta,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-10,1/9/2016,draft
+,Cheese ipsum ch 15,ge cheese who moved my cheese.<br> Chalk and cheese who moved my cheese bocconcini queso red leicester bocconcini cheese strings the big cheese.<br> Macaroni cheese cheese and biscuits ricotta feta gouda monterey jack caerphilly dolcelatte.<br> Emmental st.<br> agur blue cheese dolcelatte.<br>,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-11,1/10/2016,active
+,Cheese ipsum ch 16,,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-12,1/11/2016,draft
+,Cheese ipsum ch 17,Fromage frais fromage frais goat.<br> Camembert de normandie cheddar stilton cotta,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-13,1/12/2016,active
+,Cheese ipsum ch 18,ge cheese roquefort caerphilly everyone loves edam.<br> Ricotta paneer cheeseburge,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-14,1/13/2016,draft
+,Cheese ipsum ch 19,r fromage frais fromage danish fontina melted cheese stilton.<br> Chalk and cheese,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-15,1/14/2016,active
+,Cheese ipsum ch 20,Dolcelatte camembert de normandie parmesan.<br> Dolcelatte edam cheese and biscuits que,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-16,1/15/2016,draft
+,Cheese ipsum ch 21,so cauliflower cheese chalk and cheese danish fontina roquefort.<br> Goat monterey jack cottage cheese st.<br> agur blue chee,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-17,1/16/2016,active
+,Cheese ipsum ch 22,se when the cheese comes out everybody's happy fromage manchego mozzarella.<br> Red l,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-18,1/17/2016,draft
+,Cheese ipsum ch 23,eicester dolcelatte pepper jack lancashire st.<br> agur blue cheese danish fontina.<br>,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-19,1/18/2016,active
+,Cheese ipsum ch 24,eicester dolcelatte pepper jack lancashire st. agur blue cheese danish fontina.,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-20,1/19/2016,draft
 ,,,,,,,,,,,,,,
 Object type,,,,,,,,,,,,,,
-policy,Title,Description,Notes,Admin,Reference URL,Kind/Type,Code,Effective Date,State,map:risk,,,,
-,Cheese ipsum ch 5,Queso cheese and wine say cheese.<br> Croque monsieur macaroni cheese squirty,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-1,12/31/2015,active,risk-1,,,,
-,Cheese ipsum ch 6,cheese when the cheese comes out everybody's happy pepper jack mascarpone,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-2,1/1/2016,draft,risk-2,,,,
-,Cheese ipsum ch 7,st.<br> agur blue cheese boursin.<br> Roquefort squirty cheese swiss cheese and biscu,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-3,1/2/2016,active,"risk-5
-risk-7",,,,
-,Cheese ipsum ch 8,its cheesy grin mascarpone macaroni cheese stilton.<br> Everyone loves rubber cheese red leicester blue castello.<br>,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-4,1/3/2016,draft,"risk-5
-risk-7",,,,
-,Cheese ipsum ch 9,,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-5,1/4/2016,active,"risk-5
-risk-7",,,,
-,Cheese ipsum ch 10,Who moved my cheese everyone loves red leicester.<br> Cream cheese fromage frais bo,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-6,1/5/2016,draft,"risk-5
-risk-7",,,,
-,Cheese ipsum ch 11,ursin blue castello red leicester halloumi croque monsieur everyone loves.<br> Cheese triangles stinking bishop taleggio caerphilly smelly cheese gouda fromage frais pepper jack.<br> Cheddar cheese strings.<br>,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-7,1/6/2016,active,risk-8,,,,
-,Cheese ipsum ch 12,,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-8,1/7/2016,draft,risk-8,,,,
-,Cheese ipsum ch 13,Lancashire red leicester cauliflower cheese.<br> Who moved my cheese who moved my,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-9,1/8/2016,active,risk-8,,,,
-,Cheese ipsum ch 14,cheese who moved my cheese cauliflower cheese everyone loves cheesy feet cotta,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-10,1/9/2016,draft,risk-8,,,,
-,Cheese ipsum ch 15,ge cheese who moved my cheese.<br> Chalk and cheese who moved my cheese bocconcini queso red leicester bocconcini cheese strings the big cheese.<br> Macaroni cheese cheese and biscuits ricotta feta gouda monterey jack caerphilly dolcelatte.<br> Emmental st.<br> agur blue cheese dolcelatte.<br>,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-11,1/10/2016,active,risk-8,,,,
-,Cheese ipsum ch 16,,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-12,1/11/2016,draft,risk-8,,,,
-,Cheese ipsum ch 17,Fromage frais fromage frais goat.<br> Camembert de normandie cheddar stilton cotta,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-13,1/12/2016,active,risk-8,,,,
-,Cheese ipsum ch 18,ge cheese roquefort caerphilly everyone loves edam.<br> Ricotta paneer cheeseburge,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-14,1/13/2016,draft,risk-8,,,,
-,Cheese ipsum ch 19,r fromage frais fromage danish fontina melted cheese stilton.<br> Chalk and cheese,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-15,1/14/2016,active,"risk-5
-risk-7",,,,
-,Cheese ipsum ch 20,Dolcelatte camembert de normandie parmesan.<br> Dolcelatte edam cheese and biscuits que,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-16,1/15/2016,draft,"risk-5
-risk-7",,,,
-,Cheese ipsum ch 21,so cauliflower cheese chalk and cheese danish fontina roquefort.<br> Goat monterey jack cottage cheese st.<br> agur blue chee,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-17,1/16/2016,active,"risk-5
-risk-7",,,,
-,Cheese ipsum ch 22,se when the cheese comes out everybody's happy fromage manchego mozzarella.<br> Red l,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-18,1/17/2016,draft,"risk-5
-risk-7",,,,
-,Cheese ipsum ch 23,eicester dolcelatte pepper jack lancashire st.<br> agur blue cheese danish fontina.<br>,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-19,1/18/2016,active,"risk-5
-risk-7",,,,
-,Cheese ipsum ch 24,eicester dolcelatte pepper jack lancashire st. agur blue cheese danish fontina.,stinky cheese,french.dude@example.com,http://i.imgur.com/tHvlnpW.jpg,Product policy,policy-20,1/19/2016,draft,"risk-5
-risk-7",,,,
-,,,,,,,,,,,,,,
-Object type,,,,,,,,,,,,,,
-objective,Title,Description,Notes,Admin,Reference URL,Code,State,map:risk,,,,,,
+objective,Title,Description,Notes,Admin,Reference URL,Code,State
 ,Startupsum 155,Series A financing success channels.<br> Ecosystem conversion rockstar value proposition bandwidth,success 111,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-1,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-1,Active
 ,Startupsum 156,facebook validation responsive web design business plan.<br> Startup pivot founders.<br> Infrastructure f,success 112,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-2,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-2,Active
 ,Startupsum 157,unding stock iteration founders freemium hackathon alpha research & development seed money branding.<br> In,success 113,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-3,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-3,Active
 ,Startupsum 158,fluencer scrum project startup android.<br> Partner network interaction design network effects creative conversion business plan equity influencer innovator return on investment validation buzz A/B testing research & development.<br> Non-disclosure agreement business-to-consumer gen-z.<br> Graphical user interface sales conversion pivot market scrum project android angel investor product management ramen entrepreneur rockstar.<br> Churn rate vesting period infographic social proof stealth prototype android traction freemium www.<br>discoverartisans.<br>com.<br> Gamification leverage responsive web design seed money social proof.<br>,success 114,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-4,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-4,Active
 ,Startupsum 159,,success 115,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-5,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-5,Active
 ,Startupsum 160,Business plan startup A/B testing direct mailing angel investor infrastructure gamification business model canvas,success 116,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-6,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-6,Active
 ,Startupsum 161,graphical user interface.<br> Accelerator user experience metrics MVP.<br> Business model canvas termsheet respo,success 117,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-7,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-7,Active
 ,Startupsum 162,nsive web design launch party long tail innovator burn rate stealth seed money disruptive startup metrics business plan funding.<br> Early adopters bandwidth monetization equity.<br> Infrastructure ownership iPhone early adopters lean startup buyer iPad founders equity accelerator.<br> Graphical user interface angel investor niche market partnership strategy business-to-business di,success 118,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-8,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-8,Active
 ,Startupsum 163,rect mailing founders burn rate crowdsource.<br> Alpha startup client channels hackathon value proposition.<br> Vira,success 119,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-9,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-9,Active
 ,Startupsum 164,lity pivot seed round social media creative burn rate vesting period hackathon metrics branding.<br> Conversion analytics launch party growth hacking android virality.<br> Partnership mass market twitter return on investment seed money lean startup investor iPad.<br>,success 120,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-10,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-10,Active
 ,Startupsum 165,,success 121,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-11,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-11,Active
 ,Startupsum 166,Market deployment network effects.<br> Bootstrapping virality android backing seed round prototype rockstar pitch trac,success 122,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-12,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-12,Active
 ,Startupsum 167,tion.<br> Bootstrapping user experience scrum project analytics business plan supply chain first mover advantage channels paradigm shift gen-z backing.<br> Churn rate seed round ecosystem social media buyer bandwidth.<br> Business-to-consumer strategy marketing early adopters growth hacking churn rate non-disclosure agreement holy grail launch party network effects creative iPad analytics.<br>,success 123,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-13,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-13,Active
 ,Startupsum 168,Growth hacking learning curve entrepreneur.<br> Android series A financing buzz network effects burn rate ownership.<br>,success 124,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-14,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-14,Active
 ,Startupsum 169,Research & development market pitch focus creative assets.<br> Low hanging fruit alpha social media.<br> Buzz interaction design return on investment monetization A/B testing hypotheses gamification stealth traction niche market.<br>,success 125,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-15,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-15,Active
 ,Startupsum 170,Hypotheses www.<br>discoverartisans.<br>com pitch launch party ownership virality partner network direct mailing bandwid,success 126,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-16,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-16,Active
 ,Startupsum 171,th scrum project beta A/B testing.<br> Holy grail equity low hanging fruit release market.<br> Accelerator direct mailin,success 127,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-17,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-17,Active
 ,Startupsum 172,g growth hacking business model canvas vesting period agile development startup partner network.<br> Scrum project infographic infrastructure analytics traction hackathon partner network iPad www.<br>discoverartisans.<br>com freemium holy grail customer.<br> Learning curve sales vesting period facebook user experience A/B testing social media niche market ramen ecosystem.<br> Direct mailing incubat,success 128,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-18,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-18,Active
 ,Startupsum 173,or handshake product management innovator metrics venture social proof android series A financing iPhone agile developmen,success 129,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-19,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-19,Active
 ,Startupsum 174,t traction niche market.<br> Graphical user interface founders sales traction www.<br>discoverartisans.<br>com incubator,success 130,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-20,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-20,Active
 ,Startupsum 175,analytics first mover advantage.<br> Stock virality backing.<br> Launch party advisor MVP research & development market startup.<br> Value proposition hackathon graphical user interface innovator beta non-disclosure agreement early adopters influencer agile development stock.<br>,success 131,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-21,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-21,Active
 ,Startupsum 176,Client rockstar business-to-business vesting period innovator.<br> Rockstar business model canvas sales stealth.<br> Resea,success 132,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-22,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-22,Active
 ,Startupsum 177,rch & development iPad seed round ecosystem gen-z focus user experience ownership beta startup funding.<br> User experience focus infrastructure partnership.<br> Startup stock pitch A/B testing pivot termsheet validation vesting period.<br> Bootstrapping supply chain business-to-business research & development influencer venture ecosystem android gamification.<br> Business-to-consumer crowdfunding,success 133,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-23,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-23,Active
 ,Startupsum 178,twitter bandwidth partnership termsheet handshake research & development marketing direct mailing gamification social media burn rate branding.<br> Interaction design social proof metrics.<br> Startup focus burn rate crowdsource infographic mass market.<br> A/B testing value proposition sales market iteration scrum project non-disclosure agreement www.<br>discoverartisans.<br>com funding bootst,success 134,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-24,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-24,Active
 ,Startupsum 179,rapping freemium rockstar.<br>,success 135,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-25,Active,"risk-1
-risk-3",,,,,,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-25,Active
 ,,,,,,,,,,,,,,
 Object type,,,,,,,,,MM/DD/YYYY,,,,,
 Standard,code*,title*,description,admin,state,notes,,,effective date,reference url,,,,
@@ -594,7 +497,7 @@ Policy,code*,title*,description,admin,state,notes,effective date,reference url,K
 ,p10,mapped policy 10,test,Urbon.S@example.com,Active,this is a note,7/1/2015,http://i.imgur.com/VjicYvY.webm,Contract Related Policy,,,,,
 ,,,,,,,,,,,,,,
 Object type,,,,,,,,,,,,,,
-program,Title,Description,Notes,Program Managers,Reference URL,Primary Contacts,Code,Effective Date,State,map:policy,map:contract,map:  regulation,map: risk,map: objective
+program,Title,Description,Notes,Program Managers,Reference URL,Primary Contacts,Code,Effective Date,State,map:policy,map:contract,map:  regulation,map: objective
 ,Cat ipsum 1,Climb leg rub face on everything give attitude nap all day for under the bed. Chase mice attack feet,,smotko@example.com,http://www.google.com,sec.con@example.com,prog-1,5/9/2015,Draft,"policy-1
 policy-2
 policy-3
@@ -626,21 +529,7 @@ regulation-9011
 regulation-9012
 regulation-9013
 regulation-9014
-regulation-9015","risk-1
-risk-2
-risk-3
-risk-4
-risk-5
-risk-16
-risk-17
-risk-18
-risk-19
-risk-20
-risk-21
-risk-22
-risk-23
-risk-24
-risk-25","objective-1
+regulation-9015","objective-1
 objective-2
 objective-3
 objective-4
@@ -660,10 +549,7 @@ policy-4
 policy-5
 policy-15
 policy-16","contract-25
-contract-27",,"risk-1
-risk-2
-risk-3
-risk-4","objective-1
+contract-27",,"objective-1
 objective-2
 objective-3
 objective-4
@@ -676,10 +562,7 @@ policy-13
 policy-14
 policy-15
 policy-16","contract-25
-contract-27",,"risk-1
-risk-2
-risk-3
-risk-4","objective-1
+contract-27",,"objective-1
 objective-2
 objective-3
 objective-4
@@ -694,10 +577,7 @@ policy-13
 policy-14
 policy-15
 policy-16","contract-25
-contract-27",,"risk-1
-risk-2
-risk-3
-risk-4","objective-1
+contract-27",,"objective-1
 objective-2
 objective-3
 objective-4
@@ -709,10 +589,7 @@ policy-13
 policy-14
 policy-15
 policy-16","contract-25
-contract-27",,"risk-1
-risk-2
-risk-3
-risk-4","objective-1
+contract-27",,"objective-1
 objective-2
 objective-3
 objective-4

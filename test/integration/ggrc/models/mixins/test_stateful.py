@@ -10,6 +10,7 @@ from integration.ggrc.query_helper import WithQueryApi
 from integration.ggrc import TestCase
 from integration.ggrc.models import factories
 from ggrc.models import get_model
+from ggrc.models.mixins import synchronizable
 
 
 @ddt.ddt
@@ -24,6 +25,7 @@ class TestStatefulMixin(WithQueryApi, TestCase):
   @ddt.data(
       "AccessGroup",
       "Audit",
+      "Control",
       "DataAsset",
       "Requirement",
       "Facility",
@@ -44,7 +46,13 @@ class TestStatefulMixin(WithQueryApi, TestCase):
   )
   def test_update_status(self, model_name):
     """Test status updating."""
-    obj = factories.get_model_factory(model_name)()
+    factory = factories.get_model_factory(model_name)
+
+    # pylint: disable=protected-access
+    if issubclass(factory._meta.model, synchronizable.Synchronizable):
+      self.api.login_as_external()
+
+    obj = factory()
     object_name = obj._inflector.table_singular
     for status in obj.VALID_STATES:
       # Try to update status.
@@ -60,6 +68,7 @@ class TestStatefulMixin(WithQueryApi, TestCase):
   @ddt.data(
       "AccessGroup",
       "Audit",
+      "Control",
       "DataAsset",
       "Requirement",
       "Facility",
@@ -80,7 +89,13 @@ class TestStatefulMixin(WithQueryApi, TestCase):
   )
   def test_set_invalid_status(self, model_name):
     """Test returning 400 code for setting invalid status."""
-    obj = factories.get_model_factory(model_name)()
+    factory = factories.get_model_factory(model_name)
+
+    # pylint: disable=protected-access
+    if issubclass(factory._meta.model, synchronizable.Synchronizable):
+      self.api.login_as_external()
+
+    obj = factory()
     invalid_status = u"Invalid status."
     response = self.api.put(obj, {u"status": invalid_status})
     self.assert400(response)

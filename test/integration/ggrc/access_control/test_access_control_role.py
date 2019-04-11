@@ -17,7 +17,7 @@ from integration.ggrc.generator import ObjectGenerator
 
 ROLE_NAME = "ACR for mandatory test"
 MANDATORY_ROLE_RESPONSE = {
-    "Risk": {"row_warnings": {errors.OWNER_MISSING.format(
+    "Program": {"row_warnings": {errors.OWNER_MISSING.format(
         line=3, column_name=ROLE_NAME)}}}
 NON_MANDATORY_ROLE_RESPONSE = {}
 
@@ -52,16 +52,16 @@ class TestAccessControlRole(TestCase):
 
   def test_create_after_objects(self):
     """Test eager creation of ACLs on existing objects with new ACR."""
-    risk_id = factories.RiskFactory().id
+    program_id = factories.ProgramFactory().id
     role_name = "New Custom Role"
-    self._post_role(name=role_name, object_type="Risk")
-    risk = all_models.Risk.query.get(risk_id)
-    self.assertIn(role_name, risk.acr_name_acl_map.keys())
-    self.assertIsNotNone(risk.acr_name_acl_map[role_name])
+    self._post_role(name=role_name, object_type="Program")
+    program = all_models.Program.query.get(program_id)
+    self.assertIn(role_name, program.acr_name_acl_map.keys())
+    self.assertIsNotNone(program.acr_name_acl_map[role_name])
 
   def test_create(self):
     """Test Access Control Role creation"""
-    response = self._post_role(object_type="Risk")
+    response = self._post_role(object_type="Program")
     assert response.status_code == 201, \
         "Failed to create a new access control role, response was {}".format(
             response.status)
@@ -84,26 +84,26 @@ class TestAccessControlRole(TestCase):
     """Test set empty field via import if acr mandatory is {mandatory}"""
     role = factories.AccessControlRoleFactory(
         name=ROLE_NAME,
-        object_type="Risk",
+        object_type="Program",
         mandatory=mandatory,
     )
     with factories.single_commit():
       user = factories.PersonFactory()
-      risk = factories.RiskFactory()
+      program = factories.ProgramFactory()
       role_id = role.id
       factories.AccessControlPersonFactory(
-          ac_list=risk.acr_name_acl_map[ROLE_NAME],
+          ac_list=program.acr_name_acl_map[ROLE_NAME],
           person=user,
       )
     response = self.import_data(OrderedDict([
-        ("object_type", "Risk"),
-        ("Code*", risk.slug),
+        ("object_type", "Program"),
+        ("Code*", program.slug),
         (ROLE_NAME, "--"),
     ]))
     self._check_csv_response(response, exp_response)
     db_data = defaultdict(set)
-    risk = all_models.Risk.query.get(risk.id)
-    for person, acl in risk.access_control_list:
+    program = all_models.Program.query.get(program.id)
+    for person, acl in program.access_control_list:
       db_data[acl.ac_role_id].add(person.id)
     if mandatory:
       cur_user = all_models.Person.query.filter_by(

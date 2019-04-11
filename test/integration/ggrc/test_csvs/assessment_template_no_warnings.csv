@@ -16,13 +16,6 @@ Audit,Code*,Program*,Title*,Audit Captains*,State,,,,,,,,,,
 ,Audit,Program,Audit,user@example.com,Planned,,,,,,,,,,
 ,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,
-Object type,,,,,,,,,,,,,,,
-risk,code*,title*,description,admin,risk type,,,,,,,,,,
-,risk-1,risk-1,test,user@example.com,1,,,,,,,,,,
-,risk-2,risk-2,test,user@example.com,2,,,,,,,,,,
-,risk-3,risk 3,test,user@example.com,3,,,,,,,,,,
-,risk-4,risk-4,test,user@example.com,4,,,,,,,,,,
-,,,,,,,,,,,,,,,
 Object type,,,,,Only works if object under assessment is Control.,,,,"List of custom attributes for the assessment template
 One attribute per line. fields are separated by commas,
 

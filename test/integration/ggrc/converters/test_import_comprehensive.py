@@ -40,13 +40,6 @@ class TestComprehensiveSheets(TestCase):
     indexed = {r["name"]: r for r in response}
 
     expected = {
-        "Risk": {
-            "created": 14,
-            "ignored": 2,
-            "row_errors": 2,
-            "row_warnings": 3,
-            "rows": 16,
-        },
         "Objective": {
             "created": 8,
             "ignored": 7,
@@ -259,10 +252,6 @@ class TestComprehensiveSheets(TestCase):
                     line=54, column_name="categories")
             },
             "row_errors": {
-                errors.MISSING_COLUMN.format(
-                    line=55, s="", column_names="Risk Type"),
-                errors.MISSING_COLUMN.format(
-                    line=56, s="", column_names="Risk Type"),
                 errors.DUPLICATE_VALUE_IN_CSV.format(
                     line=57, column_name="Code",
                     value="risk-2", processed_line=56),
@@ -275,6 +264,10 @@ class TestComprehensiveSheets(TestCase):
                 errors.DUPLICATE_VALUE_IN_CSV.format(
                     line=58, column_name="Title",
                     value="risk-2", processed_line=56),
+                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(line=55),
+                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(line=56),
+                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(line=57),
+                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(line=58),
             },
             "row_warnings": {
                 errors.EXPORT_ONLY_WARNING.format(
@@ -353,7 +346,7 @@ class TestComprehensiveSheets(TestCase):
     """Test that mapping with case sensitive slugs work."""
     response = self.import_file("case_sensitive_slugs.csv", safe=False)
     expected_errors = {
-        "Risk": {
+        "Program": {
             "row_errors": {
                 errors.DUPLICATE_VALUE_IN_CSV.format(
                     line="4",
@@ -405,23 +398,6 @@ class TestComprehensiveSheets(TestCase):
                 errors.WRONG_VALUE_ERROR.format(
                     line="7",
                     column_name="End",
-                ),
-            },
-        },
-    }
-    self._check_csv_response(response, expected_errors)
-
-  def test_missing_rich_text_field(self):
-    """MISSING_VALUE_ERROR is returned on empty mandatory description."""
-    response = self.import_file("risk_missing_mandatory_description.csv",
-                                safe=False)
-
-    expected_errors = {
-        "Risk": {
-            "row_errors": {
-                errors.MISSING_VALUE_ERROR.format(
-                    line="3",
-                    column_name="Description",
                 ),
             },
         },

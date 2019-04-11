@@ -21,6 +21,6 @@ class TestBasicCsvImport(TestCase):
     self.assertEqual(response_data[0]["deleted"], 0)
     self.assertEqual(response_data[0]["ignored"], 2)
     self.assertEqual(
-        models.Risk.query.count(),
+        models.Program.query.count(),
         2,
     )

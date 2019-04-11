@@ -134,18 +134,20 @@ class TestSnapshotQueryApi(TestCase):
               **args
           )
 
-  def _create_external_object(self):
+  @staticmethod
+  def _create_external_object():
     """Populate external model object that could not be imported."""
     with factories.single_commit():
       ca_person = factories.PersonFactory(email="user4@example.com")
-      control = factories.ControlFactory(
-          slug="Control code",
-          directive=None
-      )
+      objects = [
+          factories.ControlFactory(directive=None),
+          factories.RiskFactory()
+      ]
 
       ca_definitions = {
           cad.title: cad
-          for cad in control.get_custom_attribute_definitions([
+          for object in objects
+          for cad in object.get_custom_attribute_definitions([
               "CA text",
               "CA rich text",
               "CA date",
@@ -164,11 +166,12 @@ class TestSnapshotQueryApi(TestCase):
       }
 
       for title, value in ca_values.items():
-        factories.CustomAttributeValueFactory(
-            custom_attribute=ca_definitions[title],
-            attributable=control,
-            attribute_value=value
-        )
+        for obj in objects:
+          factories.CustomAttributeValueFactory(
+              custom_attribute=ca_definitions[title],
+              attributable=obj,
+              attribute_value=value
+          )
 
   def test_revision_content(self):
     """Test that revision contains all content needed."""

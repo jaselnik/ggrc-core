@@ -60,6 +60,7 @@ class Types(object):
 
   external = {
       "Control",
+      "Risk",
   }
 
 

@@ -508,20 +508,20 @@ class TestImportExports(TestImportExportBase):
   )
   def test_import_risk_revisions(self):
     """Test if new revisions created during import."""
-    data = "Object type,,,,,\n" \
-           "Risk,Code*,Title*,Description*,Risk Type*,Admin*\n" \
-           ",,Test risk,Description,Risk type,D,user@example.com"
+    data = "Object type,,,,,\n" + \
+           "Contract,code*,title*,description,admin,state\n" + \
+           ",contract-1,contract-1,test,user@example.com,Draft"
 
     user = all_models.Person.query.first()
 
     response = self.run_full_import(user, data)
     self.assert200(response)
 
-    risk = all_models.Risk.query.filter_by(title="Test risk").first()
-    self.assertIsNotNone(risk)
+    contract = all_models.Contract.query.filter_by(title="contract-1").first()
+    self.assertIsNotNone(contract)
     revision_actions = db.session.query(all_models.Revision.action).filter(
-        all_models.Revision.resource_type == "Risk",
-        all_models.Revision.resource_id == risk.id
+        all_models.Revision.resource_type == "Contract",
+        all_models.Revision.resource_id == contract.id
     )
     self.assertEqual({"created"}, {a[0] for a in revision_actions})
 
@@ -531,22 +531,22 @@ class TestImportExports(TestImportExportBase):
   )
   def test_import_snapshot(self):
     """Test if snapshots can be created from imported objects."""
-    data = "Object type,,,,,\n" \
-           "Risk,Code*,Title*,Description*,Risk Type*,Admin*\n" \
-           ",,Risk1,Description,Risk type,user@example.com\n" \
-           ",,Risk2,Description,Risk type,user@example.com\n" \
-           ",,Risk3,Description,Risk type,user@example.com"
+    data = "Object type,,,,,\n" + \
+           "Contract,code*,title*,description,admin,state\n" + \
+           ",contract-1,contract-1,test,user@example.com,Draft\n" + \
+           ",Contract-2,Contract-2,test,user@example.com,Active\n" + \
+           ",Contract-3,Contract-3,test,user@example.com,Draft"
 
     user = all_models.Person.query.first()
 
     response = self.run_full_import(user, data)
     self.assert200(response)
 
-    risks = all_models.Risk.query
-    self.assertEqual(3, risks.count())
+    contracts = all_models.Contract.query
+    self.assertEqual(3, contracts.count())
 
     audit = factories.AuditFactory()
-    snapshots = self._create_snapshots(audit, risks.all())
+    snapshots = self._create_snapshots(audit, contracts.all())
     self.assertEqual(3, len(snapshots))
 
   def test_import_map_objectives(self):

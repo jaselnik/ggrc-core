@@ -29,68 +29,68 @@ contract,Title,Admin,Code,,,
 ,,,,,,
 ,,,,,,
 Object type,,,,,,
-risk,Title,Admin,Code,Description*,Risk type*,
-,Startupsum 115,user@example.com,risk-1,description,risk type,
-,Startupsum 116,user@example.com,risk-2,description,risk type,
-,Startupsum 117,user@example.com,risk-3,description,risk type,
-,Startupsum 118,user@example.com,risk-4,description,risk type,
-,Startupsum 119,user@example.com,risk-5,description,risk type,
-,Startupsum 120,user@example.com,risk-6,description,risk type,
-,Startupsum 121,user@example.com,risk-7,description,risk type,
-,Startupsum 122,user@example.com,risk-8,description,risk type,
-,Startupsum 123,user@example.com,risk-9,description,risk type,
-,Startupsum 124,user@example.com,risk-10,description,risk type,
-,Startupsum 125,user@example.com,risk-11,description,risk type,
-,Startupsum 126,user@example.com,risk-12,description,risk type,
-,Startupsum 127,user@example.com,risk-13,description,risk type,
-,Startupsum 128,user@example.com,risk-14,description,risk type,
-,Startupsum 129,user@example.com,risk-15,description,risk type,
-,Startupsum 130,user@example.com,risk-16,description,risk type,
-,Startupsum 131,user@example.com,risk-17,description,risk type,
-,Startupsum 132,user@example.com,risk-18,description,risk type,
-,Startupsum 133,user@example.com,risk-19,description,risk type,
-,Startupsum 134,user@example.com,risk-20,description,risk type,
-,Startupsum 135,user@example.com,risk-21,description,risk type,
-,Startupsum 136,user@example.com,risk-22,description,risk type,
-,Startupsum 137,user@example.com,risk-23,description,risk type,
-,Startupsum 138,user@example.com,risk-24,description,risk type,
-,Startupsum 139,user@example.com,risk-25,description,risk type,
+product,Title,Admin,Code,Verifier,Assignee
+,Startupsum 115,user@example.com,product-1,user@example.com,user@example.com
+,Startupsum 116,user@example.com,product-2,user@example.com,user@example.com
+,Startupsum 117,user@example.com,product-3,user@example.com,user@example.com
+,Startupsum 118,user@example.com,product-4,user@example.com,user@example.com
+,Startupsum 119,user@example.com,product-5,user@example.com,user@example.com
+,Startupsum 120,user@example.com,product-6,user@example.com,user@example.com
+,Startupsum 121,user@example.com,product-7,user@example.com,user@example.com
+,Startupsum 122,user@example.com,product-8,user@example.com,user@example.com
+,Startupsum 123,user@example.com,product-9,user@example.com,user@example.com
+,Startupsum 124,user@example.com,product-10,user@example.com,user@example.com
+,Startupsum 125,user@example.com,product-11,user@example.com,user@example.com
+,Startupsum 126,user@example.com,product-12,user@example.com,user@example.com
+,Startupsum 127,user@example.com,product-13,user@example.com,user@example.com
+,Startupsum 128,user@example.com,product-14,user@example.com,user@example.com
+,Startupsum 129,user@example.com,product-15,user@example.com,user@example.com
+,Startupsum 130,user@example.com,product-16,user@example.com,user@example.com
+,Startupsum 131,user@example.com,product-17,user@example.com,user@example.com
+,Startupsum 132,user@example.com,product-18,user@example.com,user@example.com
+,Startupsum 133,user@example.com,product-19,user@example.com,user@example.com
+,Startupsum 134,user@example.com,product-20,user@example.com,user@example.com
+,Startupsum 135,user@example.com,product-21,user@example.com,user@example.com
+,Startupsum 136,user@example.com,product-22,user@example.com,user@example.com
+,Startupsum 137,user@example.com,product-23,user@example.com,user@example.com
+,Startupsum 138,user@example.com,product-24,user@example.com,user@example.com
+,Startupsum 139,user@example.com,product-25,user@example.com,user@example.com
 ,,,,,,
 Object type,,,,,,
-policy,Title,Admin,Code,map:risk,,
-,Cheese ipsum ch 5,user@example.com,policy-1,risk-1,,
-,Cheese ipsum ch 6,user@example.com,policy-2,risk-2,,
-,Cheese ipsum ch 7,user@example.com,policy-3,"risk-5
-risk-7",,
-,Cheese ipsum ch 8,user@example.com,policy-4,"risk-5
-risk-7",,
-,Cheese ipsum ch 9,user@example.com,policy-5,"risk-5
-risk-7",,
-,Cheese ipsum ch 10,user@example.com,policy-6,"risk-5
-risk-7",,
-,Cheese ipsum ch 11,user@example.com,policy-7,risk-8,,
-,Cheese ipsum ch 12,user@example.com,policy-8,risk-8,,
-,Cheese ipsum ch 13,user@example.com,policy-9,risk-8,,
-,Cheese ipsum ch 14,user@example.com,policy-10,risk-8,,
-,Cheese ipsum ch 15,user@example.com,policy-11,risk-8,,
-,Cheese ipsum ch 16,user@example.com,policy-12,risk-8,,
-,Cheese ipsum ch 17,user@example.com,policy-13,risk-8,,
-,Cheese ipsum ch 18,user@example.com,policy-14,risk-8,,
-,Cheese ipsum ch 19,user@example.com,policy-15,"risk-5
-risk-7",,
-,Cheese ipsum ch 20,user@example.com,policy-16,"risk-5
-risk-7",,
-,Cheese ipsum ch 21,user@example.com,policy-17,"risk-5
-risk-7",,
-,Cheese ipsum ch 22,user@example.com,policy-18,"risk-5
-risk-7",,
-,Cheese ipsum ch 23,user@example.com,policy-19,"risk-5
-risk-7",,
-,Cheese ipsum ch 24,user@example.com,policy-20,"risk-5
-risk-7",,
+policy,Title,Admin,Code,map:product,,
+,Cheese ipsum ch 5,user@example.com,policy-1,product-1,,
+,Cheese ipsum ch 6,user@example.com,policy-2,product-2,,
+,Cheese ipsum ch 7,user@example.com,policy-3,"product-5
+product-7",,
+,Cheese ipsum ch 8,user@example.com,policy-4,"product-5
+product-7",,
+,Cheese ipsum ch 9,user@example.com,policy-5,"product-5
+product-7",,
+,Cheese ipsum ch 10,user@example.com,policy-6,"product-5
+product-7",,
+,Cheese ipsum ch 11,user@example.com,policy-7,product-8,,
+,Cheese ipsum ch 12,user@example.com,policy-8,product-8,,
+,Cheese ipsum ch 13,user@example.com,policy-9,product-8,,
+,Cheese ipsum ch 14,user@example.com,policy-10,product-8,,
+,Cheese ipsum ch 15,user@example.com,policy-11,product-8,,
+,Cheese ipsum ch 16,user@example.com,policy-12,product-8,,
+,Cheese ipsum ch 17,user@example.com,policy-13,product-8,,
+,Cheese ipsum ch 18,user@example.com,policy-14,product-8,,
+,Cheese ipsum ch 19,user@example.com,policy-15,"product-5
+product-7",,
+,Cheese ipsum ch 20,user@example.com,policy-16,"product-5
+product-7",,
+,Cheese ipsum ch 21,user@example.com,policy-17,"product-5
+product-7",,
+,Cheese ipsum ch 22,user@example.com,policy-18,"product-5
+product-7",,
+,Cheese ipsum ch 23,user@example.com,policy-19,"product-5
+product-7",,
+,Cheese ipsum ch 24,user@example.com,policy-20,"product-5
+product-7",,
 ,,,,,,
 Object type,,,,,,
-program,Title,Program Managers,Code,map:policy,map:contract,map: risk
+program,Title,Program Managers,Code,map:policy,map:contract,map: product
 ,Cat ipsum 1,user@example.com,prog-1,"policy-1
 policy-2
 policy-3
@@ -107,21 +107,21 @@ policy-13
 policy-14
 policy-15
 policy-16","contract-25
-contract-27","risk-1
-risk-2
-risk-3
-risk-4
-risk-5
-risk-16
-risk-17
-risk-18
-risk-19
-risk-20
-risk-21
-risk-22
-risk-23
-risk-24
-risk-25"
+contract-27","product-1
+product-2
+product-3
+product-4
+product-5
+product-16
+product-17
+product-18
+product-19
+product-20
+product-21
+product-22
+product-23
+product-24
+product-25"
 ,Cat ipsum 2,user@example.com,prog-2,"policy-1
 policy-2
 policy-3
@@ -129,10 +129,10 @@ policy-4
 policy-5
 policy-15
 policy-16","contract-25
-contract-27","risk-1
-risk-2
-risk-3
-risk-4"
+contract-27","product-1
+product-2
+product-3
+product-4"
 ,Cat ipsum 3,user@example.com,prog-3,"
 policy-10
 policy-11
@@ -141,10 +141,10 @@ policy-13
 policy-14
 policy-15
 policy-16","contract-25
-contract-27","risk-1
-risk-2
-risk-3
-risk-4"
+contract-27","product-1
+product-2
+product-3
+product-4"
 ,Cat ipsum 4,user@example.com,prog-4,"policy-1
 policy-2
 policy-3
@@ -155,10 +155,10 @@ policy-13
 policy-14
 policy-15
 policy-16","contract-25
-contract-27","risk-1
-risk-2
-risk-3
-risk-4"
+contract-27","product-1
+product-2
+product-3
+product-4"
 ,Cat ipsum 5,user@example.com,prog-5,"policy-10
 policy-11
 policy-12
@@ -166,10 +166,10 @@ policy-13
 policy-14
 policy-15
 policy-16","contract-25
-contract-27","risk-1
-risk-2
-risk-3
-risk-4"
+contract-27","product-1
+product-2
+product-3
+product-4"
 ,Cat ipsum 6,user@example.com,prog-6,"policy-10
 policy-11
 policy-12

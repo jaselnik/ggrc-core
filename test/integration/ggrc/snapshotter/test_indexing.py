@@ -110,7 +110,7 @@ class TestSnapshotIndexing(SnapshotterBaseTestCase):
              for s in snapshots}
         ))
 
-    self.assertEqual(records.count(), 69)
+    self.assertEqual(records.count(), 66)
 
     # At this point all objects are no longer in the session and we have to
     # manually refresh them from the database
@@ -261,7 +261,7 @@ class TestSnapshotIndexing(SnapshotterBaseTestCase):
              for s in snapshots}
         ))
 
-    self.assertEqual(records.count(), 69)
+    self.assertEqual(records.count(), 66)
 
     custom_attributes = [
         (objective,
@@ -320,7 +320,7 @@ class TestSnapshotIndexing(SnapshotterBaseTestCase):
 
     records = get_records(audit, snapshots)
 
-    self.assertEqual(records.count(), 66)
+    self.assertEqual(records.count(), 63)
 
     delete_records({s.id for s in snapshots})
 
@@ -331,7 +331,7 @@ class TestSnapshotIndexing(SnapshotterBaseTestCase):
 
     records = get_records(audit, snapshots)
 
-    self.assertEqual(records.count(), 66)
+    self.assertEqual(records.count(), 63)
 
   def assert_indexed_fields(self, obj, search_property, values):
     """Assert index content in full text search table."""

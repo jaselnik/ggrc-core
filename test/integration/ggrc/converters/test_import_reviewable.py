@@ -21,24 +21,24 @@ class TestImportReviewable(TestCase):
 
   def test_simple_import(self):
     """Disallow user to change review state"""
-    risk = factories.RiskFactory()
+    program = factories.ProgramFactory()
 
-    resp, _ = generate_review_object(risk)
-    risk_id = risk.id
+    resp, _ = generate_review_object(program)
+    program_id = program.id
     self.assertEqual(201, resp.status_code)
     import_data = OrderedDict(
         [
-            ("object_type", "Risk"),
-            ("Code*", risk.slug),
+            ("object_type", "Program"),
+            ("Code*", program.slug),
             ("Review State", "REVIEWED"),
         ]
     )
     response = self.import_data(import_data)
     self._check_csv_response(response, {})
 
-    risk = all_models.Risk.query.get(risk_id)
+    program = all_models.Program.query.get(program_id)
     self.assertEqual(
-        all_models.Review.STATES.UNREVIEWED, risk.review_status
+        all_models.Review.STATES.UNREVIEWED, program.review_status
     )
 
   def test_change_attribute(self):
@@ -109,126 +109,126 @@ class TestImportReviewable(TestCase):
     """Don't revert state when comment added.
     Review -> REVIEWED
     """
-    risk = factories.RiskFactory()
+    requirement = factories.RequirementFactory()
     resp, review = generate_review_object(
-        risk, state=all_models.Review.STATES.REVIEWED)
+        requirement, state=all_models.Review.STATES.REVIEWED)
     del review
-    risk_id = risk.id
+    requirement_id = requirement.id
     self.assertEqual(201, resp.status_code)
     import_data = OrderedDict(
         [
-            ("object_type", "Risk"),
-            ("Code*", risk.slug),
+            ("object_type", "Requirement"),
+            ("Code*", requirement.slug),
             ("comments", "some comments")
         ]
     )
     response = self.import_data(import_data)
     self._check_csv_response(response, {})
-    risk = all_models.Risk.query.get(risk_id)
+    requirement = all_models.Requirement.query.get(requirement_id)
     self.assertEqual(
         all_models.Review.STATES.REVIEWED,
-        risk.review_status
+        requirement.review_status
     )
 
   def test_reference_url_import(self):
     """Don't revert state when reference url added.
     Review -> REVIEWED
     """
-    risk = factories.RiskFactory()
+    program = factories.ProgramFactory()
     resp, review = generate_review_object(
-        risk, state=all_models.Review.STATES.REVIEWED)
+        program, state=all_models.Review.STATES.REVIEWED)
     del review
-    risk_id = risk.id
+    program_id = program.id
     self.assertEqual(201, resp.status_code)
     import_data = OrderedDict(
         [
-            ("object_type", "Risk"),
-            ("Code*", risk.slug),
+            ("object_type", "Program"),
+            ("Code*", program.slug),
             ("reference url", "test@test.com")
         ]
     )
     response = self.import_data(import_data)
     self._check_csv_response(response, {})
-    risk = all_models.Risk.query.get(risk_id)
+    program = all_models.Program.query.get(program_id)
     self.assertEqual(
         all_models.Review.STATES.REVIEWED,
-        risk.review_status
+        program.review_status
     )
 
   def test_non_snapshottable_import(self):
     """Reviewable mapped to non snapshotable via import
     Review -> REVIEWED
     """
-    risk = factories.RiskFactory()
+    program = factories.ProgramFactory()
     issue = factories.IssueFactory()
     issue_slug = issue.slug
     resp, review = generate_review_object(
-        risk, state=all_models.Review.STATES.REVIEWED)
+        program, state=all_models.Review.STATES.REVIEWED)
     del review
-    risk_id = risk.id
+    program_id = program.id
     self.assertEqual(201, resp.status_code)
     import_data = OrderedDict(
         [
-            ("object_type", "Risk"),
-            ("Code*", risk.slug),
+            ("object_type", "Program"),
+            ("Code*", program.slug),
             ("map:Issue", issue_slug),
         ]
     )
     response = self.import_data(import_data)
     self._check_csv_response(response, {})
-    risk = all_models.Risk.query.get(risk_id)
+    program = all_models.Program.query.get(program_id)
     self.assertEqual(
-        all_models.Review.STATES.REVIEWED, risk.review_status
+        all_models.Review.STATES.REVIEWED, program.review_status
     )
 
   def test_without_changes_import(self):
     """Import snapshotable without changes.
     Review -> REVIEWED
     """
-    risk = factories.RiskFactory()
+    program = factories.ProgramFactory()
     resp, review = generate_review_object(
-        risk, state=all_models.Review.STATES.REVIEWED)
+        program, state=all_models.Review.STATES.REVIEWED)
 
     del review
-    risk_id = risk.id
+    program_id = program.id
     self.assertEqual(201, resp.status_code)
     import_data = OrderedDict(
         [
-            ("object_type", "Risk"),
-            ("Code*", risk.slug),
+            ("object_type", "Program"),
+            ("Code*", program.slug),
         ]
     )
     response = self.import_data(import_data)
     self._check_csv_response(response, {})
-    risk = all_models.Risk.query.get(risk_id)
+    program = all_models.Program.query.get(program_id)
     self.assertEqual(
         all_models.Review.STATES.REVIEWED,
-        risk.review_status
+        program.review_status
     )
 
   def test_change_acl_import(self):
     """Change acl via import
     Review -> REVIEWED
     """
-    risk = factories.RiskFactory()
+    program = factories.ProgramFactory()
     resp, review = generate_review_object(
-        risk, state=all_models.Review.STATES.REVIEWED)
+        program, state=all_models.Review.STATES.REVIEWED)
     del review
-    risk_id = risk.id
+    program_id = program.id
     self.assertEqual(201, resp.status_code)
 
     person = factories.PersonFactory()
     import_data = OrderedDict(
         [
-            ("object_type", "Risk"),
-            ("Code*", risk.slug),
-            ("admin", person.email)
+            ("object_type", "Program"),
+            ("Code*", program.slug),
+            ("Program Managers", person.email)
         ]
     )
     response = self.import_data(import_data)
     self._check_csv_response(response, {})
-    risk = all_models.Risk.query.get(risk_id)
+    program = all_models.Program.query.get(program_id)
     self.assertEqual(
         all_models.Review.STATES.REVIEWED,
-        risk.review_status
+        program.review_status
     )

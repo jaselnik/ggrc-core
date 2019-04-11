@@ -304,22 +304,6 @@ Not Launched
 In Scope
 Not in Scope
 Deprecated",MM/DD/YYYY,,,,,,,,,,
-Risk,code*,title*,description,Risk Type*,notes,Admin*,Effective date,map:program,,,,,,,,
-,ra-1,ra-1 EDIT,test,test,this is a note,user@example.com,7/1/2015,PMRBACPROGRAM-1,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-Object type,"Must be unique.  Can be left empty for autogeneration.  If updating or deleting, code is required",,,"if owner is not provided, current user will be reated as owner of the object","Default value 'draft' is selected
-Other values are:
-Final
-Effective
-Ineffective
-Launched
-Not Launched
-In Scope
-Not in Scope
-Deprecated",MM/DD/YYYY,,,,,,,,,,
 Threat,code*,title*,description,notes,Admin*,Effective date,map:program,,,,,,,,,
 ,threat-1,threat-1 EDIT,test,this is a note,user@example.com,7/1/2015,PMRBACPROGRAM-1,,,,,,,,,
 ,,,,,,,,,,,,,,,,

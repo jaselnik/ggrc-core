@@ -197,12 +197,6 @@ class TestPrimaryContactsPropagation(base.TestACLPropagation):
               "update_review": True,
               "delete_review": False,
           },
-          "MappedReview Risk": {
-              "create_review": True,
-              "read_review": True,
-              "update_review": True,
-              "delete_review": False,
-          },
           "MappedReview Standard": {
               "create_review": True,
               "read_review": True,

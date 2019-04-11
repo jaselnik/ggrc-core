@@ -1,0 +1,14 @@
+Object type,,,,,,,,,,,,,,,
+person,Name,Email,Company,role,,,,,,,,,,,
+,admin,admin@example.com,google,Administrator,,,,,,,,,,,
+,creator,creator@example.com,google,creator,,,,,,,,,,,
+,editor,editor@example.com,google,Editor,,,,,,,,,,,
+,reader,reader@example.com,google,reader,,,,,,,,,,,
+,,,,,,,,,,,,,,,
+Object type,,,,,,,,,,,,,,,
+Product,Code*,Title*,Admin*,Assignee*,Verifier*,checkbox,date,dropdown,person,RT
+,Product 1,Product title 1,admin@example.com,admin@example.com,admin@example.com,yes,02/22/2022,one,creator@example.com,Rich text 1
+,Product 2,Product title 2,creator@example.com,creator@example.com,creator@example.com,no,02/23/2022,two,editor@example.com,Rich text 2
+,Product 3,Product title 3,editor@example.com,editor@example.com,editor@example.com,no,02/24/2022,three,reader@example.com,Rich text 3
+,Product 4,Product title 4,reader@example.com,reader@example.com,reader@example.com,true,02/25/2022,four,creator@example.com,Rich text 4
+,Product 5,Product title 5,admin@example.com,admin@example.com,admin@example.com,false,02/26/2022,five,editor@example.com,Rich text 5

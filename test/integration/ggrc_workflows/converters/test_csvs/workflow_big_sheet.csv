@@ -41,28 +41,15 @@ contract,Title,Description,Notes,Admin,Reference URL,Code,Effective Date,State,,
 ,con 40,bah 111145,really this is lame,user@example.com,http://i.imgur.com/VjicYvY.webm,contract-32,2/18/2016,active,,
 ,,,,,,,,,,
 Object type,,,,,,,,,,
-risk,Title,Description,Risk type,Admin,Reference URL,Code,,,,
-,Startupsum 115,Series A financing success channels.<br> Ecosystem conversion rockstar value proposition bandwidth,success 111,smotko@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-1,,,,
-,Startupsum 116,facebook validation responsive web design business plan.<br> Startup pivot founders.<br> Infrastructure f,success 112,smotko@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-2,,,,
-,Startupsum 117,unding stock iteration founders freemium hackathon alpha research & development seed money branding.<br> In,success 113,smotko@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-3,,,,
-,Startupsum 118,fluencer scrum project startup android.<br> Partner network interaction design network effects creative conversion business plan equity influencer innovator return on investment validation buzz A/B testing research & development.<br> Non-disclosure agreement business-to-consumer gen-z.<br> Graphical user interface sales conversion pivot market scrum project android angel investor product management ramen entrepreneur rockstar.<br> Churn rate vesting period infographic social proof stealth prototype android traction freemium www.<br>discoverartisans.<br>com.<br> Gamification leverage responsive web design seed money social proof.<br>,success 114,Urbon.S@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-4,,,,
-,Startupsum 119,fluencer scrum project startup android.<br> Partner network interaction design network effects creative conversion business plan equity influencer innovator return on investment validation buzz A/B testing research & development.<br> Non-disclosure agreement business-to-consumer gen-z.<br> Graphical user interface sales conversion pivot market scrum project android angel investor product management ramen entrepreneur rockstar.<br> Churn rate vesting period infographic social proof stealth prototype android traction freemium www.<br>discoverartisans.<br>com.<br> Gamification leverage responsive web design seed money social proof.<br>,success 115,Urbon.S@example.com,http://i.imgur.com/aP8UU5I.jpg,risk-5,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-Object type,,,,,,,,,,
-objective,Title,Description,Notes,Admin,Reference URL,Code,State,map:risk,,
+objective,Title,Description,Notes,Admin,Reference URL,Code,State
 ,Startupsum 155,Series A financing success channels.<br> Ecosystem conversion rockstar value proposition bandwidth,success 111,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-1,Active,"risk-1
-risk-3",,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-1,Active
 ,Startupsum 156,facebook validation responsive web design business plan.<br> Startup pivot founders.<br> Infrastructure f,success 112,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-2,Active,"risk-1
-risk-3",,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-2,Active
 ,Startupsum 157,unding stock iteration founders freemium hackathon alpha research & development seed money branding.<br> In,success 113,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-3,Active,"risk-1
-risk-3",,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-3,Active
 ,Startupsum 158,fluencer scrum project startup android.<br> Partner network interaction design network effects creative conversion business plan equity influencer innovator return on investment validation buzz A/B testing research & development.<br> Non-disclosure agreement business-to-consumer gen-z.<br> Graphical user interface sales conversion pivot market scrum project android angel investor product management ramen entrepreneur rockstar.<br> Churn rate vesting period infographic social proof stealth prototype android traction freemium www.<br>discoverartisans.<br>com.<br> Gamification leverage responsive web design seed money social proof.<br>,success 114,"zidar@example.com
-user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-4,Active,"risk-1
-risk-3",,
+user@example.com",http://i.imgur.com/SiuyNdp.jpg,objective-4,Active
 ,,,,,,,,,,
 Object type,,,,,,,,,,
 Task Group,code*,Title*,details,assignee,workflow*,map:policy,map:regulation,map:objective,map:contract,,,,

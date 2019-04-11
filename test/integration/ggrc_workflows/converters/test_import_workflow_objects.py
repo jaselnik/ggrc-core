@@ -90,13 +90,13 @@ class TestWorkflowObjectsImport(TestCase):
         "Task Group Task": {
             "row_warnings": {
                 errors.WRONG_REQUIRED_VALUE.format(
-                    line=82, value="aaaa", column_name="Task Type"
+                    line=73, value="aaaa", column_name="Task Type"
                 ),
                 errors.MISSING_VALUE_WARNING.format(
-                    line=83, default_value="Rich Text", column_name="Task Type"
+                    line=74, default_value="Rich Text", column_name="Task Type"
                 ),
                 errors.MISSING_VALUE_WARNING.format(
-                    line=84, default_value="Rich Text", column_name="Task Type"
+                    line=75, default_value="Rich Text", column_name="Task Type"
                 ),
             }
         },

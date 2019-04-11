@@ -106,6 +106,7 @@ class Api(object):
 
   @contextmanager
   def as_external(self):
+    """Context manager that login client as external user."""
     self.login_as_external()
     yield
     self.login_as_normal()
@@ -263,3 +264,82 @@ class Api(object):
     link = "/search?{}".format(urlencode(params))
 
     return self.client.get(link), self.headers
+
+
+class ExternalApi(object):
+  """Simple API client that add headers to make requests as external user."""
+
+  def __init__(self):
+    self.client = app.test_client()
+    wrap_client_calls(self.client)
+    self.headers = {
+        "Content-Type": "application/json",
+        "X-Requested-By": "GGRC",
+        "X-GGRC-User": json.dumps({
+            "email": "external_app@example.com",
+            "name": "External app"
+        }),
+        "X-External-User": json.dumps({
+            "email": "external_user@example.com",
+            "name": "External user"
+        })
+    }
+
+  def make_request(self, request, url, data=None, custom_headers=None):
+    """Main method that add user headers to request."""
+    headers = self.headers.copy()
+
+    if custom_headers:
+      headers.update(custom_headers)
+
+    response = request(url, data=data, headers=headers)
+
+    return self.data_to_json(response)
+
+  @staticmethod
+  def data_to_json(response):
+    """Add decoded json to response object """
+    try:
+      response.json = flask.json.loads(response.data)
+    except StandardError:
+      response.json = None
+    return response
+
+  @staticmethod
+  def api_link(model, id_=None):
+    """Generate api link for provided model."""
+    url = "/api/%s" % model._inflector.table_plural
+    return "%s/%s" % (url, id_) if id_ else url
+
+  def get(self, url, headers=None):
+    """Make GET request to provided url."""
+    return self.make_request(self.client.get, url, custom_headers=headers)
+
+  def post(self, url, data, headers=None):
+    """Make POST request to provided url."""
+    return self.make_request(self.client.post, url,
+                             data=utils.as_json(data), custom_headers=headers)
+
+  def put(self, url, data, headers=None):
+    """Make PUT request to provided url."""
+    return self.make_request(self.client.put, url,
+                             data=utils.as_json(data), custom_headers=headers)
+
+  def delete(self, url, headers=None):
+    """Make DELETE request to provided url."""
+    return self.make_request(self.client.delete, url, custom_headers=headers)
+
+  @staticmethod
+  def extract_etag_headers(headers):
+    """Helper method that extract ETAG headers from dict."""
+    return {
+        "If-Match": headers.get("Etag"),
+        "If-Unmodified-Since": headers.get("Last-Modified")
+    }
+
+  def get_etag_headers(self, obj):
+    """Helper method that get ETAG headers for provided object."""
+    url = self.api_link(obj, obj.id)
+    response = self.get(url)
+
+    return self.extract_etag_headers(response.headers)

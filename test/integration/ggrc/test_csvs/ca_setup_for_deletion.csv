@@ -1,4 +1,4 @@
 Object type,,,,,
-Risk,Code*,Title*,Admin*,Description*,Risk type
-,r1,r1,user@example.com,Description 1,Risk 1
-,r2,r2,user@example.com,Description 2,Risk 2
+Program,Code*,Title*,Program managers
+,p1,p1,user@example.com
+,p2,p2,user@example.com

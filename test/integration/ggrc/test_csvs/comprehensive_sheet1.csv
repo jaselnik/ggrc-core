@@ -15,28 +15,6 @@ Person,name,email,company,non-existent-attribute,role,,,,,,,
 ,Someone.Else,someone.else@ggrc.com,,Administrator,,,,,,,,
 ,Another,another@user.com,,Administrator,,,,,,,,
 ,,,,,,,,,,,,
-Object type,"Must be unique.  Can be left empty for autogeneration.  If updating or deleting, code is required",Mandatory field,,"options:
-yearly
-monthly
-daily",,required cutom attribute. contain text,,,,,,
-risk,code*,title*,description,risk type*,frequency,admin,my custom text*,non-existent-attribute,,,,
-,risk-1,risk-1,desc 1b,risk-1,daily,user1@ggrc.com,1,,,,,
-,risk-2,risk-2,desc 2,risk-2,monthly,user1@ggrc.com,2,,,,,
-,risk-3,risk-3,desc 3,risk-3,,user1@ggrc.com,3,,,,,
-,risk-4,risk-4,desc 4,risk-4,yearly,someone.else@ggrc.com,4,,,,,
-,risk-5,risk-5,desc 4,risk-5,daily,user1@ggrc.com,6,,,,,
-,risk-6,risk-6,desc 1b,risk-6,daily,someone.else@ggrc.com,1,,,,,
-,risk-7,risk-7,desc 2,risk-7,monthly,user1@ggrc.com,4,,,,,
-,risk-8,risk-8,desc 3,risk-8,,someone.else@ggrc.com,5,,,,,
-,risk-9,risk-9,desc 4,risk-9,yearly,user1@ggrc.com,6,,,,,
-,risk-10,risk-10,desc 4,risk-10,daily,user1@ggrc.com,66,,,,,
-,risk-no-owner,risk-no-owner,desc 2,risk-no-owner,monthly,,3,,,,,
-,risk-invalid-owner,risk-invalid-owner,desc 3,risk-invalid-owner,yearly,nonexist@nonexist.com,6,,,,,
-,risk-invalid-attribute,risk-invalid-attribute,desc 4,risk-invalid-attribute,daily,user1@ggrc.com,6,,,,,
-,risk-dup-title,risk-1,desc 1b,risk-dup-title,daily,user1@ggrc.com,6,,,,,
-,risk-req-attr-missing,,desc 1b,risk-req-attr-missing,daily,user1@ggrc.com,45,,,,,
-,risk-req-custom-attr-missing,risk-req-custom-attr-missing,desc 1b,risk-req-custom-attr-missing,daily,user1@ggrc.com,4,,,,,
-,,,,,,,,,,,,
 Object type,"Must be unique.  Can be left empty for autogeneration.  If updating or deleting, code is required",,,,"options are:
 draft
 final

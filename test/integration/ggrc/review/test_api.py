@@ -26,11 +26,11 @@ class TestReviewApi(TestCase):
   def test_simple_get(self):
     """Test simple get"""
     with factories.single_commit():
-      risk = factories.RiskFactory()
+      program = factories.ProgramFactory()
       review = factories.ReviewFactory(
           email_message="test email message",
           notification_type="email",
-          reviewable=risk,
+          reviewable=program,
           status=all_models.Review.STATES.UNREVIEWED,
       )
     resp = self.api.get(all_models.Review, review.id)
@@ -105,27 +105,27 @@ class TestReviewApi(TestCase):
   def test_delete_review(self):
     """Test delete review via API"""
     with factories.single_commit():
-      risk = factories.RiskFactory()
-      risk_id = risk.id
-      review = factories.ReviewFactory(reviewable=risk)
+      program = factories.ProgramFactory()
+      program_id = program.id
+      review = factories.ReviewFactory(reviewable=program)
       review_id = review.id
     resp = self.api.delete(review)
     self.assert200(resp)
     review = all_models.Review.query.get(review_id)
-    risk = all_models.Risk.query.get(risk_id)
+    program = all_models.Program.query.get(program_id)
 
     self.assertIsNone(review)
-    self.assertEquals(0, len(risk.related_objects(_types=["Review"])))
+    self.assertEquals(0, len(program.related_objects(_types=["Review"])))
 
   def test_last_reviewed(self):
     """last_reviewed_by, last_reviewed_by should be set if reviewed"""
-    risk = factories.RiskFactory()
+    program = factories.ProgramFactory()
     resp, review = self.generator.generate_object(
         all_models.Review,
         {
             "reviewable": {
-                "type": risk.type,
-                "id": risk.id,
+                "type": program.type,
+                "id": program.id,
             },
             "context": None,
             "status": all_models.Review.STATES.UNREVIEWED,

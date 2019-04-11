@@ -551,7 +551,7 @@ class TestExportMultipleObjects(TestCase):
         },
         "fields": ["slug", "title", "description"],
     }, {
-        "object_name": "Risk",  # risk-3, risk-4, risk-5
+        "object_name": "Product",  # product-3, product-4, product-5
         "filters": {
             "expression": {
                 "left": {
@@ -612,7 +612,7 @@ class TestExportMultipleObjects(TestCase):
       else:
         self.assertNotIn(",con {},".format(i), response.data)
 
-    # controls
+    # product
     for i in range(115, 140):
       if i in (117, 118, 119):
         self.assertIn(",Startupsum {},".format(i), response.data)

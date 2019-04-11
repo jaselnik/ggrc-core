@@ -22,8 +22,8 @@ class TestExportReviewable(TestCase):
       self.person1_email = person1.email
       person2 = factories.PersonFactory()
       self.person2_email = person2.email
-      risk = factories.RiskFactory(title="Test risk")
-      review = factories.ReviewFactory(reviewable=risk)
+      program = factories.ProgramFactory(title="Test program")
+      review = factories.ReviewFactory(reviewable=program)
 
       review.add_person_with_role_name(person1, 'Reviewers')
       review.add_person_with_role_name(person2, 'Reviewers')
@@ -36,7 +36,7 @@ class TestExportReviewable(TestCase):
 
     data = [
         {
-            "object_name": "Risk",
+            "object_name": "Program",
             "filters": {
                 "expression": {}
             },
@@ -45,7 +45,7 @@ class TestExportReviewable(TestCase):
     ]
     response = self.export_csv(data)
 
-    self.assertIn("Test risk", response.data)
+    self.assertIn("Test program", response.data)
     self.assertIn("Review State", response.data)
     self.assertIn("Unreviewed", response.data)
     self.assertIn("Reviewers", response.data)
@@ -86,19 +86,18 @@ class TestImportReviewable(TestCase):
   def test_import_reviewable(self):
     """Review State and Reviewers should be non imported."""
 
-    risk = factories.RiskFactory()
-    self.assertIsNone(risk.end_date)
+    program = factories.ProgramFactory()
+    self.assertIsNone(program.end_date)
     resp = self.import_data(collections.OrderedDict([
-        ("object_type", "Risk"),
-        ("code", risk.slug),
-        ("Last Deprecated Date", "06/06/2017"),
+        ("object_type", "Program"),
+        ("code", program.slug),
         ("Review State", 'Reviewed'),
         ("Reviewers", "example1@mail.com\nexample2@mail.com")
     ]))
 
-    risk = all_models.Risk.query.get(risk.id)
+    program = all_models.Program.query.get(program.id)
     self.assertEqual(1, len(resp))
     self.assertEqual(1, resp[0]["updated"])
-    self.assertIsNone(risk.end_date)
-    self.assertEqual(risk.review_status, 'Unreviewed')
-    self.assertFalse(risk.reviewers)
+    self.assertIsNone(program.end_date)
+    self.assertEqual(program.review_status, 'Unreviewed')
+    self.assertFalse(program.reviewers)

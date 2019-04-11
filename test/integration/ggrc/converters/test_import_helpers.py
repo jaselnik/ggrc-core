@@ -829,8 +829,6 @@ class TestGetObjectColumnDefinitions(TestCase):
         "Admin",
         "Reference URL",
         "State",
-        "Review State",
-        "Reviewers",
         "Last Deprecated Date",
         "Title",
         "Primary Contacts",

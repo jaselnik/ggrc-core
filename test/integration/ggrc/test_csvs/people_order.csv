@@ -38,15 +38,6 @@ Assessment,Code*,Template,Audit*,Title*,Description,Assignees*,Creators*,Verifie
 ,ASSESSMENT-6,,AUDIT-1,assessment6,,turing@example.com,user@1.com,blue@example.com,Risk,,,
 ,,,,,,,,,,,,
 Object type,,,,,,,,,,,,
-Risk,Code*,Title*,Description,Risk type,Review State,Admin*,Primary Contacts,Secondary Contacts,,,,
-,RISK-1,risk1,RISK-1,risk1,Unreviewed,turing@example.com,blue@example.com,test@example.com
-,RISK-2,risk2,RISK-2,risk2,Unreviewed,blue@example.com,terminator@example.com,user@1.com
-,RISK-3,risk3,RISK-3,risk3,Unreviewed,terminator@example.com,test@example.com,turing@example.com
-,RISK-4,risk4,RISK-4,risk4,Unreviewed,test@example.com,user@2.com,blue@example.com
-,RISK-5,risk5,RISK-5,risk5,Unreviewed,user@2.com,user@1.com,terminator@example.com
-,RISK-6,risk6,RISK-6,risk6,Unreviewed,user@1.com,turing@example.com,user@2.com
-,,,,,,,,,,,,
-Object type,,,,,,,,,,,,
 Workflow,Code*,Title*,Description,admin,workflow member,Need Verification*,,,,,,
 ,WORKFLOW-1,workflow1,,turing@example.com,blue@example.com,false,,,,,,
 ,WORKFLOW-2,workflow2,,blue@example.com,terminator@example.com,false,,,,,,

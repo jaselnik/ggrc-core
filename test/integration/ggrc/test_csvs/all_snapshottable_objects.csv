@@ -64,11 +64,6 @@ Regulation,Code*,Title*,Description,Notes,Admin*,Effective Date,State,Reference 
 user1@example.com",20/2/2020,Draft,http://url.example.zzz,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
 Object type,,,,,,,,,,,,,,,,,,,,,,
-Risk,Code*,Title*,Description*, Risk Type*, Notes,Admin*,Effective Date,State,Reference URL,,,,,,,,,,,,,,
-,Risk code,Risk title,Risk description, Risk type, Risk notes,"user@example.com
-user1@example.com",20/2/2020,Draft,http://url.example.zzz,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,
-Object type,,,,,,,,,,,,,,,,,,,,,,
 Requirement,Code*,Title*,description,Notes,Admin*,State,Reference URL,Policy / Regulation / Standard / Contract,CA date,CA dropdown,CA text,CA rich text,CA checkbox,CA person,,,,,,,,
 ,Requirement code,Requirement title,Requirement description,Requirement notes,"user@example.com
 user1@example.com",Draft,http://url.example.zzz,policy code,22/2/2022,four,Requirement ca text,"Requirement<br><br>

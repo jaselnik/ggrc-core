@@ -57,12 +57,6 @@ class TestSecondaryContactsDocumentPropagation(base.TestACLPropagation):
               "read_comments": True,
               "add_comment": True
           },
-          "MappedReview Risk": {
-              "create_review": True,
-              "read_review": True,
-              "update_review": True,
-              "delete_review": False,
-          },
       },
       "Reader": {
           "Document Program": {

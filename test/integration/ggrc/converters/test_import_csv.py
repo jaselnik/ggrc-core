@@ -23,9 +23,6 @@ class TestBasicCsvImport(TestCase):
     self.generator = generator.ObjectGenerator()
     self.client.get("/login")
 
-  def tearDown(self):
-    pass
-
   def generate_people(self, people):
     for person in people:
       self.generator.generate_person({
@@ -419,15 +416,13 @@ class TestBasicCsvImport(TestCase):
   def test_import_code_validation(self):
     """Test validation of 'Code' column during import"""
     response = self.import_data(OrderedDict([
-        ("object_type", "Risk"),
-        ("Code*", "*RISK-1"),
-        ("Admin", "user@example.com"),
-        ("Title", "Risk_1"),
-        ("Description", "Description"),
-        ("Risk type", "Type 1"),
+        ("object_type", "Program"),
+        ("Code*", "*program-1"),
+        ("Program managers", "user@example.com"),
+        ("Title", "program-1"),
     ]))
     self._check_csv_response(response, {
-        "Risk": {
+        "Program": {
             "row_errors": {
                 "Line 3: Field 'Code' validation failed with the following "
                 "reason: Field 'Code' contains unsupported symbol '*'. "
@@ -483,8 +478,8 @@ class TestBasicCsvImport(TestCase):
               result_dict,
           ),
       )
-    self.assertIn(u"Line 16", results["Program"]["row_warnings"][0])
-    self.assertIn(u"Line 21", results["Audit"]["row_warnings"][0])
+      self.assertIn(u"Line 16", results["Program"]["row_warnings"][0])
+      self.assertIn(u"Line 21", results["Audit"]["row_warnings"][0])
 
   def test_import_hook_error(self):
     """Test errors in import"""

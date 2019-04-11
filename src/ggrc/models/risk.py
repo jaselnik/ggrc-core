@@ -8,8 +8,7 @@ from sqlalchemy.orm import validates
 
 from ggrc import db
 from ggrc.fulltext.mixin import Indexed
-from ggrc.models import mixins, review
-from ggrc.models import proposal
+from ggrc.models import mixins
 from ggrc.models.comment import Commentable
 from ggrc.models.deferred import deferred
 from ggrc.models.mixins import synchronizable
@@ -21,7 +20,6 @@ from ggrc.models import reflection
 
 class Risk(synchronizable.Synchronizable,
            synchronizable.RoleableSynchronizable,
-           review.Reviewable,
            mixins.CustomAttributable,
            Relatable,
            Personable,
@@ -31,7 +29,6 @@ class Risk(synchronizable.Synchronizable,
            mixins.LastDeprecatedTimeboxed,
            mixins.base.ContextRBAC,
            mixins.BusinessObject,
-           proposal.Proposalable,
            mixins.Folderable,
            Indexed,
            db.Model):

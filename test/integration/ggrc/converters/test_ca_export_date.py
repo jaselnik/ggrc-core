@@ -14,7 +14,7 @@ class TestCustomAttributeExportDate(TestCase):
   """Tests date format for CA with date type in exported file.
 
   Test suite for checking date format of CA in the exported
-  file of an object, e.g. Risk.
+  file of an object, e.g. Program.
   """
 
   def setUp(self):
@@ -25,25 +25,25 @@ class TestCustomAttributeExportDate(TestCase):
     with factories.single_commit():
       cad1 = factories.CustomAttributeDefinitionFactory(
           title="Test Date",
-          definition_type="risk",
+          definition_type="program",
           attribute_type="Date"
       )
       cad2 = factories.CustomAttributeDefinitionFactory(
           title="Test Invalid Date",
-          definition_type="risk",
+          definition_type="program",
           attribute_type="Date"
       )
 
-      risk = factories.RiskFactory()
+      program = factories.ProgramFactory()
 
       factories.CustomAttributeValueFactory(
-          attributable=risk,
+          attributable=program,
           custom_attribute=cad1,
           attribute_value=u"2018-01-19"
       )
 
       factories.CustomAttributeValueFactory(
-          attributable=risk,
+          attributable=program,
           custom_attribute=cad2,
           attribute_value=u"Test Value"
       )
@@ -51,12 +51,12 @@ class TestCustomAttributeExportDate(TestCase):
       admin = factories.PersonFactory(email="test@example.com", name='test')
 
       factories.AccessControlPersonFactory(
-          ac_list=risk.acr_name_acl_map["Admin"],
+          ac_list=program.acr_name_acl_map["Program Managers"],
           person=admin
       )
 
     self.search_request = [{
-        "object_name": "Risk",
+        "object_name": "Program",
         "filters": {
             "expression": {},
         },
@@ -64,8 +64,8 @@ class TestCustomAttributeExportDate(TestCase):
     }]
 
   def test_ca_export_date(self):
-    """Export risk with date CA."""
-    exported_data = self.export_parsed_csv(self.search_request)["Risk"]
+    """Export program with date CA."""
+    exported_data = self.export_parsed_csv(self.search_request)["Program"]
 
     self.assertTrue(
         len(exported_data) == 1

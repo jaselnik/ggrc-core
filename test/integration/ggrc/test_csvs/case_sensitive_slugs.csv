@@ -1,10 +1,10 @@
-Object type,Test duplicate column error.,,,,
-Risk,Code*,Title*,Admin*,Description*,Risk type*
-,a,a,user@example.com,a,a
-,A,A,user@example.com,A,A
+Object type,,,
+Program,Code,Title,Program managers
+,a,a,user@example.com
+,A,A,user@example.com
 ,,,,,
 Object type,,,,,
-Person,Name,Email*,Company,Role,map:Risk
+Person,Name,Email*,Company,Role,map:Program
 ,Person,person@gmail.com,no company,reader,"a
 A"
 ,,,,,
