@@ -83,3 +83,22 @@ class TestHTML2MarkdownParser(unittest.TestCase):
     html_data = u"• one <br>• two <br>"
     self.parser.feed(html_data)
     self.assertEquals(self.parser.get_data(), u'\u2022 one \n\u2022 two')
+
+  @ddt.data(
+      (u'<a href="mailto:other_user@example.com">user@example.com</a>',
+       u'+other_user@example.com'),
+      (u'<a href=" mailto:other_user@example.com">user@example.com</a>',
+       u'[user@example.com]( mailto:other_user@example.com)'),
+      (u'<a href="mailto:first@example.com">user@example.com</a> '
+       u'<a href="mailto:second@example.com">user@example.com</a> '
+       u'<a href="mailto:third@example.com">user@example.com</a> ',
+       u'+first@example.com +second@example.com +third@example.com'),
+      (u'<a href="mailto:external@example.com">user@example.com '
+       u'<a href="mailto:internal@example.com">user@example.com</a></a> ',
+       u'+external@example.com+internal@example.com'),
+  )
+  @ddt.unpack
+  def test_people_mentions_parse(self, html_data, markdown_data):
+    """Test parsing of people mentions."""
+    self.parser.feed(html_data)
+    self.assertEquals(self.parser.get_data(), markdown_data)
