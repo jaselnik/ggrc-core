@@ -264,10 +264,22 @@ class TestComprehensiveSheets(TestCase):
                 errors.DUPLICATE_VALUE_IN_CSV.format(
                     line=58, column_name="Title",
                     value="risk-2", processed_line=56),
-                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(line=55),
-                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(line=56),
-                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(line=57),
-                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(line=58),
+                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(
+                    line=55,
+                    external_model_name="Risk"
+                ),
+                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(
+                    line=56,
+                    external_model_name="Risk"
+                ),
+                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(
+                    line=57,
+                    external_model_name="Risk"
+                ),
+                errors.EXTERNAL_MODEL_IMPORT_RESTRICTION.format(
+                    line=58,
+                    external_model_name="Risk"
+                ),
             },
             "row_warnings": {
                 errors.EXPORT_ONLY_WARNING.format(
