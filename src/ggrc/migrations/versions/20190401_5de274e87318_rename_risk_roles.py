@@ -21,7 +21,7 @@ from ggrc.migrations.utils import migrator
 
 # revision identifiers, used by Alembic.
 revision = '5de274e87318'
-down_revision = '482a30c8cb03'
+down_revision = 'b74156ce58c2'
 
 
 ROLE_MAPPING = {
