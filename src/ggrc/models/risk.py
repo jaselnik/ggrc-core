@@ -46,7 +46,7 @@ class Risk(synchronizable.Synchronizable,
     """Relationship to user referenced by created_by_id."""
     return utils.person_relationship(cls.__name__, "created_by_id")
 
-  last_owner_review_date = db.Column(db.Date, nullable=True)
+  last_owner_reviewed_date = db.Column(db.Date, nullable=True)
   last_owner_reviewed_by_id = db.Column(db.Integer, nullable=True)
 
   @declared_attr
@@ -112,7 +112,7 @@ class Risk(synchronizable.Synchronizable,
                                        force_create=True),
       reflection.ExternalUserAttribute('last_compliance_reviewed_by',
                                        force_create=True),
-      'last_owner_review_date',
+      'last_owner_reviewed_date',
       'last_compliance_reviewed_date',
       'external_slug',
   )

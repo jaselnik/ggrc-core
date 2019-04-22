@@ -28,7 +28,7 @@ def upgrade():
                                    sa.Integer,
                                    nullable=True))
 
-  op.add_column("risks", sa.Column("last_owner_review_date",
+  op.add_column("risks", sa.Column("last_owner_reviewed_date",
                                    sa.Date,
                                    nullable=True))
 
