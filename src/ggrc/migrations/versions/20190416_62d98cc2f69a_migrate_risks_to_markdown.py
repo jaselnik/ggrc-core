@@ -21,7 +21,7 @@ from ggrc.migrations.utils import html_markdown_parser
 
 # revision identifiers, used by Alembic.
 revision = '62d98cc2f69a'
-down_revision = '42afbc0e6c09'
+down_revision = '2dd5e1292b9c'
 
 
 REGEX_HTML = r"(<[a-zA-Z]+>)+|(<\/[a-zA-Z]+>)+"
