@@ -28,20 +28,20 @@ def upgrade():
                                    sa.Integer,
                                    nullable=True))
 
-  op.add_column("risks", sa.Column("last_owner_reviewed_date",
-                                   sa.Date,
+  op.add_column("risks", sa.Column("last_submitted_at",
+                                   sa.DateTime,
                                    nullable=True))
 
-  op.add_column("risks", sa.Column("last_owner_reviewed_by_id",
+  op.add_column("risks", sa.Column("last_submitted_by_id",
                                    sa.Integer,
                                    nullable=True))
 
-  op.add_column("risks", sa.Column("last_compliance_reviewed_by_id",
+  op.add_column("risks", sa.Column("last_verified_by_id",
                                    sa.Integer,
                                    nullable=True))
 
-  op.add_column("risks", sa.Column("last_compliance_reviewed_date",
-                                   sa.Date,
+  op.add_column("risks", sa.Column("last_verified_at",
+                                   sa.DateTime,
                                    nullable=True))
 
 

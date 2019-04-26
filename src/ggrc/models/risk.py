@@ -46,23 +46,23 @@ class Risk(synchronizable.Synchronizable,
     """Relationship to user referenced by created_by_id."""
     return utils.person_relationship(cls.__name__, "created_by_id")
 
-  last_owner_reviewed_date = db.Column(db.Date, nullable=True)
-  last_owner_reviewed_by_id = db.Column(db.Integer, nullable=True)
+  last_submitted_at = db.Column(db.DateTime, nullable=True)
+  last_submitted_by_id = db.Column(db.Integer, nullable=True)
 
   @declared_attr
-  def last_owner_reviewed_by(cls):
-    """Relationship to user referenced by last_owner_reviewed_by_id."""
+  def last_submitted_by(cls):
+    """Relationship to user referenced by last_submitted_by_id."""
     return utils.person_relationship(cls.__name__,
-                                     "last_owner_reviewed_by_id")
+                                     "last_submitted_by_id")
 
-  last_compliance_reviewed_date = db.Column(db.Date, nullable=True)
-  last_compliance_reviewed_by_id = db.Column(db.Integer, nullable=True)
+  last_verified_at = db.Column(db.DateTime, nullable=True)
+  last_verified_by_id = db.Column(db.Integer, nullable=True)
 
   @declared_attr
-  def last_compliance_reviewed_by(cls):
-    """Relationship to user referenced by last_compliance_reviewed_by_id."""
+  def last_verified_by(cls):
+    """Relationship to user referenced by last_verified_by_id."""
     return utils.person_relationship(cls.__name__,
-                                     "last_compliance_reviewed_by_id")
+                                     "last_verified_by_id")
 
   # Overriding mixin to make mandatory
   @declared_attr
@@ -108,12 +108,12 @@ class Risk(synchronizable.Synchronizable,
       'due_date',
       reflection.ExternalUserAttribute('created_by',
                                        force_create=True),
-      reflection.ExternalUserAttribute('last_owner_reviewed_by',
+      reflection.ExternalUserAttribute('last_submitted_by',
                                        force_create=True),
-      reflection.ExternalUserAttribute('last_compliance_reviewed_by',
+      reflection.ExternalUserAttribute('last_verified_by',
                                        force_create=True),
-      'last_owner_reviewed_date',
-      'last_compliance_reviewed_date',
+      'last_submitted_at',
+      'last_verified_at',
       'external_slug',
   )
 
@@ -150,6 +150,6 @@ class Risk(synchronizable.Synchronizable,
   def log_json(self):
     res = super(Risk, self).log_json()
     res["created_by"] = create_stub(self.created_by)
-    res["last_owner_reviewed_by"] = self.last_owner_reviewed_by
-    res["last_compliance_reviewed_by"] = self.last_compliance_reviewed_by
+    res["last_submitted_by"] = self.last_submitted_by
+    res["last_verified_by"] = self.last_verified_by
     return res
