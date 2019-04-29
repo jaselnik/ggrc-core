@@ -8,7 +8,7 @@ from sqlalchemy.orm import validates
 
 from ggrc import db
 from ggrc.fulltext.mixin import Indexed
-from ggrc.models import mixins, comment, utils
+from ggrc.models import mixins, comment, utils, exceptions
 from ggrc.models.deferred import deferred
 from ggrc.models.mixins import synchronizable
 from ggrc.models.object_document import PublicDocumentable
@@ -39,6 +39,9 @@ class Risk(synchronizable.Synchronizable,
   external_id = db.Column(db.Integer, nullable=False)
   due_date = db.Column(db.Date, nullable=True)
   created_by_id = db.Column(db.Integer, nullable=False)
+  review_status = deferred(db.Column(db.String, nullable=True), "Risk")
+  review_status_display_name = deferred(db.Column(db.String, nullable=True),
+                                        "Risk")
 
   # pylint: disable=no-self-argument
   @declared_attr
@@ -85,6 +88,26 @@ class Risk(synchronizable.Synchronizable,
     else:
       raise ValueError("Risk Type value shouldn't be empty")
 
+  @validates('review_status')
+  def validate_review_status(self, _, value):
+    """Add explicit non-nullable validation."""
+    if value is None:
+      raise exceptions.ValidationError(
+         "Review status for the object is not specified")
+
+    return value
+
+  @validates('review_status_display_name')
+  def validate_review_status_display_name(self, _, value):
+    """Add explicit non-nullable validation."""
+    # pylint: disable=no-self-use
+
+    if value is None:
+      raise exceptions.ValidationError(
+         "Review status for the object is not specified")
+
+    return value
+
   _sanitize_html = [
       'risk_type',
       'threat_source',
@@ -96,7 +119,8 @@ class Risk(synchronizable.Synchronizable,
       'risk_type',
       'threat_source',
       'threat_event',
-      'vulnerability'
+      'vulnerability',
+      'review_status_display_name'
   ]
 
   _api_attrs = reflection.ApiAttributes(
@@ -115,6 +139,8 @@ class Risk(synchronizable.Synchronizable,
       'last_submitted_at',
       'last_verified_at',
       'external_slug',
+      'review_status',
+      'review_status_display_name'
   )
 
   _aliases = {
@@ -144,7 +170,11 @@ class Risk(synchronizable.Synchronizable,
           "mandatory": False,
           "description": "Options are: \n {}".format('\n'.join(
               mixins.BusinessObject.VALID_STATES))
-      }
+      },
+      "review_status_display_name": {
+          "display_name": "Review State",
+          "mandatory": False
+      },
   }
 
   def log_json(self):
