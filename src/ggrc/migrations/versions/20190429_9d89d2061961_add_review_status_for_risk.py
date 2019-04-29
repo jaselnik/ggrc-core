@@ -20,18 +20,18 @@ down_revision = '5de274e87318'
 
 
 def upgrade():
-    """Upgrade database schema and/or data, creating a new revision."""
-    op.add_column(
+  """Upgrade database schema and/or data, creating a new revision."""
+  op.add_column(
       'risks',
       sa.Column('review_status', sa.String(length=250), nullable=True),
-    )
-    op.add_column(
+  )
+  op.add_column(
       'risks',
       sa.Column('review_status_display_name', sa.String(length=250),
                 nullable=True),
-    )
-    
+  )
+
 
 def downgrade():
-    """Downgrade database schema and/or data back to the previous revision."""
-    raise NotImplementedError("Downgrade is not supported")
+  """Downgrade database schema and/or data back to the previous revision."""
+  raise NotImplementedError("Downgrade is not supported")

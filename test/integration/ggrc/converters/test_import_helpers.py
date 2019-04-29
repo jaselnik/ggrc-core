@@ -842,6 +842,7 @@ class TestGetObjectColumnDefinitions(TestCase):
         "Vulnerability",
         "Threat Event",
         "Risk Type",
+        "Review State",
     }
     expected_fields = {
         "mandatory": {

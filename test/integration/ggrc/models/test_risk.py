@@ -70,7 +70,9 @@ class TestRiskGGRCQ(TestCase):
         "created_at": datetime.datetime(2019, 1, 1, 12, 30),
         "updated_at": datetime.datetime(2019, 1, 2, 13, 30),
         "external_id": 10,
-        "external_slug": "external_slug"
+        "external_slug": "external_slug",
+        "review_status": all_models.Review.STATES.UNREVIEWED,
+        "review_status_display_name": "some status",
     }
 
     return body
@@ -111,6 +113,42 @@ class TestRiskGGRCQ(TestCase):
     risk = all_models.Risk.query.get(risk_body["id"])
     self.assert_instance(risk_body, risk)
 
+  # pylint: disable=invalid-name
+  def test_create_without_review_status(self):
+    """Check risk creation without review_status"""
+    risk_body = self.generate_risk_body()
+    del risk_body['review_status']
+
+    response = self.api.post(all_models.Risk, risk_body)
+    self.assert400(response)
+
+  # pylint: disable=invalid-name
+  def test_create_with_empty_review_status(self):
+    """Check risk creation with empty review_status"""
+    risk_body = self.generate_risk_body()
+    risk_body['review_status'] = None
+
+    response = self.api.post(all_models.Risk, risk_body)
+    self.assert400(response)
+
+  # pylint: disable=invalid-name
+  def test_create_without_review_status_display_name(self):
+    """Check risk creation without review_status_display_name"""
+    risk_body = self.generate_risk_body()
+    del risk_body['review_status_display_name']
+
+    response = self.api.post(all_models.Risk, risk_body)
+    self.assert400(response)
+
+  # pylint: disable=invalid-name
+  def test_create_with_empty_review_status_display_name(self):
+    """Check risk creation with empty review_status_display_name"""
+    risk_body = self.generate_risk_body()
+    risk_body['review_status_display_name'] = None
+
+    response = self.api.post(all_models.Risk, risk_body)
+    self.assert400(response)
+
   def test_update(self):
     """Test risk update with external user."""
     with factories.single_commit():
@@ -119,7 +157,9 @@ class TestRiskGGRCQ(TestCase):
     new_values = {
         "title": "New risk",
         "created_at": datetime.datetime(2019, 1, 3, 14, 30),
-        "updated_at": datetime.datetime(2019, 1, 4, 14, 30)
+        "updated_at": datetime.datetime(2019, 1, 4, 14, 30),
+        "review_status": all_models.Review.STATES.UNREVIEWED,
+        "review_status_display_name": "some status",
     }
 
     risk = all_models.Risk.query.get(risk_id)
@@ -129,6 +169,52 @@ class TestRiskGGRCQ(TestCase):
 
     risk = all_models.Risk.query.get(risk_id)
     self.assert_instance(new_values, risk)
+
+  # pylint: disable=invalid-name
+  def test_update_review_status_to_null(self):
+    """Test review_status is not set to None"""
+    risk = factories.RiskFactory()
+    response = self.api.put(risk, {"review_status": None})
+    self.assert400(response)
+    self.assertEqual(response.json["message"],
+                     "Review status for the object is not specified")
+
+    risk = db.session.query(all_models.Risk).get(risk.id)
+    self.assertIsNotNone(risk.external_id)
+
+  # pylint: disable=invalid-name
+  def test_update_review_status(self):
+    """Test review_status is updated"""
+    risk = factories.RiskFactory()
+    new_value = all_models.Review.STATES.REVIEWED
+    self.api.put(risk, {"review_status": new_value,
+                        "review_status_display_name": "some status"})
+
+    risk = db.session.query(all_models.Risk).get(risk.id)
+    self.assertEquals(risk.review_status, new_value)
+
+  # pylint: disable=invalid-name
+  def test_update_review_status_display_name_to_null(self):
+    """Test review_status_display_name is not set to None"""
+    risk = factories.RiskFactory()
+    response = self.api.put(risk, {"review_status_display_name": None})
+    self.assert400(response)
+    self.assertEqual(response.json["message"],
+                     "Review status display for the object is not specified")
+
+    risk = db.session.query(all_models.Risk).get(risk.id)
+    self.assertIsNotNone(risk.external_id)
+
+  # pylint: disable=invalid-name
+  def test_update_review_status_display_name(self):
+    """Test review_status_display_name is updated"""
+    risk = factories.RiskFactory()
+    new_value = "test123"
+    self.api.put(risk, {"review_status_display_name": new_value,
+                        "review_status": all_models.Review.STATES.UNREVIEWED})
+
+    risk = db.session.query(all_models.Risk).get(risk.id)
+    self.assertEquals(risk.review_status_display_name, new_value)
 
   def test_create_comments(self):
     """Test external comments creation for risk."""

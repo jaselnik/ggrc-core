@@ -93,7 +93,7 @@ class Risk(synchronizable.Synchronizable,
     """Add explicit non-nullable validation."""
     if value is None:
       raise exceptions.ValidationError(
-         "Review status for the object is not specified")
+          "Review status for the object is not specified")
 
     return value
 
@@ -104,7 +104,7 @@ class Risk(synchronizable.Synchronizable,
 
     if value is None:
       raise exceptions.ValidationError(
-         "Review status for the object is not specified")
+          "Review status display for the object is not specified")
 
     return value
 
@@ -171,9 +171,14 @@ class Risk(synchronizable.Synchronizable,
           "description": "Options are: \n {}".format('\n'.join(
               mixins.BusinessObject.VALID_STATES))
       },
+      "review_status": {
+          "display_name": "Review State",
+          "mandatory": False,
+          "filter_only": True,
+      },
       "review_status_display_name": {
           "display_name": "Review State",
-          "mandatory": False
+          "mandatory": False,
       },
   }
 
