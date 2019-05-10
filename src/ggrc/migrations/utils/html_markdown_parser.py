@@ -16,7 +16,8 @@ class HTML2MarkdownParser(HTMLParser, object):
     4) Will replace 'strong', 'i', 'b', 'div', 'p', 'dl', 'dt' html tags
        with whitespaces.
     5) Will preserve the source content of <img> tag.
-    5) Will delete all other html tags.
+    6) Will delete all other html tags.
+    7) Will replace mailto links with a format +some@email.com
 
     self.parsed_data - is cleaned data without html tags.
   """
@@ -77,7 +78,11 @@ class HTML2MarkdownParser(HTMLParser, object):
     if lower_tag == self.LINK_TAG:
       href = attrs_dict.get('href', '')
       # pylint: disable=attribute-defined-outside-init
-      self.current_link = "(" + href + ")" if href else ''
+      if href.startswith('mailto:'):
+        self.current_link = ''
+        self.parsed_data.append('+' + href.replace('mailto:', ''))
+      else:
+        self.current_link = "(" + href + ")" if href else ''
       self.current_link_data = []
       # pylint: enable=attribute-defined-outside-init
     elif lower_tag == self.LIST_TAG:
@@ -96,6 +101,7 @@ class HTML2MarkdownParser(HTMLParser, object):
       self.parsed_data.append(data)
     else:
       if self.tags_stack[-1] == self.LINK_TAG:
-        self.current_link_data.append(data)
+        if self.current_link:
+          self.current_link_data.append(data)
       else:
         self.parsed_data.append(data)
