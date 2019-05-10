@@ -28,29 +28,40 @@ REGEX_HTML = r"(<[a-zA-Z]+>)+|(<\/[a-zA-Z]+>)+"
 
 
 def parse_html(value):
-  """Parse html to markdown."""
+  """Parse html to markdown.
+
+    Args:
+      value: the raw value of rich text data
+
+    Returns:
+      rich text value with markdown styling.
+  """
   parser = html_markdown_parser.HTML2MarkdownParser()
   parser.feed(value)
   return parser.get_data()
 
 
 def update_comments(connection):
-  """Parse comments from html to markdown."""
+  """Parse comments from html to markdown.
+
+    Args:
+      connection: SQLAlchemy connection.
+  """
   comments_data = connection.execute(
       sa.text("""
             SELECT c.id, c.description
-            FROM risks as c
-            JOIN relationships as r
-            ON r.source_type = "Comment" and r.source_id = c.id
-              and r.destination_type = "Risk"
+            FROM risks AS c
+            JOIN relationships AS r
+            ON r.source_type = "Comment" AND r.source_id = c.id
+              AND r.destination_type = "Risk"
             WHERE c.description REGEXP :reg_exp
             UNION
             SELECT c.id, c.description
-            FROM comments as c
-            JOIN relationships as r
-            ON r.destination_type = "Comment" and r.destination_id = c.id
-              and r.source_type = "Risk"
-            where c.description REGEXP :reg_exp
+            FROM comments AS c
+            JOIN relationships AS r
+            ON r.destination_type = "Comment" AND r.destination_id = c.id
+              AND r.source_type = "Risk"
+            WHERE c.description REGEXP :reg_exp
         """),
       reg_exp=REGEX_HTML
   ).fetchall()
@@ -72,15 +83,22 @@ def update_comments(connection):
 
 
 def update_risk_cavs(connection):
-  """Parse cavs from html to markdown."""
+  """Parse cavs from html to markdown.
+
+    Args:
+        connection: SQLAlchemy connection.
+
+     Returns:
+       ids of risks for which cavs where updated.
+  """
   cavs_data = connection.execute(
       sa.text("""
-            select cav.id, cav.attribute_value, cav.attributable_id
-            from custom_attribute_values cav
-            join custom_attribute_definitions cad
-              on cad.id = cav.custom_attribute_id
-            where cad.definition_type = "risk"
-              and attribute_value REGEXP :reg_exp
+            SELECT cav.id, cav.attribute_value, cav.attributable_id
+            FROM custom_attribute_values AS cav
+            JOIN custom_attribute_definitions AS cad
+              ON cad.id = cav.custom_attribute_id
+            WHERE cad.definition_type = "risk"
+              AND attribute_value REGEXP :reg_exp
         """),
       reg_exp=REGEX_HTML
   ).fetchall()
@@ -104,20 +122,27 @@ def update_risk_cavs(connection):
 
 
 def update_risk_attr(connection):
-  """Parse Risk attributes from html to markdown."""
+  """Parse Risk attributes from html to markdown.
+
+    Args:
+        connection: SQLAlchemy connection.
+
+    Returns:
+       ids of risks for which attributes where updated.
+  """
   risks_data = connection.execute(
       sa.text("""
             SELECT id, title, description, test_plan, notes,
                    risk_type, threat_source, threat_event, vulnerability
             FROM risks
             WHERE title REGEXP :reg_exp
-            OR description REGEXP :reg_exp
-            OR test_plan REGEXP :reg_exp
-            OR notes REGEXP :reg_exp
-            OR risk_type REGEXP :reg_exp
-            OR threat_source REGEXP :reg_exp
-            OR threat_event REGEXP :reg_exp
-            OR vulnerability REGEXP :reg_exp
+              OR description REGEXP :reg_exp
+              OR test_plan REGEXP :reg_exp
+              OR notes REGEXP :reg_exp
+              OR risk_type REGEXP :reg_exp
+              OR threat_source REGEXP :reg_exp
+              OR threat_event REGEXP :reg_exp
+              OR vulnerability REGEXP :reg_exp
         """),
       reg_exp=REGEX_HTML
   ).fetchall()
