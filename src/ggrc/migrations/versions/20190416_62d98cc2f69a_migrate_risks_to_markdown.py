@@ -50,7 +50,7 @@ def update_comments(connection):
   comments_data = connection.execute(
       sa.text("""
             SELECT c.id, c.description
-            FROM risks AS c
+            FROM comments AS c
             JOIN relationships AS r
             ON r.source_type = "Comment" AND r.source_id = c.id
               AND r.destination_type = "Risk"

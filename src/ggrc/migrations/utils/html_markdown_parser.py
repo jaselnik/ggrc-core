@@ -16,8 +16,8 @@ class HTML2MarkdownParser(HTMLParser, object):
     4) Will replace 'strong', 'i', 'b', 'div', 'p', 'dl', 'dt' html tags
        with whitespaces.
     5) Will preserve the source content of <img> tag.
-    5) Will delete all other html tags.
-    6) Will replace mailto links with a format +some@email.com
+    6) Will delete all other html tags.
+    7) Will replace mailto links with a format +some@email.com
 
     self.parsed_data - is cleaned data without html tags.
   """
