@@ -8,13 +8,16 @@ from sqlalchemy.orm import validates
 
 from ggrc import db
 from ggrc.fulltext.mixin import Indexed
-from ggrc.models import mixins, comment, utils, exceptions
+from ggrc.models import comment
+from ggrc.models import exceptions
+from ggrc.models import mixins
+from ggrc.models import reflection
+from ggrc.models import utils
 from ggrc.models.deferred import deferred
 from ggrc.models.mixins import synchronizable
 from ggrc.models.object_document import PublicDocumentable
 from ggrc.models.object_person import Personable
 from ggrc.models.relationship import Relatable
-from ggrc.models import reflection
 from ggrc.utils import create_stub
 
 
@@ -140,7 +143,7 @@ class Risk(synchronizable.Synchronizable,
       'last_verified_at',
       'external_slug',
       'review_status',
-      'review_status_display_name'
+      'review_status_display_name',
   )
 
   _aliases = {
