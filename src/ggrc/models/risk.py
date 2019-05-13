@@ -77,19 +77,10 @@ class Risk(synchronizable.Synchronizable,
     return deferred(db.Column(db.Text, nullable=False, default=u""),
                     cls.__name__)
 
-  risk_type = db.Column(db.Text, nullable=False)
+  risk_type = db.Column(db.Text, nullable=True)
   threat_source = db.Column(db.Text, nullable=True)
   threat_event = db.Column(db.Text, nullable=True)
   vulnerability = db.Column(db.Text, nullable=True)
-
-  @validates("risk_type")
-  def validate_risk_type(self, key, value):
-    """Validate risk_type"""
-    #  pylint: disable=unused-argument,no-self-use
-    if value:
-      return value
-    else:
-      raise ValueError("Risk Type value shouldn't be empty")
 
   @validates('review_status')
   def validate_review_status(self, _, value):
@@ -153,7 +144,7 @@ class Risk(synchronizable.Synchronizable,
       },
       "risk_type": {
           "display_name": "Risk Type",
-          "mandatory": True
+          "mandatory": False
       },
       "threat_source": {
           "display_name": "Threat Source",
