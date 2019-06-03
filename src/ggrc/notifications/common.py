@@ -522,12 +522,18 @@ def send_email(user_email, subject, body):
   if not sender:
     logger.error("APPENGINE_EMAIL setting is invalid.")
     return
-
+  check_email_body = False
+  if 'Ticket generation' in subject and 'completed successfully' in subject:
+    check_email_body = True
   subject = prefix_subject(subject)
   message = mail.EmailMessage(sender=sender, subject=subject)
 
   message.to = user_email
   message.html = body
+
+  if check_email_body and body.count('</div>') != 3:
+    logger.info("mail.EmailMessage. DIV's count %s", body.count('</div>'))
+    logger.error("Invalid Email body %s", body)
 
   message.send()
 

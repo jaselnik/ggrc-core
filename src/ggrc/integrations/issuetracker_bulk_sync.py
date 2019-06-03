@@ -468,6 +468,9 @@ class IssueTrackerBulkCreator(object):
       data["title"] = self.SUCCESS_TITLE.format(filename=filename)
       data["email_text"] = self.SUCCESS_TEXT.format(filename=filename)
       body = settings.EMAIL_BULK_SYNC_SUCCEEDED.render(sync_data=data)
+      if body.count('</div>') != 3:
+        logger.info("DIV's count in Success body %s", body.count('</div>'))
+        logger.error("Invalid Email body %s", body)
 
     common.send_email(recipient, self.ISSUETRACKER_SYNC_TITLE, body)
 
