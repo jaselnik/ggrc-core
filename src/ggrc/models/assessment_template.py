@@ -257,7 +257,9 @@ class AssessmentTemplate(assessment.AuditRelationship,
     """
     # pylint: disable=unused-argument
     for mandatory in self._mandatory_default_people:
+      # import pdb; pdb.set_trace()
       mandatory_value = value.get(mandatory)
+      # mandatory_value = "Primary contacts"
       if (not mandatory_value or
               isinstance(mandatory_value, list) and
               any(not isinstance(p_id, (int, long))
