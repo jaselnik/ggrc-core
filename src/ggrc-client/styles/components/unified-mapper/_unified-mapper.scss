@@ -483,7 +483,12 @@ mapper-results-columns-configuration {
 
 .object-modal {
 
-  object-mapper, object-search, object-generator, object-bulk-update, assessment-template-clone {
+  object-mapper,
+  object-search,
+  object-generator,
+  object-bulk-update,
+  assessment-template-clone,
+  assessments-bulk-complete {
     collapsible-panel {
       h6 {
         width: inherit;
@@ -559,6 +564,12 @@ mapper-results-columns-configuration {
         padding-bottom: 0;
       }
     }
+
+    .modal-section {
+      border-top: 1px solid $itemBorder;
+      padding: 20px;
+    }
+
     .modal-footer {
       border-top: 1px solid $itemBorder;
 
