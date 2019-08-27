@@ -1,0 +1,28 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<div class="modal-header">
+  <a class="modal-dismiss pull-right" href="javascript://" data-dismiss="modal">
+    <i class="fa fa-times black"></i>
+  </a>
+  <h2>
+    Bulk Complete
+  </h2>
+</div>
+<div class="modal-section">
+  <collapsible-panel softMode:from="true" titleText:from="'Filter'" expanded:bind="showSearch">
+  </collapsible-panel>
+</div>
+
+<div class="modal-section">
+  <collapsible-panel softMode:from="true" titleText:from="'Select assessments to complete in bulk'" expanded:bind="showResults">
+  </collapsible-panel>
+</div>
+
+<div class="modal-section">
+  <collapsible-panel softMode:from="true" titleText:from="'Provide information below to finish bulk completion of assessments'" expanded:bind="showFields">
+  </collapsible-panel>
+</div>
+
