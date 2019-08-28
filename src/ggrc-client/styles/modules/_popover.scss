@@ -3,7 +3,7 @@
  * Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
  */
 
-.popover {
+.popover.popover-help-wrap {
   padding: 0;
   @include border-radius($default-border-radius);
   width: 350px;
@@ -239,12 +239,6 @@
           }
         }
       }
-      ul {
-        @extend %reset-list;
-        li {
-          padding-bottom: 4px;
-        }
-      }
     }
   }
   .progress {
@@ -284,90 +278,90 @@
   .title {
     color:$black;
   }
-  &.popover-help-wrap {
-    @include box-shadow(0 0 5px rgba(0,0,0, .3));
-    width: 60%;
-    border: 1px solid $warmGray;
-    .popover-inner {
-      width: auto;
-      .popover-title {
-        background: $white;
-        padding-bottom: 4px;
-        border-bottom: 1px solid $warmGray;
-        color: $black;
+  @include box-shadow(0 0 5px rgba(0,0,0, .3));
+  width: 60%;
+  border: 1px solid $warmGray;
+  .popover-inner {
+    width: auto;
+    .popover-title {
+      background: $white;
+      padding-bottom: 4px;
+      border-bottom: 1px solid $warmGray;
+      color: $black;
+    }
+  }
+  .popover-content {
+    @include border-radius(0);
+  }
+  .content-wrap {
+    padding: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    .images-wrap {
+      @extend %clearfix;
+      margin-bottom: 15px;
+    }
+    img {
+      float: left;
+      &:last-child {
+        margin-left: 9px;
       }
     }
-    .popover-content {
+    .code {
+      font-family: "Courier New", Courier, monospace;
+      margin-right: 0;
+      font-size: 100%;
+      color: $darkText;
+    }
+    p {
+      margin-bottom: 15px;
+    }
+    h3 {
+      margin-bottom: 6px;
+    }
+    ul {
+      margin-left: 30px;
+      li {
+        list-style: disc;
+        padding-bottom: 4px;
+      }
+    }
+    .table-bordered {
       @include border-radius(0);
     }
-    .content-wrap {
-      padding: 12px;
-      max-height: 300px;
-      overflow-y: auto;
-      .images-wrap {
-        @extend %clearfix;
-        margin-bottom: 15px;
-      }
-      img {
-        float: left;
-        &:last-child {
-          margin-left: 9px;
-        }
-      }
-      .code {
-        font-family: "Courier New", Courier, monospace;
-        margin-right: 0;
-        font-size: 100%;
-        color: $darkText;
-      }
-      p {
-        margin-bottom: 15px;
-      }
-      h3 {
-        margin-bottom: 6px;
-      }
-      ul {
-        margin-left: 30px;
-        li {
-          list-style: disc;
-          padding-bottom: 4px;
-        }
-      }
-      .table-bordered {
-        @include border-radius(0);
-      }
-      .table {
-        tr {
-          td {
-            &:first-child {
-              text-align: center;
-            }
-          }
-          th {
-            &:first-child {
-              text-align: center;
-            }
+    .table {
+      tr {
+        td {
+          &:first-child {
+            text-align: center;
           }
         }
-      }
-    }
-    .footer-wrap {
-      border-top: 1px solid $warmGray;
-      padding: 12px;
-    }
-    &.bottom {
-      .arrow {
-        display: none;
+        th {
+          &:first-child {
+            text-align: center;
+          }
+        }
       }
     }
   }
+  .footer-wrap {
+    border-top: 1px solid $warmGray;
+    padding: 12px;
+  }
+  &.bottom {
+    .arrow {
+      display: none;
+    }
+  }
+  &.fade.in {
+    @include transition(opacity 0.35s linear);
+  }
 }
 /* slowing down fade-in only.  Fade-out remains 0.15s */
-.tooltip.fade.in,
-.popover.fade.in {
+.tooltip.fade.in {
   @include transition(opacity 0.35s linear);
 }
 
-.modal-open .popover {
+.modal-open .popover.popover-help-wrap {
   z-index: 3001;
 }

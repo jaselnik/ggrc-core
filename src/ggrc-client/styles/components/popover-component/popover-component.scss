@@ -1,0 +1,44 @@
+/*
+ * Copyright (C) 2019 Google Inc.
+ * Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+ */
+
+.popover.btstrp-popover__wrapper {
+  position: absolute;
+  margin-top: 5px;
+  padding: 0;
+  border-radius: 6px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  z-index: 3001;
+
+  .arrow {
+    display: none;
+  }
+
+  .popover-inner {
+    width: 400px;
+    padding: 0;
+    background: $white;
+    color: $black;
+    border-radius: 6px;
+
+    .popover-title {
+      max-height: 200px;
+      overflow: auto;
+      padding: 14px 18px;
+      background: $white;
+      border-bottom: 1px solid $warmGray;
+    }
+
+    .popover-content {
+      max-height: 300px;
+      overflow: auto;
+      padding: 14px 18px;
+      border-radius: 0;
+    }
+  }
+
+  &.fade.in {
+    transition: opacity 0.35s linear;
+  }
+}
