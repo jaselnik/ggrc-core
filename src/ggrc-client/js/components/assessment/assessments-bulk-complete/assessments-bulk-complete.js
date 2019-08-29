@@ -5,6 +5,7 @@
 
 
 import '../../collapsible-panel/collapsible-panel';
+import '../../advanced-search/advanced-search-container/advanced-search-container';
 
 import canComponent from 'can-component';
 import canStache from 'can-stache';
@@ -14,6 +15,9 @@ import ObjectOperationsBaseVM from '../../view-models/object-operations-base-vm'
 const viewModel = ObjectOperationsBaseVM.extend({
   showSearch: false,
   showFields: false,
+  filterItems: [],
+  mappingItems: [],
+  type: 'Assessment',
 });
 
 export default canComponent.extend({

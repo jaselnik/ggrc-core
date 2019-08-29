@@ -38,68 +38,67 @@
 <simple-modal state:from="advancedSearch"
               on:vm:hide="searchModalClosed"
               modalTitle:from="'{{model.title_singular}} Advanced Search'"
-              extraCssClass:from="'advanced-search'">
-
+              extraCssClass:from="'advanced-search__modal'">
   <div class="advanced-search__body">
-  {{#if isSavedSearchShown}}
-    <aside>
-      <saved-search-list
-        widgetId:from="widgetId"
-        objectType:from="modelName"
-        selectedSearchId:from="selectedSavedSearchId"
-        searchType:from="'AdvancedSearch'"
-        advancedSearch:from="advancedSearch"
-      />
-    </aside>
-  {{/if}}
-  <main>
-  <div class="advanced-search__content">
-    <div class="simple-modal__body">
-      <advanced-search-filter-container
-        items:bind="advancedSearch.filterItems"
-        availableAttributes:from="columns.available"
-        modelName:from="modelName"
-        on:el:enter="applyAdvancedFilters()"
-      />
-    </div>
-    <div class="advanced-search__mapping-header">
-      <h4>Filter by Mapping</h4>
-    </div>
-    <div class="simple-modal__body">
-      {{#advancedSearch.parentInstance}}
-        <div class="advanced-search__parent-filter">
-          <h6>Mapped to {{value.type}}:</h6><span>{{value.title}}</span>
-        </div>
-      {{/advancedSearch.parentInstance}}
-
-      {{#advancedSearch.parentItems}}
-        <div class="advanced-search__parent-filter">
-          <h6>Mapped to {{value.type}}:</h6><span>{{value.title}}</span>
-        </div>
-      {{/advancedSearch.parentItems}}
-      <advanced-search-mapping-container
-        items:bind="advancedSearch.mappingItems"
-        modelName:from="modelName"
-        on:el:enter="applyAdvancedFilters()"
-      />
-    </div>
-  </div>
-  <div class="simple-modal__footer">
     {{#if isSavedSearchShown}}
-      <create-saved-search
-        type:from="'AdvancedSearch'"
-        filterItems:from="advancedSearch.filterItems"
-        mappingItems:from="advancedSearch.mappingItems"
-        parentItems:from="advancedSearch.parentItems"
-        parentInstance:from="advancedSearch.parentInstance"
-        objectType:from="modelName"
-      />
+      <aside>
+        <saved-search-list
+          widgetId:from="widgetId"
+          objectType:from="modelName"
+          selectedSearchId:from="selectedSavedSearchId"
+          searchType:from="'AdvancedSearch'"
+          advancedSearch:from="advancedSearch"
+        />
+      </aside>
     {{/if}}
-    <div class="advanced-search__controls">
-      <button type="reset" class="btn btn-white" on:el:click="resetAdvancedFilters()">Reset to Defaults</button>
-      <button type="submit" class="btn btn-lightBlue" on:el:click="applyAdvancedFilters()">Apply</button>
-    </div>
-  </div>
-  </main>
+    <main class="advanced-search__content">
+      <div class="advanced-search__row">
+        <advanced-search-filter-container
+          items:bind="advancedSearch.filterItems"
+          availableAttributes:from="columns.available"
+          modelName:from="modelName"
+          on:el:enter="applyAdvancedFilters()"
+        />
+      </div>
+      <div class="advanced-search__row">
+        <div class="advanced-search__mapping-header">
+          <h4>Filter by Mapping</h4>
+        </div>
+        {{#advancedSearch.parentInstance}}
+          <div class="advanced-search__row-item advanced-search__parent-filter">
+            <h6>Mapped to {{value.type}}:</h6><span>{{value.title}}</span>
+          </div>
+        {{/advancedSearch.parentInstance}}
+
+        {{#advancedSearch.parentItems}}
+          <div class="advanced-search__row-item advanced-search__parent-filter">
+            <h6>Mapped to {{value.type}}:</h6><span>{{value.title}}</span>
+          </div>
+        {{/advancedSearch.parentItems}}
+        <div class="advanced-search__row-item">
+          <advanced-search-mapping-container
+            items:bind="advancedSearch.mappingItems"
+            modelName:from="modelName"
+            on:el:enter="applyAdvancedFilters()"
+          />
+        </div>
+      </div>
+      <div class="advanced-search__footer">
+        {{#if isSavedSearchShown}}
+          <create-saved-search
+            type:from="'AdvancedSearch'"
+            filterItems:from="advancedSearch.filterItems"
+            mappingItems:from="advancedSearch.mappingItems"
+            parentItems:from="advancedSearch.parentItems"
+            parentInstance:from="advancedSearch.parentInstance"
+            objectType:from="modelName"
+          />
+        {{/if}}
+        <div class="advanced-search__footer-controls">
+          <button type="reset" class="btn btn-white" on:el:click="resetAdvancedFilters()">Reset to Defaults</button>
+          <button type="submit" class="btn btn-lightBlue" on:el:click="applyAdvancedFilters()">Apply</button>
+        </div>
+      </div>
+    </main>
   </div>
 </simple-modal>

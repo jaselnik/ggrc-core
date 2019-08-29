@@ -40,10 +40,8 @@ h3 {
 }
 
 h4 {
-  font-size: 16px;
-  line-height: 20px;
-  font-weight: normal;
-  color: $subTitle;
+  @extend %header-medium;
+
   span {
     color: $disabled;
   }
