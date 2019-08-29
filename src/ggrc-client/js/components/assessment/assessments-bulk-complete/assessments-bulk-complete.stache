@@ -13,6 +13,12 @@
 </div>
 <div class="modal-section">
   <collapsible-panel softMode:from="true" titleText:from="'Filter'" expanded:bind="showSearch">
+    <advanced-search-container
+      modelName:from="type"
+      filterItems:to="filterItems"
+      mappingItems:to="mappingItems"
+      on:vm:onSubmit="onSubmit()"
+    />
   </collapsible-panel>
 </div>
 
