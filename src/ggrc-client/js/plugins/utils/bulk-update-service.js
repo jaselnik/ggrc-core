@@ -5,6 +5,10 @@
 
 import loMap from 'lodash/map';
 import {ggrcAjax} from '../ajax_extensions';
+import {
+  buildParam,
+  batchRequests,
+} from './query-api-utils';
 
 const toBulkModel = (instances, targetProps) => {
   let state = targetProps.state;
@@ -34,4 +38,52 @@ export default {
     });
     return dfd;
   },
+};
+
+export const requestAssessmentsCount = (relevant = null) => {
+  const filters = {
+    expression: {
+      left: {
+        object_name: 'Person',
+        op: {
+          name: 'relevant',
+        },
+        ids: [
+          GGRC.current_user.id,
+        ],
+      },
+      op: {
+        name: 'AND',
+      },
+      right: {
+        left: {
+          left: 'status',
+          op: {
+            name: 'IN',
+          },
+          right: [
+            'Not Started',
+            'In Progress',
+            'Rework Needed',
+          ],
+        },
+        op: {
+          name: 'AND',
+        },
+        right: {
+          left: 'archived',
+          op: {
+            name: '=',
+          },
+          right: 'false',
+        },
+      },
+    },
+  };
+
+  const param = buildParam('Assessment', {}, relevant, [], filters);
+  param.type = 'count';
+  param.permissions = 'update';
+
+  return batchRequests(param);
 };
