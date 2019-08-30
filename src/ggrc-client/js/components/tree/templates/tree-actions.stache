@@ -25,7 +25,7 @@
           </span>
         </li>
       {{/if}}
-      {{#if showGenerateAssessments}}
+      {{#if isAssessmentOnAudit}}
         <assessment-generator-button audit:from="parent_instance">
         </assessment-generator-button>
       {{/if}}
