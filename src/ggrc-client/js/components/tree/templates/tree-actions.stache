@@ -74,6 +74,11 @@
           </create-task-group-button>
         </li>
       {{/if}}
+      {{#if showBulkComplete}}
+        <li>
+          <assessments-bulk-complete-button />
+        </li>
+      {{/if}}
     </three-dots-menu>
   {{/if}}
 </div>
