@@ -70,11 +70,6 @@ export default canComponent.extend({
             model.model_singular === 'Assessment';
         },
       },
-      showGenerateAssessments: {
-        get: function () {
-          return this.attr('isAssessmentOnAudit');
-        },
-      },
       showBulkUpdate: {
         type: 'boolean',
         get: function () {
@@ -136,8 +131,9 @@ export default canComponent.extend({
               id: parentInstance.id,
               operation: 'relevant',
             };
+
             requestAssessmentsCount(relevant)
-              .then(({Assessment: {count}}) => {
+              .then((count) => {
                 setAttrValue(count > 0);
               });
           }
