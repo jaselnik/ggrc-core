@@ -1,0 +1,15 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+{{#if isButtonView}}
+    <button type="button" class="btn btn-small btn-darkBlue">
+      Bulk Complete
+    </button>
+  {{else}}
+    <a href="javascript://">
+      <i class="fa fa-refresh"></i>
+      Bulk Complete
+    </a>
+{{/if}}
