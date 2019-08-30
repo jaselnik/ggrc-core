@@ -22,8 +22,43 @@
   </collapsible-panel>
 </div>
 
-<div class="modal-section">
-  <collapsible-panel softMode:from="true" titleText:from="'Select assessments to complete in bulk'" expanded:bind="showResults">
+<div class="modal-section modal-footer">
+  <collapsible-panel softMode:from="true" titleText:from="'Select assessments to complete in bulk ({{entriesTotalCount}})'" expanded:bind="showResults">
+    <div class="search-results">
+      {{#if resultsRequested}}
+        <mapper-results
+          type:from="type"
+          selected:from="selected"
+          filterItems:from="filterItems"
+          mappingItems:from="mappingItems"
+          @onSearch:to="onSearchCallback"
+          paging.total:to="entriesTotalCount"
+          isLoading:bind="is_loading"
+          items:bind="entries" />
+
+        <div class="control-buttons">
+          <div class="confirm-buttons">
+            <spinner-component toggle:from="is_saving" />
+            <span class="confirm-buttons__objects-count">
+              {{selected.length}}
+              object(s) selected
+            </span>
+            <button type="button" class="btn btn-small btn-darkBlue"
+              {{^if selected.length}}disabled="disabled"{{/if}}>
+              {{#if is_saving}}
+                Saving, please wait...
+              {{else}}
+                Select
+              {{/if}}
+            </button>
+          </div>
+        </div>
+      {{else}}
+        <div class="well well-small">
+          No results
+        </div>
+      {{/if}}
+    </div>
   </collapsible-panel>
 </div>
 
