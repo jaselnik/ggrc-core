@@ -20,8 +20,15 @@ const viewModel = ObjectOperationsBaseVM.extend({
   type: 'Assessment',
 });
 
+const events = {
+  inserted() {
+    this.viewModel.onSubmit();
+  },
+};
+
 export default canComponent.extend({
   tag: 'assessments-bulk-complete',
   view: canStache(template),
   viewModel,
+  events,
 });
