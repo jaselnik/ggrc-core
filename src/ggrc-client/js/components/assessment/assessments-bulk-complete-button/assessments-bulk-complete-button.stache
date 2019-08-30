@@ -16,7 +16,7 @@
       href="javascript://"
       on:el:click="openBulkCompleteModal(scope.element)"
     >
-      <i class="fa fa-refresh"></i>
+      <i class="fa fa-fw fa-refresh"></i>
       Bulk Complete
     </a>
 {{/if}}
