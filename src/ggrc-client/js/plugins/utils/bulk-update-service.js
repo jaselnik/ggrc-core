@@ -85,5 +85,5 @@ export const requestAssessmentsCount = (relevant = null) => {
   param.type = 'count';
   param.permissions = 'update';
 
-  return batchRequests(param);
+  return batchRequests(param).then(({Assessment: {count}}) => count);
 };
