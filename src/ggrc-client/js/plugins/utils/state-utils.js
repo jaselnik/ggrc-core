@@ -15,6 +15,13 @@ import QueryParser from '../../generated/ggrc_filter_query_parser';
  */
 let snapshotableObject = GGRC.config.snapshotable_objects;
 
+const STATES_KEYS = {
+  BULK_COMPLETE: Symbol(
+    `States which are available
+     for bulk complete operation`
+  ),
+};
+
 let statesModels = [
   {
     models: ['AssessmentTemplate', 'Project', 'Program']
@@ -27,6 +34,8 @@ let statesModels = [
       'Not Started', 'In Progress', 'In Review', 'Rework Needed',
       'Completed (no verification)', 'Completed and Verified', 'Deprecated',
     ],
+    [STATES_KEYS.BULK_COMPLETE]: ['Not Started', 'In Progress',
+      'Rework Needed'],
   },
   {
     models: ['Audit'],
@@ -116,11 +125,20 @@ function getStatesModelsPair(model) {
 /**
  * Get states for model.
  * @param {String} model - The model name
+ * @param {Symbol=} statesCollectionKey - describes key of collection with
+ * states for certain model.
  * @return {Array} array of strings
  */
-function getStatesForModel(model) {
+function getStatesForModel(model, statesCollectionKey = null) {
   let pair = getStatesModelsPair(model);
-  return pair ? pair.states : [];
+
+  if (!pair) {
+    return [];
+  }
+
+  return pair[statesCollectionKey]
+    ? pair[statesCollectionKey]
+    : pair.states; // use "states" collection by default
 }
 
 /**
@@ -139,11 +157,18 @@ function getBulkStatesForModel(model) {
  * @param {Array} statuses - array of active statuses
  * @param {String} modelName - model name
  * @param {Boolean} inverse - the flag indicathes whether filter should be inversed
+ * @param {Symbol=} statesCollectionKey - Describes key of collection which
+ * will be used to get list of available statuses for certain model.
  * @return {String} The transformed query
  */
-function buildStatusFilter(statuses, modelName, inverse) {
+function buildStatusFilter(
+  statuses,
+  modelName,
+  inverse,
+  statesCollectionKey = null
+) {
   if (inverse) {
-    let allStatuses = getStatesForModel(modelName);
+    let allStatuses = getStatesForModel(modelName, statesCollectionKey);
     statuses = loDifference(allStatuses, statuses);
   }
 
@@ -272,6 +297,7 @@ function getDefaultStatesForModel(model) {
 }
 
 export {
+  STATES_KEYS,
   hasState,
   hasFilter,
   hasFilterTooltip,

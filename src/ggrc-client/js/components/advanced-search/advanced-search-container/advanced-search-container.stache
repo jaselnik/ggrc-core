@@ -9,6 +9,7 @@
       <advanced-search-filter-container
         items:bind="filterItems"
         availableAttributes:from="availableAttributes"
+        statesCollectionKey:from="statesCollectionKey"
         modelName:from="modelName" />
     </section>
     <section class="advanced-search__row">

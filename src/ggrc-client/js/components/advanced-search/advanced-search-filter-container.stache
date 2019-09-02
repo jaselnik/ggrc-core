@@ -11,6 +11,7 @@
         <div class="filter-container__state">
           <advanced-search-filter-state
             modelName:from="modelName"
+            statesCollectionKey:from="statesCollectionKey"
             stateModel:bind="value">
           </advanced-search-filter-state>
         </div>

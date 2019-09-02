@@ -36,10 +36,13 @@ let viewModel = AdvancedSearchContainer.extend({
           StateUtils.hasFilter(this.attr('modelName'))) {
           const statusItem = new canMap(AdvancedSearch.create.state());
           statusItem.value = AdvancedSearch.setDefaultStatusConfig(
-            statusItem.value, this.attr('modelName')
+            statusItem.value,
+            this.attr('modelName'),
+            this.attr('statesCollectionKey')
           );
           items.push(statusItem);
         }
+
         return items;
       },
     },
@@ -72,6 +75,12 @@ let viewModel = AdvancedSearchContainer.extend({
    * @type {canList}
    */
   availableAttributes: canList(),
+  /**
+   * Contains key of collection which will be used to get list of available
+   * statuses for certain model.
+   * @type {Symbol|null}
+   */
+  statesCollectionKey: null,
   /**
    * Adds Filter Operator and Filter Attribute to the collection.
    */
