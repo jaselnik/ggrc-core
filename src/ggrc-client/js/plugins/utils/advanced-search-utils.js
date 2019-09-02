@@ -157,7 +157,12 @@ export const builders = {
    */
   state: (state) => {
     let inverse = state.operator === 'NONE';
-    return StateUtils.buildStatusFilter(state.items, state.modelName, inverse);
+    return StateUtils.buildStatusFilter(
+      state.items,
+      state.modelName,
+      inverse,
+      state.statesCollectionKey
+    );
   },
   /**
    * Transforms Group model to valid QueryAPI filter expression.
@@ -217,13 +222,22 @@ export const buildFilter = (data, request) => {
  * Fills statusItem with default values for passed modelName.
  * @param {canMap} state - Current state.
  * @param {String} modelName - Name of the model to find states of.
+ * @param {Symbol=} statesCollectionKey - describes key of collection with
+ * states for certain model.
  * @return {canMap} - updated state.
  */
-export const setDefaultStatusConfig = (state, modelName) => {
-  const items = StateUtils.getStatesForModel(modelName);
+export const setDefaultStatusConfig = (
+  state,
+  modelName,
+  statesCollectionKey = null
+) => {
+  const items = StateUtils.getStatesForModel(modelName, statesCollectionKey);
+
   state.attr('items', items);
   state.attr('operator', 'ANY');
   state.attr('modelName', modelName);
+  state.attr('statesCollectionKey', statesCollectionKey);
+
   return state;
 };
 
