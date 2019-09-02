@@ -15,6 +15,7 @@
   <collapsible-panel softMode:from="true" titleText:from="'Filter'" expanded:bind="showSearch">
     <advanced-search-container
       modelName:from="type"
+      statesCollectionKey:from="statesCollectionKey"
       filterItems:to="filterItems"
       mappingItems:to="mappingItems"
       on:vm:onSubmit="onSubmit()"

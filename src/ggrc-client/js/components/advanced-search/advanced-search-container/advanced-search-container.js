@@ -16,6 +16,7 @@ import {getAvailableAttributes} from '../../../plugins/utils/tree-view-utils';
 const viewModel = canMap.extend({
   filterItems: [],
   availableAttributes: [],
+  statesCollectionKey: [],
   mappingItems: [],
   modelName: null,
   mappedToItems: [],

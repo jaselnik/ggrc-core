@@ -35,8 +35,11 @@ let viewModel = canMap.extend({
     filterStates: {
       get() {
         let items = this.attr('stateModel.items') || [];
-        let allStates =
-          StateUtils.getStatesForModel(this.attr('modelName'));
+
+        let allStates = StateUtils.getStatesForModel(
+          this.attr('modelName'),
+          this.attr('statesCollectionKey')
+        );
 
         let filterStates = allStates.map((filterState) => {
           return {
@@ -82,6 +85,12 @@ let viewModel = canMap.extend({
    * Regulation
    */
   modelName: null,
+  /**
+   * Contains key of collection which will be used to get list of available
+   * statuses for certain model.
+   * @type {Symbol|null}
+   */
+  statesCollectionKey: null,
   /**
    * Saves selected states.
    * @param {Array} selectedStates - selected states.
