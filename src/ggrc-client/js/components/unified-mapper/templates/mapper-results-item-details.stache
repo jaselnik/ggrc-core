@@ -3,30 +3,40 @@
   Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 }}
 
-<div class="menu-button-container">
-  {{#if instance.snapshot}}
-    {{> /static/templates/snapshots/dropdown_menu.stache}}
-  {{else}}
-    {{#is(instance.type, "Person")}}
-      {{> /static/templates/people/dropdown_menu.stache}}
-    {{else}}
-      {{#is(instance.type, "Audit")}}
-        {{> /static/templates/audits/dropdown_menu.stache}}
+{{#if (itemDetailsViewType, "bulk-update")}}
+  <div class="subtree__wrapper">
+    <collapsible-panel class="subtree__wrapper-item" titleText:from="'Mapped {{assessmentType}}'" softMode:from="true" expanded:to="scope.vars.mappedObjectsExpanded"> 
+      <assessment-mapped-objects instance:from="instance" expanded:from="scope.vars.mappedObjectsExpanded" />
+    </collapsible-panel>
+  </div>
+{{else}}
+  <div class="details__wrapper">
+    <div class="menu-button-container">
+      {{#if instance.snapshot}}
+        {{> /static/templates/snapshots/dropdown_menu.stache}}
       {{else}}
-        {{> /static/templates/base_objects/dropdown_menu.stache}}
+        {{#is(instance.type, "Person")}}
+          {{> /static/templates/people/dropdown_menu.stache}}
+        {{else}}
+          {{#is(instance.type, "Audit")}}
+            {{> /static/templates/audits/dropdown_menu.stache}}
+          {{else}}
+            {{> /static/templates/base_objects/dropdown_menu.stache}}
+          {{/is}}
+        {{/is}}
+      {{/if}}
+    </div>
+    <div class="flex-box">
+      {{#is(instance.type, "Person")}}
+        {{> /static/templates/people/mapper-item-description.stache}}
+      {{else}}
+        {{> /static/templates/base_objects/mapper-item-description.stache}}
       {{/is}}
-    {{/is}}
-  {{/if}}
-</div>
-<div class="flex-box">
-  {{#is(instance.type, "Person")}}
-    {{> /static/templates/people/mapper-item-description.stache}}
-  {{else}}
-    {{> /static/templates/base_objects/mapper-item-description.stache}}
-  {{/is}}
-</div>
-<div class="open-link-container">
-  <a href="{{firstnonempty instance.originalLink item.viewLink}}" target="_blank">
-    Open in a new tab <i class="fa fa-angle-double-right"></i>
-  </a>
-</div>
+    </div>
+    <div class="open-link-container">
+      <a href="{{firstnonempty instance.originalLink item.viewLink}}" target="_blank">
+        Open in a new tab <i class="fa fa-angle-double-right"></i>
+      </a>
+    </div>
+  </div>
+{{/is}}

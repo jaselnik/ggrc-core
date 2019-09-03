@@ -9,6 +9,15 @@ collapsible-panel {
   box-sizing: border-box;
   position: relative;
 
+  &.subtree__wrapper-item {
+    collapsible-panel-header {
+      .title-text {
+        font-weight: normal;
+        color: $darkText;
+        text-transform: none;
+      }
+    }
+  }
 
   .collapsible-panel-body {
     &.no-padding {
