@@ -20,6 +20,7 @@ const viewModel = canMap.extend({
   mappingItems: [],
   modelName: null,
   mappedToItems: [],
+  disabled: false,
   resetFilters() {
     this.attr('filterItems', []);
     this.attr('mappingItems', []);

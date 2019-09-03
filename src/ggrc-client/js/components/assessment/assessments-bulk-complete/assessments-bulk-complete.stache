@@ -16,6 +16,7 @@
     <advanced-search-container
       modelName:from="type"
       statesCollectionKey:from="statesCollectionKey"
+      disabled:from="is_loading"
       filterItems:to="filterItems"
       mappingItems:to="mappingItems"
       on:vm:onSubmit="onSubmit()"
