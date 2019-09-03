@@ -1,0 +1,23 @@
+/*
+ * Copyright (C) 2019 Google Inc.
+ * Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+ */
+
+ assessment-mapped-objects {
+  .mapped-objects__list {
+    margin: 10px 0 10px 21px;
+
+    .mapped-objects__item {
+      margin-bottom: 10px;
+
+      .title {
+        color: $darkText;
+
+        .fa {
+          color: $darkText;
+        }
+      }
+    }
+  }
+ }
+ 
