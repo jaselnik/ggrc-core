@@ -31,7 +31,7 @@
 </div>
 <div class="advanced-search__footer">
   <div class="advanced-search__footer-controls">
-    <button type="reset" class="btn btn-white" on:el:click="resetFilters()">Reset to Defaults</button>
-    <button type="submit" class="btn btn-lightBlue" on:el:click="onSubmit()">Apply</button>
+    <button type="reset" class="btn btn-white" on:el:click="resetFilters()" {{#if disabled}}disabled{{/if}}>Reset to Defaults</button>
+    <button type="submit" class="btn btn-lightBlue" on:el:click="onSubmit()" {{#if disabled}}disabled{{/if}}>Apply</button>
   </div>
 </div>
