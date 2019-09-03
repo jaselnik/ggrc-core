@@ -1,0 +1,17 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+{{#if isLoading}}
+  <spinner-component toggle:from="isLoading" />
+{{else}}
+  {{#if isInitialized}}
+    <assessment-mapped-controls
+      class="mapped-objects__list info-pane__section-content"
+      instance:from="instance"
+      mappedItems:from="mappedObjects"
+      assessmentType:from="instance.assessment_type">
+    </assessment-mapped-controls>
+  {{/if}}
+{{/if}}

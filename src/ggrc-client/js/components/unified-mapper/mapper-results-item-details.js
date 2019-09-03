@@ -10,6 +10,7 @@ import '../related-objects/related-people-access-control';
 import '../related-objects/related-people-access-control-group';
 import '../people/deletable-people-group';
 import '../unarchive-link';
+import '../assessment/assessment-mapped-objects/assessment-mapped-objects';
 import template from './templates/mapper-results-item-details.stache';
 import * as businessModels from '../../models/business-models';
 
@@ -25,6 +26,14 @@ export default canComponent.extend({
       } else {
         this.attr('model', businessModels[instance.type]);
       }
+    },
+    define: {
+      assessmentType: {
+        get() {
+          const instance = this.attr('instance');
+          return businessModels[instance.assessment_type].title_plural;
+        },
+      },
     },
     item: null,
     instance: null,
