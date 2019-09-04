@@ -79,6 +79,10 @@ GGRC_EXPORTABLE = {
     "risk": all_models.Risk,
 }
 
+GGRC_IMPORTABLE_ONLY = {
+    "lca comment": all_models.Comment,
+}
+
 
 def _get_types(attr):
   """Get contributed attribute types.
@@ -97,16 +101,23 @@ def _get_types(attr):
   return res
 
 
-def get_importables():
-  """ Get a dict of all importable objects from all modules """
+def _get_importables_exportables():
+  """ Get a dict of all objects can be importable and exportable """
   importable = GGRC_IMPORTABLE
   importable.update(_get_types("contributed_importables"))
+  return importable
+
+
+def get_importables():
+  """ Get a dict of all importable objects from all modules """
+  importable = GGRC_IMPORTABLE_ONLY
+  importable.update(_get_importables_exportables())
   return importable
 
 
 def get_exportables():
   """ Get a dict of all exportable objects from all modules """
   exportable = GGRC_EXPORTABLE
-  exportable.update(get_importables())
+  exportable.update(_get_importables_exportables())
   exportable.update(_get_types("contributed_exportables"))
   return exportable

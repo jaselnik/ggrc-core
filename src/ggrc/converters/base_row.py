@@ -153,6 +153,11 @@ class ImportRowConverter(RowConverter):
     row_headers = {attr_name: (idx, header_dict)
                    for idx, (attr_name, header_dict)
                    in enumerate(self.headers.iteritems())}
+    if self.object_class == all_models.Comment:
+      self.obj = all_models.Comment(
+          modified_by_id=get_current_user_id()
+      )
+
     for attr_name in self.block_converter.handle_fields:
       if attr_name not in row_headers or self.is_delete:
         continue
@@ -168,6 +173,15 @@ class ImportRowConverter(RowConverter):
         self.obj.__class__
     ][
         getattr(self.obj, self.id_key)
+    ] = self.obj
+
+  def _update_new_comment_cache(self):
+    """Update local cache with newly created comment object."""
+    if not self.is_new:
+      return
+    self.is_new_object_set = True
+    self.block_converter.converter.new_objects[
+        self.obj.__class__
     ] = self.obj
 
   def add_error(self, template, **kwargs):
@@ -207,6 +221,8 @@ class ImportRowConverter(RowConverter):
     # custom attributes.
     missing = [headers[key]["display_name"] for key in missing_keys if
                headers[key]["type"] != AttributeInfo.Type.OBJECT_CUSTOM]
+    if self.block_converter.class_name.lower() == "lca comment":
+      return
     if missing:
       self.add_error(errors.MISSING_COLUMN,
                      s="s" if len(missing) > 1 else "",
@@ -405,7 +421,10 @@ class ImportRowConverter(RowConverter):
     if self.ignore:
       db.session.rollback()
       return
-    self._update_new_obj_cache()
+    if self.object_class == all_models.Comment:
+      self._update_new_comment_cache()
+    else:
+      self._update_new_obj_cache()
     self._setup_object()
     self._check_object()
     try:

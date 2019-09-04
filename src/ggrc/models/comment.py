@@ -246,6 +246,11 @@ class Comment(Roleable, Relatable, Described, Notifiable,
       ReindexRule("Relationship", reindex_by_relationship),
   ]
 
+  _aliases = {
+      "custom_attribute_definition": "custom_attribute_definition",
+      "context_id": "context_id",
+  }
+
   @builder.simple_property
   def header_url_link(self):
     """Return header url link to comment if that comment related to proposal
