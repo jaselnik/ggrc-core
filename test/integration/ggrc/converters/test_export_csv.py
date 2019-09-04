@@ -8,7 +8,7 @@ import ddt
 from flask.json import dumps
 
 from ggrc import utils
-from ggrc.converters import get_importables
+from ggrc.converters import get_exportables
 from ggrc.models import inflector, all_models
 from ggrc.models.reflection import AttributeInfo
 from integration.ggrc import TestCase
@@ -603,7 +603,7 @@ class TestExportSingleObject(TestCase):
       }]
 
     failed = set()
-    for model in set(get_importables().values()):
+    for model in set(get_exportables().values()):
       for attr, field in AttributeInfo(model)._aliases.items():
         if field is None:
           continue
