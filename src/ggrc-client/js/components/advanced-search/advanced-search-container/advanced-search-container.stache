@@ -15,6 +15,8 @@
     <section class="advanced-search__row">
       <h3 class="advanced-search__mapping-header">Filter by Mapping</h3>
 
+      <can-slot name="mapped-to-section" />
+
       {{#mappedToItems}}
         <div class="advanced-search__row-item advanced-search__parent-filter">
           <h6>Mapped to {{type}}:</h6><span>{{title}}</span>
