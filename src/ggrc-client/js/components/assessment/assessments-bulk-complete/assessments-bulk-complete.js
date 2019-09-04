@@ -16,6 +16,8 @@ import {STATES_KEYS} from '../../../plugins/utils/state-utils';
 const viewModel = ObjectOperationsBaseVM.extend({
   showSearch: false,
   showFields: false,
+  isMyAssessmentsView: false,
+  mappedToItems: [],
   filterItems: [],
   mappingItems: [],
   statesCollectionKey: STATES_KEYS.BULK_COMPLETE,
