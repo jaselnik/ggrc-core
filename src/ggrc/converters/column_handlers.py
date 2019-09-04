@@ -157,6 +157,8 @@ _DEFAULT_COLUMN_HANDLERS_DICT = {
     "__object_custom__": custom_attribute.ObjectCaColumnHandler,
     "__snapshot_mapping__": SnapshotInstanceColumnHandler,
     "__acl__": acl.AccessControlRoleColumnHandler,
+
+    "custom_attribute_definition": comments.LCACommentColumnHandler,
 }
 
 
