@@ -17,10 +17,16 @@
       modelName:from="type"
       statesCollectionKey:from="statesCollectionKey"
       disabled:from="is_loading"
+      mappedToItems:from="mappedToItems"
       filterItems:to="filterItems"
       mappingItems:to="mappingItems"
-      on:vm:onSubmit="onSubmit()"
-    />
+      on:vm:onSubmit="onSubmit()">
+        <can-template name="mapped-to-section">
+          {{#isMyAssessmentsView}}
+            <h6 class="spacing-top">My Assessments</h6>
+          {{/isMyAssessmentsView}}
+        </can-template>
+    </advanced-search-container>
   </collapsible-panel>
 </div>
 
@@ -33,6 +39,7 @@
           selected:from="selected"
           filterItems:from="filterItems"
           mappingItems:from="mappingItems"
+          relevantTo:from="mappedToItems"
           @onSearch:to="onSearchCallback"
           paging.total:to="entriesTotalCount"
           isLoading:bind="is_loading"
