@@ -16,6 +16,7 @@ from ggrc.cache import utils as cache_utils
 from ggrc.cache.utils import clear_memcache
 from ggrc.converters import base_block
 from ggrc.converters import get_exportables
+from ggrc.converters import get_importables
 from ggrc.converters import import_helper
 from ggrc.converters import snapshot_block
 from ggrc.fulltext import get_indexer
@@ -106,6 +107,7 @@ class ImportConverter(BaseConverter):
     self.comment_created_notif_type = all_models.NotificationType.query. \
         filter_by(name="comment_created").one().id
     super(ImportConverter, self).__init__(ie_job)
+    self.exportable.update(get_importables())
 
   def get_info(self):
     return self.response_data

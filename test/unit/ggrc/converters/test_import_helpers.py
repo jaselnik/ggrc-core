@@ -13,6 +13,9 @@ import mock
 
 from ggrc import app  # noqa - this is neede for imports to work
 from ggrc.converters import import_helper
+from ggrc.converters import get_exportables
+from ggrc.converters import get_importables
+from ggrc.converters import GGRC_IMPORTABLE_ONLY
 from ggrc.converters.column_handlers import model_column_handlers
 
 
@@ -185,3 +188,16 @@ class TestModelColumntHandler(unittest.TestCase):
       self.assertEqual(
           {"col_a": test_custom_handler, "col_b": test_handler},
           model_column_handlers(test_custom_class))
+
+
+class TestImportablesExportables(unittest.TestCase):
+
+  """Test for existing importables and exportables"""
+
+  def test_importable_only(self):
+    """Test importable only objects not exists in exportables"""
+    result_importables = set(get_importables().keys())
+    result_exportables = set(get_exportables().keys())
+    importable_only = set(GGRC_IMPORTABLE_ONLY.keys())
+    self.assertTrue(importable_only.issubset(result_importables))
+    self.assertFalse(importable_only.issubset(result_exportables))
