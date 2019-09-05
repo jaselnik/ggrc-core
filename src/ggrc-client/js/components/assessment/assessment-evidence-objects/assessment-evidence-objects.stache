@@ -1,0 +1,51 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+{{#if isLoading}}
+  <spinner-component toggle:from="isLoading" />
+{{else}}
+  {{#if isInitialized}}
+    <div class="evidence-objects__wrapper">
+      <div class="evidence-objects__wrapper-item">
+        <div class="evidence__title">Evidence file</div>
+          {{#evidenceFiles}}
+            <document-object-list-item instance:from="{.}" />
+          {{else}}
+            <span class="empty-message">None</span>
+          {{/evidenceFiles}}
+      </div>
+      <div class="evidence-objects__wrapper-item">
+        <div class="evidence__title">Evidence URL</div>
+          {{#evidenceUrls}}
+            <document-object-list-item instance:from="{.}" />
+          {{else}}
+            <span class="empty-message">None</span>
+          {{/evidenceUrls}}
+        </div>
+    </div>
+
+    {{#if localCustomAttributes.length}}
+      <div class="fields-wrapper flex-box flex-row">
+        {{#each localCustomAttributes}}
+          <div class="field-wrapper flex-size-1 custom-attribute-{{attributeType}}">
+            <div class="field__title form-field__title">
+              <label class="field__title-text custom-attribute-{{attributeType}}">
+                {{title}}
+                {{#if mandatory}}
+                  <i class="fa fa-asterisk field__mandatory"></i>
+                {{/if}}
+              </label>
+            </div>
+            <custom-attributes-field-view
+              type:from="attributeType"
+              value:from="value"
+              options:from="multiChoiceOptions"
+              class="form-field__content custom-attribute-{{attributeType}}" />
+          </div>
+        {{/each}}
+      </div>
+    {{/if}}
+  {{/if}}
+{{/if}}
