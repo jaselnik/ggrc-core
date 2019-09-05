@@ -4,11 +4,18 @@
 }}
 
 {{#if isButtonView}}
-    <button type="button" class="btn btn-small btn-darkBlue">
+    <button
+      type="button"
+      class="btn btn-small btn-darkBlue"
+      on:el:click="openBulkCompleteModal(scope.element)"
+    >
       Bulk Complete
     </button>
   {{else}}
-    <a href="javascript://">
+    <a
+      href="javascript://"
+      on:el:click="openBulkCompleteModal(scope.element)"
+    >
       <i class="fa fa-refresh"></i>
       Bulk Complete
     </a>
