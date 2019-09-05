@@ -1,0 +1,50 @@
+/*
+ * Copyright (C) 2019 Google Inc.
+ * Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+ */
+
+ assessment-evidence-objects {
+  .evidence-objects__wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 15px 0;
+
+    &-item {
+      position: relative;
+      box-sizing: border-box;
+      padding: 0 16px 0 21px;
+      flex: 1 1 50%;
+      max-width: 50%;
+
+      .evidence__title {
+        font-weight: bold;
+        color: $darkText;
+        text-transform: uppercase;
+      }
+    }
+  }
+
+  .fields-wrapper {
+    .field-wrapper {
+      padding: 0 16px 20px 21px;
+
+      .field__title-text  {
+        font-weight: bold;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .form-field__content {
+        color: $darkText;
+
+        .inline-edit__text {
+          line-height: 18px;
+        }
+
+        &.custom-attribute-checkbox {
+          padding: 0 8px 0 0;
+        }
+      }
+    }
+  }
+ }
