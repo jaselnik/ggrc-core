@@ -3,10 +3,13 @@
   Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 }}
 
-{{#if (itemDetailsViewType, "bulk-update")}}
+{{#is (itemDetailsViewType, "bulk-update")}}
   <div class="subtree__wrapper">
     <collapsible-panel class="subtree__wrapper-item" titleText:from="'Mapped {{assessmentType}}'" softMode:from="true" expanded:to="scope.vars.mappedObjectsExpanded"> 
       <assessment-mapped-objects instance:from="instance" expanded:from="scope.vars.mappedObjectsExpanded" />
+    </collapsible-panel>
+    <collapsible-panel class="subtree__wrapper-item" titleText:from="'Evidence and Custom Attributes'" softMode:from="true" expanded:to="scope.vars.evidenceObjectsExpanded">
+      <assessment-evidence-objects instance:from="instance" expanded:from="scope.vars.evidenceObjectsExpanded" />
     </collapsible-panel>
   </div>
 {{else}}

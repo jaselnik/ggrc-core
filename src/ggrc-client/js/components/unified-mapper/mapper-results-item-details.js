@@ -11,6 +11,7 @@ import '../related-objects/related-people-access-control-group';
 import '../people/deletable-people-group';
 import '../unarchive-link';
 import '../assessment/assessment-mapped-objects/assessment-mapped-objects';
+import '../assessment/assessment-evidence-objects/assessment-evidence-objects';
 import template from './templates/mapper-results-item-details.stache';
 import * as businessModels from '../../models/business-models';
 
