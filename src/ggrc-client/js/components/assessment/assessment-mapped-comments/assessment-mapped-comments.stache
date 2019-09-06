@@ -1,0 +1,28 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+{{#if isLoading}}
+  <spinner-component toggle:from="isLoading" />
+{{else}}
+  {{#if isInitialized}}
+    <div class="mapped-comments__wrapper">
+      {{#if mappedComments.length}}
+        <mapped-comments 
+          mappedItems:from="mappedComments"
+          baseInstance:from="instance"
+          showNoItemsText:from="false" />
+        {{#if showMore}}
+          <div class="more-comments__wrapper">Showing up to 5 related comments.
+            <a target="_blank" class="more-comments__link" href="/assessments/{{instance.id}}">
+              See more
+            </a>
+          </div>
+        {{/if}}
+      {{else}}
+        <span class="empty-message">None</span>
+      {{/if}}
+    </div>
+  {{/if}}
+{{/if}}
