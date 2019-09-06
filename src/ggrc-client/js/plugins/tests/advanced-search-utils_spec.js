@@ -340,18 +340,18 @@ describe('AdvancedSearch', () => {
         item = AdvancedSearch.create.state({
           modelName: 'testModelName',
           items: ['test'],
+          operator: 'ANY',
+          statesCollectionKey: null,
         });
         expectedResult = {test: 'result'};
         spyOn(StateUtils, 'buildStatusFilter').and.returnValue(expectedResult);
       });
 
       it('correctly call buildStatusFilter() if operator is ANY', () => {
-        item.value.operator = 'ANY';
-
         let result = AdvancedSearch.builders.state(item.value);
 
         expect(StateUtils.buildStatusFilter)
-          .toHaveBeenCalledWith(['test'], 'testModelName', false);
+          .toHaveBeenCalledWith(['test'], 'testModelName', false, null);
         expect(result).toBe(expectedResult);
       });
 
@@ -361,7 +361,18 @@ describe('AdvancedSearch', () => {
         let result = AdvancedSearch.builders.state(item.value);
 
         expect(StateUtils.buildStatusFilter)
-          .toHaveBeenCalledWith(['test'], 'testModelName', true);
+          .toHaveBeenCalledWith(['test'], 'testModelName', true, null);
+        expect(result).toBe(expectedResult);
+      });
+
+      it('correctly call buildStatusFilter() if custom collection of ' +
+       'statuses is used', () => {
+        item.value.statesCollectionKey = 'CustomKey';
+
+        let result = AdvancedSearch.builders.state(item.value);
+
+        expect(StateUtils.buildStatusFilter)
+          .toHaveBeenCalledWith(['test'], 'testModelName', false, 'CustomKey');
         expect(result).toBe(expectedResult);
       });
     });
