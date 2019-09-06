@@ -1,0 +1,22 @@
+/*
+ * Copyright (C) 2019 Google Inc.
+ * Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+ */
+
+ assessment-mapped-comments {
+  .mapped-comments__wrapper {
+    margin: 10px 0 10px 21px;
+    
+    .comment-object-item__text {
+      color: $darkText;
+    }
+  }
+
+  .more-comments__wrapper {
+    color: $darkText;
+
+    .more-comments__link {
+      font-style: italic;
+    }
+  }
+ }
