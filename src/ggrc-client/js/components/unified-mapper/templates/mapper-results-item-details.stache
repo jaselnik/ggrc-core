@@ -11,6 +11,9 @@
     <collapsible-panel class="subtree__wrapper-item" titleText:from="'Evidence and Custom Attributes'" softMode:from="true" expanded:to="scope.vars.evidenceObjectsExpanded">
       <assessment-evidence-objects instance:from="instance" expanded:from="scope.vars.evidenceObjectsExpanded" />
     </collapsible-panel>
+    <collapsible-panel class="subtree__wrapper-item" titleText:from="'Comments'" softMode:from="true" expanded:to="scope.vars.mappedCommentsExpanded">
+      <assessment-mapped-comments instance:from="instance" expanded:from="scope.vars.mappedCommentsExpanded" />
+    </collapsible-panel>
   </div>
 {{else}}
   <div class="details__wrapper">
