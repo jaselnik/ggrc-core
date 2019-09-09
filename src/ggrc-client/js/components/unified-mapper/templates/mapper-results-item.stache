@@ -56,6 +56,7 @@
 {{#showDetails}}
   <mapper-results-item-details class="{{#isSnapshot}}is-snapshot{{/isSnapshot}}"
                                item:from="displayItem"
-                               instance:from="itemData">
+                               instance:from="itemData"
+                               itemDetailsViewType:from="itemDetailsViewType">
   </mapper-results-item-details>
 {{/showDetails}}

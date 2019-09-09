@@ -99,6 +99,7 @@ export default canComponent.extend({
     deferredList: [],
     disabledIds: [],
     megaRelationObj: {},
+    itemDetailsViewType: '',
     setItems: function () {
       const stopFn = tracker.start(this.attr('type'),
         tracker.USER_JOURNEY_KEYS.NAVIGATION,
