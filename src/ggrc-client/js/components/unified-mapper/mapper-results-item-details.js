@@ -43,5 +43,6 @@ export default canComponent.extend({
     isMapperDetails: true,
     adminRole: ['Admin'],
     deletableAdmin: false,
+    itemDetailsViewType: '',
   }),
 });
