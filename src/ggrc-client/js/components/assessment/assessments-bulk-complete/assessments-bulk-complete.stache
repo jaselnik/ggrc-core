@@ -44,7 +44,8 @@
           paging.total:to="entriesTotalCount"
           isLoading:bind="is_loading"
           items:bind="entries"
-          on:vm:loaded="onLoaded()" />
+          on:vm:loaded="onLoaded()"
+          itemDetailsViewType:from="'bulk-update'" />
 
         <div class="control-buttons">
           <div class="confirm-buttons">
