@@ -198,3 +198,107 @@ class TestBulkOperations(TestCase):
     )
     self.assert200(response)
     self.assertEqual(expected_response, response.json)
+
+  def test_same_cads(self):
+    """Test group by same cads"""
+    with factories.single_commit():
+      asmt1 = factories.AssessmentFactory(assessment_type="Control")
+      cad_obj1 = factories.CustomAttributeDefinitionFactory(
+          title="text_LCA",
+          definition_type="assessment",
+          definition_id=asmt1.id,
+          attribute_type="Text",
+      )
+      factories.CustomAttributeValueFactory(
+          custom_attribute=cad_obj1,
+          attributable=asmt1,
+          attribute_value="test_value",
+      )
+      asmt2 = factories.AssessmentFactory(assessment_type="Control")
+      cad_obj2 = factories.CustomAttributeDefinitionFactory(
+          title="text_LCA",
+          definition_type="assessment",
+          definition_id=asmt2.id,
+          attribute_type="Text",
+      )
+    data = [{
+        "ids": [asmt1.id, asmt2.id]
+    }]
+    expected_response = [{
+        "attribute": {
+            "attribute_type": "Text",
+            "title": "text_LCA",
+            "default_value": "",
+            "multi_choice_options": None,
+            "multi_choice_mandatory": None,
+            "mandatory": False,
+        },
+        "related_assessments": [{
+            "assessments_type": "Control",
+            "assessments": [{
+                "id": asmt2.id,
+                "attribute_definition_id": cad_obj2.id,
+            }]
+        }],
+        "assessments_with_values": [{
+            "id": asmt1.id,
+            "title": asmt1.title,
+            "attribute_value": "test_value",
+        }]
+    }]
+    response = self.client.post(
+        self.ENDPOINT_URL,
+        data=json.dumps(data),
+        headers=self.headers
+    )
+    self.assert200(response)
+    self.assertEqual(expected_response, response.json)
+
+  def test_many_related_assessments(self):
+    """Test same CADs with same assessment_types"""
+    with factories.single_commit():
+      asmt1 = factories.AssessmentFactory(assessment_type="Control")
+      cad_obj1 = factories.CustomAttributeDefinitionFactory(
+          title="text_LCA",
+          definition_type="assessment",
+          definition_id=asmt1.id,
+          attribute_type="Text",
+      )
+      asmt2 = factories.AssessmentFactory(assessment_type="Control")
+      cad_obj2 = factories.CustomAttributeDefinitionFactory(
+          title="text_LCA",
+          definition_type="assessment",
+          definition_id=asmt2.id,
+          attribute_type="Text",
+      )
+    data = [{
+        "ids": [asmt1.id, asmt2.id]
+    }]
+    expected_response = [{
+        "attribute": {
+            "attribute_type": "Text",
+            "title": "text_LCA",
+            "default_value": "",
+            "multi_choice_options": None,
+            "multi_choice_mandatory": None,
+            "mandatory": False,
+        },
+        "related_assessments": [{
+            "assessments_type": "Control",
+            "assessments": [{
+                "id": asmt1.id,
+                "attribute_definition_id": cad_obj1.id,
+            }, {
+                "id": asmt2.id,
+                "attribute_definition_id": cad_obj2.id,
+            }]
+        }],
+        "assessments_with_values": [],
+    }]
+    response = self.client.post(
+        self.ENDPOINT_URL,
+        data=json.dumps(data),
+        headers=self.headers
+    )
+    self.assert200(response)
+    self.assertEqual(expected_response, response.json)
