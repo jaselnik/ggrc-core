@@ -1,0 +1,21 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+{{#if isLoading}}
+  <spinner-component toggle:from="isLoading" />
+{{else}}
+  {{#if relatedObjects.length}}
+    <ul class="popover-content__list">
+      {{#relatedObjects}}
+        <li>
+          <p class="popover-content__item-title">{{title}}</p>
+          <p class="popover-content__item-value">{{slug}}</p>
+        </li>
+      {{/relatedObjects}}
+    </ul>
+  {{else}}
+    <span class="empty-message">No mapped objects</span>
+  {{/if}}
+{{/if}}

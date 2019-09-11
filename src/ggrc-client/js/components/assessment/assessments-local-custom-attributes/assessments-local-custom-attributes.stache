@@ -9,10 +9,26 @@
       <form-validation-icon validation:from="validation" />
       <div class="form-field__title">
         <label class="field__title-text {{getFieldClass(type)}}" for="form-field-{{id}}">
-          {{title}}
+          <span>{{title}}</span>
           {{#if validation.mandatory}}
             <i class="fa fa-asterisk field__mandatory"></i>
           {{/if}}
+          <div class="popover-component__container">
+            <popover-component 
+              header:from="popovers.relObjectsHeader(@index)"
+              content:from="popovers.relObjectsContent(@index)"
+            >
+              <i class="fa fa-question-circle" data-popover-trigger></i>
+            </popover-component>
+            {{#if relatedAnswers.length}}
+              <popover-component 
+                header:from="popovers.relAnswersHeader(@index)"
+                content:from="popovers.relAnswersContent(@index)"
+              >
+                <i class="fa fa-exclamation-circle" data-popover-trigger></i>
+              </popover-component>
+            {{/if}}
+            </div>
         </label>
       </div>
 

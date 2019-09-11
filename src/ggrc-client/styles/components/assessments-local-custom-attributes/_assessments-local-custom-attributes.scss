@@ -18,10 +18,86 @@
 
   .field__title-text {
     font-size: 13px;
+
+    > * {
+      vertical-align: middle;
+    }
   }
 
   form-validation-icon {
     width: 15px;
     height: 26px;
+  }
+
+  .popover-component__container {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    margin-left: 7px;
+
+    .fa-exclamation-circle {
+      margin-left: 6px;
+    }
+  }
+}
+
+.popover.btstrp-popover__wrapper {
+  .popover-title {
+    color: $black;
+
+    &__header {
+      margin: 0 0 5px 0;
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    &__description {
+      font-size: 13px;
+      font-weight: normal;
+      line-height: 1.4;
+    }
+  }
+
+  .popover-content {
+    color: $black;
+
+    &__list {
+      margin: 0;
+      line-height: 1.2;
+      list-style: none;
+    }
+
+    &__item:not(:last-child) {
+      margin-bottom: 10px;
+    }
+  }
+
+  .popover-content__item-title {
+    padding: 5px 0;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .popover-content__item-value  {
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  .field-wrapper {
+    padding: 0;
+
+    .field__title-text  {
+      color: $black;
+      @extend .popover-content__item-title;
+    }
+
+    .form-field__content {
+      @extend .popover-content__item-value;
+        
+      .view-wrapper {
+        word-break: break-word;
+      }
+    }
   }
 }
