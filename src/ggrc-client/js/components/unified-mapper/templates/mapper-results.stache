@@ -7,7 +7,7 @@
                   selectedItems:from="selected"
                   disabledIds:from="disabledIds"
                   allItems:from="allItems"
-                  refreshSelection:from="refreshItems"
+                  state:from="selectionState"
                   allSelected:bind="allSelected"
                   {{#if serviceColumnsEnabled}}class="object-selection__service-columns"{{/if}}>
   {{#if items.length}}
