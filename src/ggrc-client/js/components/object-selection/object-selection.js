@@ -12,12 +12,12 @@ export default canComponent.extend({
   tag: 'object-selection',
   leakScope: true,
   viewModel: canMap.extend({
+    state: null,
     selectedItems: [],
     items: [],
     // This is an array by default replace with deferred on actual load
     allItems: [],
     disabledIds: [],
-    refreshSelection: null,
     allSelected: false,
     selectAllCheckboxValue: false,
     select: function (item) {
@@ -103,10 +103,8 @@ export default canComponent.extend({
     },
   }),
   events: {
-    '{viewModel} refreshSelection': function ([scope], ev, refreshSelection) {
-      if (refreshSelection) {
-        this.viewModel.emptySelection();
-      }
+    '{viewModel.state} resetSelection'() {
+      this.viewModel.emptySelection();
     },
     '{viewModel.items} add': function () {
       this.viewModel.markSelectedItems();
