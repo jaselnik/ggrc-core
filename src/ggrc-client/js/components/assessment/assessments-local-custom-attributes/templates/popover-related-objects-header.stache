@@ -1,0 +1,9 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<header>
+  <h2 class="popover-title__header">Related objects</h2>
+  <div class="popover-title__description">Your input will be applied to {{count}} {{assessment}} across the following objects:</div>
+</header>

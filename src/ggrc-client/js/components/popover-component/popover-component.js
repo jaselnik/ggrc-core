@@ -13,11 +13,27 @@ export default canComponent.extend({
   leakScope: true,
   viewModel: canMap.extend({
     header: '',
-    content: '',
+    /**
+     * Сontent is function because template may contain canJS components which are not yet initialized.
+     * After calling of this function, all the components will be initialized (called needed lifecycle-related methods etc.).
+     *
+     * @type {function}
+     */
+    content: null,
     isInitialized: false,
     showPopover($el) {
       $el.popover('show');
-
+      /**
+       * We add "content" after showing of the popover because
+       * "content" can be canStache's fragment. canStache's fragments are initialized
+       * properly only in case, if we add them in the DOM. If we use Bootstrap's option "content" during
+       * the initialization of popover, "content"'ll be added internally in some Bootstrap's
+       * fragment which will be inserted into the DOM later - components
+       * which are included into canStache won't call different methods like `inserted` and set up bindings
+       * between viewModel and view.
+       */
+      $('.btstrp-popover__wrapper .popover-content')
+        .html(this.attr('content')());
       const left = $el.offset().left;
       $('.btstrp-popover__wrapper').offset({left});
     },
@@ -29,7 +45,7 @@ export default canComponent.extend({
         trigger: 'manual',
         html: true,
         title: this.attr('header'),
-        content: this.attr('content'),
+        content: null,
         animation: true,
         container: 'body',
         placement(el) {
@@ -47,12 +63,15 @@ export default canComponent.extend({
         this.viewModel.initializePopover($el);
         this.viewModel.attr('isInitialized', true);
       }
+      setTimeout(() => {
+        if ($el.is(':hover')) {
+          this.viewModel.showPopover($el);
 
-      this.viewModel.showPopover($el);
-
-      $('.btstrp-popover__wrapper').one('mouseleave', () => {
-        this.viewModel.hidePopover($el);
-      });
+          $('.btstrp-popover__wrapper').one('mouseleave', () => {
+            this.viewModel.hidePopover($el);
+          });
+        }
+      }, POPOVER_HOVER_WAIT_TIME);
     },
     '[data-popover-trigger] mouseleave'(el) {
       setTimeout(() => {
