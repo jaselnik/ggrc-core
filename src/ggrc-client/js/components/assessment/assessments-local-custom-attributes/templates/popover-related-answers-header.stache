@@ -1,0 +1,9 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<header>
+  <h2 class="popover-title__header">Available answers</h2>
+  <div class="popover-title__description">Please, note that the following information that already exists will be overwritten.</div>
+</header>

@@ -7,7 +7,7 @@
   position: absolute;
   margin-top: 5px;
   padding: 0;
-  border-radius: 6px;
+  border-radius: 4px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
   z-index: 3001;
 
@@ -16,15 +16,16 @@
   }
 
   .popover-inner {
-    width: 400px;
+    width: 350px;
     padding: 0;
     background: $white;
     color: $black;
-    border-radius: 6px;
+    border-radius: 4px;
 
     .popover-title {
       max-height: 200px;
       overflow: auto;
+      overflow-wrap: break-word;
       padding: 14px 18px;
       background: $white;
       border-bottom: 1px solid $warmGray;
@@ -33,7 +34,8 @@
     .popover-content {
       max-height: 300px;
       overflow: auto;
-      padding: 14px 18px;
+      overflow-wrap: break-word;
+      padding: 9px 18px;
       border-radius: 0;
     }
   }

@@ -121,7 +121,11 @@ const viewModel = ObjectOperationsBaseVM.extend({
   convertToArray(value) {
     return typeof value === 'string' ? value.split(',') : [];
   },
-  convertToAttributeField(attribute, fieldIndex) {
+  convertToAttributeField({
+    attribute,
+    related_assessments: relatedAssessments,
+    assessments_with_values: relatedAnswers,
+  }, fieldIndex) {
     const attributeType = getCustomAttributeType(attribute.attribute_type);
     const optionsList = this.convertToArray(attribute.multi_choice_options);
     const optionsStates = this.convertToArray(attribute.multi_choice_mandatory);
@@ -152,6 +156,13 @@ const viewModel = ObjectOperationsBaseVM.extend({
         requiresAttachment: false,
         hasMissingInfo: false,
       },
+      relatedAssessments,
+      relatedAnswers: relatedAnswers.map((answer) => ({
+        title: answer.title,
+        attributeValue: answer.attribute_person_id === null
+          ? answer.attribute_value
+          : answer.attribute_person_id,
+      })),
     };
   },
   async generateAttributes() {
@@ -159,8 +170,8 @@ const viewModel = ObjectOperationsBaseVM.extend({
 
     try {
       const rawAttributesList = await this.loadGeneratedAttributes();
-      const attributeFields = rawAttributesList.map(({attribute}, index) =>
-        this.convertToAttributeField(attribute, index));
+      const attributeFields = rawAttributesList.map((rawAttribute, index) =>
+        this.convertToAttributeField(rawAttribute, index));
 
       this.attr('isAttributesGenerated', true);
       this.attr('attributeFields', attributeFields);
