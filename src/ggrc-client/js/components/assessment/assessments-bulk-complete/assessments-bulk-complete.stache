@@ -43,7 +43,8 @@
           @onSearch:to="onSearchCallback"
           paging.total:to="entriesTotalCount"
           isLoading:bind="is_loading"
-          items:bind="entries" />
+          items:bind="entries"
+          on:vm:loaded="onLoaded()" />
 
         <div class="control-buttons">
           <div class="confirm-buttons">
