@@ -14,8 +14,30 @@ import template from './assessments-bulk-complete.stache';
 import ObjectOperationsBaseVM from '../../view-models/object-operations-base-vm';
 import {STATES_KEYS} from '../../../plugins/utils/state-utils';
 import loFindIndex from 'lodash/findIndex';
+import {request} from '../../../plugins/utils/request-utils';
+import {confirm} from '../../../plugins/utils/modals';
+import {getFetchErrorInfo} from '../../../plugins/utils/errors-utils';
+import {notifier} from '../../../plugins/utils/notifiers-utils';
 
 const viewModel = ObjectOperationsBaseVM.extend({
+  define: {
+    isSelectButtonDisabled: {
+      get() {
+        return (
+          this.attr('isAttributesGenerating') ||
+          !this.attr('hasChangedSelection')
+        );
+      },
+    },
+    hasChangedSelection: {
+      get() {
+        return (
+          this.attr('selectedAfterLastSelection.length') > 0 ||
+          this.attr('deselectedAfterLastSelection.length') > 0
+        );
+      },
+    },
+  },
   showSearch: false,
   showFields: false,
   isMyAssessmentsView: false,
@@ -24,7 +46,8 @@ const viewModel = ObjectOperationsBaseVM.extend({
   mappingItems: [],
   statesCollectionKey: STATES_KEYS.BULK_COMPLETE,
   type: 'Assessment',
-
+  isAttributesGenerating: false,
+  attributes: [],
   /**
    * Contains selected objects (which have id and type properties)
    */
@@ -55,6 +78,42 @@ const viewModel = ObjectOperationsBaseVM.extend({
     });
 
     canBatch.stop();
+  },
+  onSelectClick() {
+    if (this.attr('hasChangedSelection')) {
+      confirm({
+        modal_title: 'Warning',
+        modal_description: 'Custom attributes list will be updated ' +
+          'accordingly. All already added answers will be lost.',
+        button_view:
+          `${GGRC.templates_path}/modals/confirm_cancel_buttons.stache`,
+        modal_confirm: 'Proceed',
+      }, () => this.generateAttributes());
+    } else {
+      this.generateAttributes();
+    }
+  },
+  async generateAttributes() {
+    this.attr('isAttributesGenerating', true);
+
+    try {
+      const attributesList = await this.loadGeneratedAttributes();
+      this.attr('attributes', attributesList);
+      this.attr('showResults', false);
+      this.attr('showFields', true);
+      this.attr('selectedAfterLastSelection', []);
+      this.attr('deselectedAfterLastSelection', []);
+    } catch (err) {
+      notifier('error', getFetchErrorInfo(err).details);
+    } finally {
+      this.attr('isAttributesGenerating', false);
+    }
+  },
+  loadGeneratedAttributes() {
+    return request('/api/bulk_operations/cavs/search', {
+      ids: this.attr('selected').serialize()
+        .map((selected) => selected.id),
+    });
   },
 });
 
