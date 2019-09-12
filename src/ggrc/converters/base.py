@@ -99,10 +99,11 @@ class ImportConverter(BaseConverter):
       "status",
   ]
 
-  def __init__(self, ie_job, dry_run=True, csv_data=None):
+  def __init__(self, ie_job, dry_run=True, csv_data=None, bulk_import=False):
     self.user = login.get_current_user()
     self.dry_run = dry_run
     self.csv_data = csv_data or []
+    self.bulk_import = bulk_import
     self.indexer = get_indexer()
     self.comment_created_notif_type = all_models.NotificationType.query. \
         filter_by(name="comment_created").one().id
