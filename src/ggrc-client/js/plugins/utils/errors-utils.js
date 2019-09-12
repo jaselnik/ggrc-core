@@ -42,29 +42,52 @@ function handleAjaxError(jqxhr, errorThrown = '') {
   }
 }
 
-function getAjaxErrorInfo(jqxhr, errorThrown = '') {
+
+function getAjaxErrorInfo(jqxhr, errorThrown) {
+  return getRequestErrorDetails({
+    status: jqxhr.status,
+    statusText: jqxhr.statusText,
+    responseText: jqxhr.responseText,
+    responseJson: jqxhr.responseJSON,
+  }, errorThrown);
+}
+
+function getFetchErrorInfo(errorInfo) {
+  return getRequestErrorDetails({
+    responseJson: errorInfo.json,
+    status: errorInfo.status,
+    statusText: errorInfo.statusText,
+  });
+}
+
+function getRequestErrorDetails({
+  status,
+  statusText,
+  responseJson,
+  responseText = null,
+}, errorThrown = '') {
   let name = '';
   let details = '';
 
-  if (jqxhr.status) {
-    name += jqxhr.status;
+  if (status) {
+    name += status;
   }
 
-  if (jqxhr.statusText) {
-    name += ` ${jqxhr.statusText}`;
+  if (statusText) {
+    name += ` ${statusText}`;
   }
 
-  let response = jqxhr.responseJSON;
+  let response = responseJson;
 
   if (!response) {
     try {
-      response = JSON.parse(jqxhr.responseText);
+      response = JSON.parse(responseText);
     } catch (e) {
       response = null;
     }
   }
 
-  details = (response && response.message) || jqxhr.responseText ||
+  details = (response && response.message) || responseText ||
     errorThrown.message || errorThrown;
 
   if (isConnectionLost()) {
@@ -84,4 +107,5 @@ export {
   isExpectedError,
   handleAjaxError,
   getAjaxErrorInfo,
+  getFetchErrorInfo,
 };
