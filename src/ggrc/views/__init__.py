@@ -24,7 +24,7 @@ from ggrc.fulltext import mixin
 from ggrc.integrations import integrations_errors, issues
 from ggrc.integrations.synchronization_jobs import one_time_back_sync
 from ggrc.integrations.external_app import constants
-from ggrc.models import background_task, reflection, revision
+from ggrc.models import background_task, reflection, revision, all_models
 from ggrc.models.hooks.issue_tracker import integration_utils
 from ggrc.notifications import common
 from ggrc.query import views as query_views
@@ -1183,6 +1183,26 @@ def update_issues():
   )
   db.session.commit()
   return bg_task.task_scheduled_response()
+
+
+@app.route(
+    "/_background_tasks/generate_evidence", methods=["POST"]
+)
+@background_task.queued_task
+def generate_evidence(task):
+  """Generate evidence File object linked to assessment"""
+  evidence = all_models.Evidence(**task.parameters["evidence_data"])
+  evidence.add_admin_role()
+  parent_id = task.parameters["evidence_data"]["parent_obj"]["id"]
+  rel_obj = all_models.Relationship(
+      source=all_models.Assessment.query.get(parent_id),
+      destination=evidence
+  )
+  signals.Restful.model_posted.send(rel_obj.__class__, obj=rel_obj)
+  db.session.add(rel_obj)
+  db.session.add(evidence)
+  db.session.commit()
+  return app.make_response(("success", 200, [("Content-Type", "text/html")]))
 
 
 def background_update_issues(parameters=None):
