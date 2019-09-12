@@ -10,6 +10,7 @@ import logger from './issue-tracker-log';
 import {getPageInstance} from '../current-page-utils';
 import Assessment from '../../../models/business-models/assessment';
 import QueryParser from '../../../generated/ggrc_filter_query_parser';
+import {request} from '../request-utils';
 
 /* eslint-disable no-console */
 
@@ -26,19 +27,7 @@ const relevantToAuditFilter = {
     ids: [audit.id],
   },
 };
-const request = async (url, body) => {
-  let params = {
-    method: 'POST',
-    body: JSON.stringify(body),
-    headers: {
-      'Content-type': 'application/json',
-    },
-    credentials: 'include',
-  };
 
-  let response = await fetch(url, params);
-  return response.json();
-};
 const getRelatedAssessmentsIds = async (filters = relevantToAuditFilter,
   limit) => {
   let query = {

@@ -49,18 +49,17 @@
 
         <div class="control-buttons">
           <div class="confirm-buttons">
-            <spinner-component toggle:from="is_saving" />
+            <spinner-component toggle:from="isAttributesGenerating" />
             <span class="confirm-buttons__objects-count">
               {{selected.length}}
               object(s) selected
             </span>
-            <button type="button" class="btn btn-small btn-darkBlue"
-              {{^if selected.length}}disabled="disabled"{{/if}}>
-              {{#if is_saving}}
-                Saving, please wait...
-              {{else}}
+            <button
+              type="button"
+              class="btn btn-small btn-darkBlue"
+              on:el:click="onSelectClick()"
+              {{#if isSelectButtonDisabled}}disabled="disabled"{{/if}}>
                 Select
-              {{/if}}
             </button>
           </div>
         </div>
