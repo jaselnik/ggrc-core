@@ -103,7 +103,7 @@ class ImportConverter(BaseConverter):
     self.user = login.get_current_user()
     self.dry_run = dry_run
     self.csv_data = csv_data or []
-    self.bulk_import = bulk_import
+    self._bulk_import = bulk_import
     self.indexer = get_indexer()
     self.comment_created_notif_type = all_models.NotificationType.query. \
         filter_by(name="comment_created").one().id
@@ -112,6 +112,9 @@ class ImportConverter(BaseConverter):
 
   def get_info(self):
     return self.response_data
+
+  def is_bulk_import(self):
+    return self._bulk_import
 
   def initialize_block_converters(self):
     """Initialize block converters."""
