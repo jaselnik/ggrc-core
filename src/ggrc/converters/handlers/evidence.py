@@ -211,8 +211,6 @@ class EvidenceFileHandler(EvidenceHandler, FileHandler,
         url=flask.url_for(generate_evidence.__name__),
         queued_callback=generate_evidence,
         parameters={
-            "cred": flask.session['credentials'],
-            "state": flask.session['state'],
             "evidence_data": dict(
                 title=link,
                 modified_by_id=user_id,

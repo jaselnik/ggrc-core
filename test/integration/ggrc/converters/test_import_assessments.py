@@ -12,6 +12,8 @@ import collections
 import ddt
 import freezegun
 
+from mock import mock
+
 from ggrc import db
 from ggrc import utils
 from ggrc.models import all_models
@@ -222,6 +224,37 @@ class TestAssessmentImport(TestCase):
     ]))
 
     self.assertEquals([], response[0]['row_warnings'])
+
+  @mock.patch('ggrc.gdrive.file_actions.process_gdrive_file')
+  def test_assessment_bulk_mode(self, process_gdrive_mock):
+    """Test import assessment evidence file in bulk_import mode"""
+
+    evidence_file = "test_gdrive_url?id=mock_id"
+    process_gdrive_mock.return_value = {
+        "id": "mock_id",
+        "webViewLink": "mock_link",
+        "name": "mock_name",
+    }
+
+    with factories.single_commit():
+      audit = factories.AuditFactory()
+      assessment = factories.AssessmentFactory()
+      assessment_slug = assessment.slug
+      factories.RelationshipFactory(source=audit, destination=assessment)
+
+    with mock.patch("ggrc.converters.base.ImportConverter.is_bulk_import",
+                    return_value=True):
+      response = self.import_data(OrderedDict([
+          ("object_type", "Assessment"),
+          ("Code*", assessment_slug),
+          ("Evidence File", evidence_file),
+      ]))
+    self.assertEqual(process_gdrive_mock.call_count, 1)
+    self._check_csv_response(response, {})
+    assessment = all_models.Assessment.query.filter_by(
+        slug=assessment_slug
+    ).first()
+    self.assertEqual(len(assessment.evidences_file), 1)
 
   def _test_assessment_users(self, asmt, users):
     """ Test that all users have correct roles on specified Assessment"""

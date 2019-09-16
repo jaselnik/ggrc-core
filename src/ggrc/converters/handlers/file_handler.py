@@ -43,7 +43,7 @@ class FileHandler(object):
     if file already mapped to parent we ignore it and not show warning
     """
 
-    if self.row_converter.block_converter.converter.bulk_import:
+    if self.row_converter.block_converter.converter.is_bulk_import():
       return self.build_files()
     if self.raw_value:
       parent = self.row_converter.obj
