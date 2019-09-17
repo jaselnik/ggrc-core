@@ -18,7 +18,39 @@ CAV = all_models.CustomAttributeValue
 
 
 def _get_bulk_cad_assessment_data(data):
-  """Returns CADs and joined assessment data"""
+  """Returns CADs and joined assessment data
+
+  :param data:
+    [{
+      "ids": list of int assessments ids
+    }]
+  :return:
+    [{
+      "attribute": {
+          "attribute_type": str,
+          "title": str,
+          "default_value": any,
+          "multi_choice_options": str,
+          "multi_choice_mandatory":  str,
+          "mandatory": bool,
+      },
+      "related_assessments": {
+          "count": int,
+          "values": [{
+              "assessments_type": str,
+              "assessments": [{
+                  "id": int,
+                  "attribute_definition_id": int
+          }]
+      },
+      "assessments_with_values": [{
+          "id": int,
+          "title": str,
+          "attribute_value": any,
+      }]
+    }]
+  """
+  # pylint: disable=too-many-locals
   all_cads = db.session.query(
       CAD,
       all_models.Assessment.id,
@@ -34,8 +66,10 @@ def _get_bulk_cad_assessment_data(data):
   )
   response_dict = {}
   for cad, asmt_id, asmt_title, asmt_type, cav_value in all_cads:
+    item_key = (cad.title, cad.attribute_type, cad.mandatory,
+                cad.multi_choice_options, cad.multi_choice_mandatory)
     item_response = response_dict.get(
-        (cad.title, cad.attribute_type, cad.mandatory),
+        item_key,
         {
             "attribute": {
                 "attribute_type": cad.attribute_type,
@@ -44,6 +78,7 @@ def _get_bulk_cad_assessment_data(data):
                 "multi_choice_options": cad.multi_choice_options,
                 "multi_choice_mandatory": cad.multi_choice_mandatory,
                 "mandatory": cad.mandatory,
+                "placeholder": None,
             },
             "related_assessments": {},
             "assessments_with_values": [],
@@ -62,19 +97,20 @@ def _get_bulk_cad_assessment_data(data):
           "id": asmt_id,
           "attribute_definition_id": cad.id,
       })
-    response_dict[
-        (cad.title, cad.attribute_type, cad.mandatory)
-    ] = item_response
+    response_dict[item_key] = item_response
   response = []
 
   for _, cad_item in response_dict.items():
     related_assessments = cad_item["related_assessments"]
-    cad_item["related_assessments"] = []
+    cad_item["related_assessments"] = {"values": []}
+    asmt_count = 0
     for asmt_type, assessments in related_assessments.items():
-      cad_item["related_assessments"].append({
+      cad_item["related_assessments"]["values"].append({
           "assessments_type": asmt_type,
           "assessments": assessments
       })
+      asmt_count += len(assessments)
+    cad_item["related_assessments"]["count"] = asmt_count
     response.append(cad_item)
   return response
 
