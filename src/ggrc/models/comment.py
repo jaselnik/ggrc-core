@@ -248,7 +248,6 @@ class Comment(Roleable, Relatable, Described, Notifiable,
 
   _aliases = {
       "custom_attribute_definition": "custom_attribute_definition",
-      "context_id": "context_id",
   }
 
   @builder.simple_property

@@ -10,7 +10,7 @@ import ddt
 from integration.ggrc import TestCase
 from integration.ggrc import api_helper
 from integration.ggrc.models import factories
-from ggrc.models import Assessment
+from ggrc.models import Assessment, Comment
 
 
 @ddt.ddt
@@ -88,10 +88,12 @@ class TestLCACommentsImport(TestCase):
         ("object_type", "LCA Comment"),
         ("description", "test description"),
         ("custom_attribute_definition", cad.id),
-        ("context_id", self.asmt.context_id),
     ]))
     self._check_csv_response(response, {})
     response = self.api.put(self.asmt, {
         "status": "Completed",
     })
     self.assertEqual(response.status_code, 200)
+    new_comment = Comment.query.first()
+    self.assertEqual(new_comment.description, "test description")
+    self.assertEqual(new_comment.custom_attribute_definition_id, cad.id)
