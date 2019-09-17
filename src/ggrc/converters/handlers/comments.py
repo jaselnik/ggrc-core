@@ -88,8 +88,7 @@ class LCACommentColumnHandler(ColumnHandler):
                       if person == current_user]
     current_obj.assignee_types = assignee_types
     mapping = all_models.Relationship(
-        source_id=cad_obj.definition_id,
-        source_type=cad_obj.definition_type,
+        source=definition,
         destination=current_obj
     )
     db.session.add(mapping)
