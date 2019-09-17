@@ -54,15 +54,18 @@ class TestBulkOperations(TestCase):
             "multi_choice_options": None,
             "multi_choice_mandatory": None,
             "mandatory": False,
+            "placeholder": None,
         },
-        "related_assessments": [{
-            "assessments_type": "Control",
-            "assessments": [{
-                "id": asmt.id,
-                "attribute_definition_id": cad_text.id,
-            }]
-        }],
-
+        "related_assessments": {
+            "count": 1,
+            "values": [{
+                "assessments_type": "Control",
+                "assessments": [{
+                    "id": asmt.id,
+                    "attribute_definition_id": cad_text.id,
+                }]
+            }],
+        },
         "assessments_with_values": []
     }]
     response = self.client.post(
@@ -99,8 +102,12 @@ class TestBulkOperations(TestCase):
             "multi_choice_options": None,
             "multi_choice_mandatory": None,
             "mandatory": False,
+            "placeholder": None,
         },
-        "related_assessments": [],
+        "related_assessments": {
+            "count": 0,
+            "values": [],
+        },
         "assessments_with_values": [{
             "id": asmt.id,
             "title": asmt.title,
@@ -137,14 +144,18 @@ class TestBulkOperations(TestCase):
             "multi_choice_options": "1,2,3",
             "multi_choice_mandatory": None,
             "mandatory": False,
+            "placeholder": None,
         },
-        "related_assessments": [{
-            "assessments_type": "Control",
-            "assessments": [{
-                "id": asmt.id,
-                "attribute_definition_id": cad_obj.id,
-            }]
-        }],
+        "related_assessments": {
+            "count": 1,
+            "values": [{
+                "assessments_type": "Control",
+                "assessments": [{
+                    "id": asmt.id,
+                    "attribute_definition_id": cad_obj.id,
+                }]
+            }],
+        },
         "assessments_with_values": []
     }]
     response = self.client.post(
@@ -183,8 +194,12 @@ class TestBulkOperations(TestCase):
             "multi_choice_options": "1,2,3",
             "multi_choice_mandatory": None,
             "mandatory": True,
+            "placeholder": None,
         },
-        "related_assessments": [],
+        "related_assessments": {
+            "count": 0,
+            "values": [],
+        },
         "assessments_with_values": [{
             "id": asmt.id,
             "title": asmt.title,
@@ -232,14 +247,18 @@ class TestBulkOperations(TestCase):
             "multi_choice_options": None,
             "multi_choice_mandatory": None,
             "mandatory": False,
+            "placeholder": None,
         },
-        "related_assessments": [{
-            "assessments_type": "Control",
-            "assessments": [{
-                "id": asmt2.id,
-                "attribute_definition_id": cad_obj2.id,
-            }]
-        }],
+        "related_assessments": {
+            "count": 1,
+            "values": [{
+                "assessments_type": "Control",
+                "assessments": [{
+                    "id": asmt2.id,
+                    "attribute_definition_id": cad_obj2.id,
+                }]
+            }],
+        },
         "assessments_with_values": [{
             "id": asmt1.id,
             "title": asmt1.title,
@@ -282,17 +301,77 @@ class TestBulkOperations(TestCase):
             "multi_choice_options": None,
             "multi_choice_mandatory": None,
             "mandatory": False,
+            "placeholder": None,
         },
-        "related_assessments": [{
-            "assessments_type": "Control",
-            "assessments": [{
-                "id": asmt1.id,
-                "attribute_definition_id": cad_obj1.id,
+        "related_assessments": {
+            "count": 2,
+            "values": [{
+                "assessments_type": "Control",
+                "assessments": [{
+                    "id": asmt1.id,
+                    "attribute_definition_id": cad_obj1.id,
+                }, {
+                    "id": asmt2.id,
+                    "attribute_definition_id": cad_obj2.id,
+                }]
+            }],
+        },
+        "assessments_with_values": [],
+    }]
+    response = self.client.post(
+        self.ENDPOINT_URL,
+        data=json.dumps(data),
+        headers=self.headers
+    )
+    self.assert200(response)
+    self.assertEqual(expected_response, response.json)
+
+  def test_diff_assessments_type(self):
+    """Test same CADs with diff assessment_types"""
+    with factories.single_commit():
+      asmt1 = factories.AssessmentFactory(assessment_type="Control")
+      cad_obj1 = factories.CustomAttributeDefinitionFactory(
+          title="text_LCA",
+          definition_type="assessment",
+          definition_id=asmt1.id,
+          attribute_type="Text",
+      )
+      asmt2 = factories.AssessmentFactory(assessment_type="Risk")
+      cad_obj2 = factories.CustomAttributeDefinitionFactory(
+          title="text_LCA",
+          definition_type="assessment",
+          definition_id=asmt2.id,
+          attribute_type="Text",
+      )
+    data = [{
+        "ids": [asmt1.id, asmt2.id]
+    }]
+    expected_response = [{
+        "attribute": {
+            "attribute_type": "Text",
+            "title": "text_LCA",
+            "default_value": "",
+            "multi_choice_options": None,
+            "multi_choice_mandatory": None,
+            "mandatory": False,
+            "placeholder": None,
+        },
+        "related_assessments": {
+            "count": 2,
+            "values": [{
+                "assessments_type": "Control",
+                "assessments": [{
+                    "id": asmt1.id,
+                    "attribute_definition_id": cad_obj1.id,
+                }],
             }, {
-                "id": asmt2.id,
-                "attribute_definition_id": cad_obj2.id,
-            }]
-        }],
+                "assessments_type": "Risk",
+                "assessments": [{
+                    "id": asmt2.id,
+                    "attribute_definition_id": cad_obj2.id,
+                }],
+            }],
+        },
         "assessments_with_values": [],
     }]
     response = self.client.post(
