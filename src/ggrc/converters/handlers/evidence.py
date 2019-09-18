@@ -4,7 +4,6 @@
 """Handlers evidence entries."""
 from logging import getLogger
 import urlparse
-import flask
 
 from ggrc import db
 from ggrc.models import all_models
@@ -196,10 +195,7 @@ class EvidenceFileHandler(EvidenceHandler, FileHandler,
         logger.warning("Invalid relationship state for document URLs.")
 
   def setup_evidence(self, link, user_id):
-    """Create background task for Evidence File generation"""
-
-    from ggrc.models import background_task
-    from ggrc.views import generate_evidence
+    """Generate Evidence File object"""
 
     parent = self.row_converter.obj
 
@@ -208,21 +204,18 @@ class EvidenceFileHandler(EvidenceHandler, FileHandler,
     if source_gdrive_id:
       source_gdrive_id = source_gdrive_id[0]
 
-    background_task.create_task(
-        name="generate_evidence",
-        url=flask.url_for(generate_evidence.__name__),
-        queued_callback=generate_evidence,
-        parameters={
-            "evidence_data": dict(
-                title=link,
-                modified_by_id=user_id,
-                context=parent.context,
-                kind=self.KIND,
-                source_gdrive_id=source_gdrive_id,
-                parent_obj={
-                    'id': parent.id,
-                    'type': parent.__class__.__name__
-                },
-            ),
-        }
+    evidence = all_models.Evidence(title=link,
+                                   modified_by_id=user_id,
+                                   context=parent.context,
+                                   kind=self.KIND,
+                                   source_gdrive_id=source_gdrive_id,
+                                   parent_obj={
+                                       'id': parent.id,
+                                       'type': parent.__class__.__name__
+                                   })
+    evidence.add_admin_role()
+    rel_obj = all_models.Relationship(
+        source=all_models.Assessment.query.get(parent.id),
+        destination=evidence
     )
+    signals.Restful.model_posted.send(rel_obj.__class__, obj=rel_obj)
