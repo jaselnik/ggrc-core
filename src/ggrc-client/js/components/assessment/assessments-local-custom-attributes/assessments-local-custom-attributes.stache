@@ -1,0 +1,37 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<div class="fields-wrapper flex-box assessments-lca">
+  {{#each fields}}
+    <div class="field-wrapper flex-size-1 {{getFieldClass(type)}}">
+      <form-validation-icon validation:from="validation" />
+      <div class="form-field__title">
+        <label class="field__title-text {{getFieldClass(type)}}" for="form-field-{{labelId}}">
+          {{title}}
+          {{#if validation.mandatory}}
+            <i class="fa fa-asterisk field__mandatory"></i>
+          {{/if}}
+        </label>
+      </div>
+
+      <custom-attributes-field
+        isLocalCa:from="true"
+        type:from="type"
+        value:bind="value"
+        fieldId:from="labelId"
+        placeholder:from="placeholder"
+        options:from="options"
+        class="form-field__content {{getFieldClass(type)}}" />
+      {{#if validation.hasMissingInfo}}
+        <div class="form-field__validation-hint-placeholder">
+            <button type="button"
+                    class="btn btn-small btn-link btn-link-nopadding">
+              Add required info
+            </button>
+        </div>
+      {{/if}}
+    </div>
+  {{/each}}
+</div>
