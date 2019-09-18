@@ -74,6 +74,7 @@
 
 <div class="modal-section">
   <collapsible-panel softMode:from="true" titleText:from="'Provide information below to finish bulk completion of assessments'" expanded:bind="showFields">
+    <assessments-local-custom-attributes fields:from="attributeFields" />
   </collapsible-panel>
 </div>
 

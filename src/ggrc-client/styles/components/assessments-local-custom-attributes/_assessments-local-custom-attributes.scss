@@ -1,0 +1,26 @@
+/*
+ * Copyright (C) 2019 Google Inc.
+ * Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+*/
+
+.assessments-lca {
+  margin: 15px 0 0;
+
+  .field-wrapper {
+    padding: 0 0 20px 20px;
+
+    .form-field__title {
+      box-sizing: border-box;
+      padding: 0 15px 0 0;
+    }
+  }
+
+  .field__title-text {
+    font-size: 13px;
+  }
+
+  form-validation-icon {
+    width: 15px;
+    height: 26px;
+  }
+}

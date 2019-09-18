@@ -6,6 +6,7 @@
 
 import '../../collapsible-panel/collapsible-panel';
 import '../../advanced-search/advanced-search-container/advanced-search-container';
+import '../../assessment/assessments-local-custom-attributes/assessments-local-custom-attributes';
 
 import canComponent from 'can-component';
 import canStache from 'can-stache';
@@ -18,6 +19,7 @@ import {request} from '../../../plugins/utils/request-utils';
 import {confirm} from '../../../plugins/utils/modals';
 import {getFetchErrorInfo} from '../../../plugins/utils/errors-utils';
 import {notifier} from '../../../plugins/utils/notifiers-utils';
+import {getCustomAttributeType} from '../../../plugins/utils/ca-utils';
 
 const viewModel = ObjectOperationsBaseVM.extend({
   define: {
@@ -47,7 +49,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
   statesCollectionKey: STATES_KEYS.BULK_COMPLETE,
   type: 'Assessment',
   isAttributesGenerating: false,
-  attributes: [],
+  attributeFields: [],
   /**
    * Contains selected objects (which have id and type properties)
    */
@@ -93,12 +95,32 @@ const viewModel = ObjectOperationsBaseVM.extend({
       this.generateAttributes();
     }
   },
+  convertToAttributeFields(attributes) {
+    return attributes.map(({attribute}, index) => ({
+      title: attribute.title,
+      type: getCustomAttributeType(attribute.attribute_type),
+      value: attribute.default_value,
+      labelId: index, // id is needed for input <-> label relation
+      placeholder: attribute.placeholder,
+      options: typeof attribute.multi_choice_options === 'string'
+        ? attribute.multi_choice_options.split(',')
+        : [],
+      validation: {
+        mandatory: attribute.mandatory,
+        valid: false,
+        requiresAttachment: false,
+        hasMissingInfo: attribute.mandatory,
+      },
+    }));
+  },
   async generateAttributes() {
     this.attr('isAttributesGenerating', true);
 
     try {
-      const attributesList = await this.loadGeneratedAttributes();
-      this.attr('attributes', attributesList);
+      const rawAttributesList = await this.loadGeneratedAttributes();
+      this.attr('attributeFields', this.convertToAttributeFields(
+        rawAttributesList
+      ));
       this.attr('showResults', false);
       this.attr('showFields', true);
       this.attr('selectedAfterLastSelection', []);
