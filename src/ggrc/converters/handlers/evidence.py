@@ -25,6 +25,9 @@ class EvidenceHandler(object):
   def _get_old_map(self):
     pass
 
+  def set_value(self):
+    """This should be ignored with second class attributes."""
+
   def _parse_item(self):
     """Parse evidence link lines.
 
@@ -93,9 +96,6 @@ class EvidenceUrlHandler(EvidenceHandler, handlers.ColumnHandler):
   def parse_item(self):
     return self._parse_item()
 
-  def set_value(self):
-    """This should be ignored with second class attributes."""
-
   def insert_object(self):
     """Update document URL values
 
@@ -155,8 +155,9 @@ class EvidenceFileHandler(EvidenceHandler, FileHandler,
     # pylint:disable=no-self-use,unused-argument
     return link
 
-  def build_files(self):  # pylint: disable=no-self-use
-    return self._parse_item()
+  def build_files(self):  # pylint: disable=inconsistent-return-statements
+    if self.row_converter.block_converter.converter.is_bulk_import():
+      return self._parse_item()
 
   def insert_object(self):
     """Update document URL values
@@ -164,7 +165,8 @@ class EvidenceFileHandler(EvidenceHandler, FileHandler,
     This function adds missing URLs and remove existing ones from Documents.
     The existing URLs with new titles just change the title.
     """
-    if self.row_converter.ignore:
+    if self.row_converter.ignore or not \
+       self.row_converter.block_converter.converter.is_bulk_import():
       return
     new_link_map = self.value
     old_link_map = self._get_old_map()
