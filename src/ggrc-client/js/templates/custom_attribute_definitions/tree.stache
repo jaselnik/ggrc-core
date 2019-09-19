@@ -46,7 +46,9 @@
               <tr>
                 <th>Attribute name</th>
                 <th>Attribute type</th>
-                <th>Mandatory</th>
+                {{^is(instance.model_singular, "Assessment")}}
+                  <th>Mandatory</th>
+                {{/is}}
                 {{^if instance.isChangeableExternally}}
                   <th>Edit</th>
                 {{/if}}
