@@ -3,7 +3,7 @@
     Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 }}
 
-<div class="fields-wrapper flex-box assessments-lca">
+<div class="fields-wrapper flex-box assessments-lca{{#if disabled}} disabled-block{{/if}}">
   {{#each fields}}
     <div class="field-wrapper flex-size-1 {{getFieldClass(type)}}">
       <form-validation-icon validation:from="validation" />
