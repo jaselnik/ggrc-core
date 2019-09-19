@@ -33,12 +33,14 @@
                             name:bind="instance.attribute_type">
         </dropdown-component>
     </div>
-    <div class="span2">
-      <label>
-        Mandatory
-      </label>
-      <input tabindex="3" type="checkbox" class="input-block-level" placeholder="Enter Placeholder" name="mandatory" {{#if mandatory}}checked="checked"{{/if}}>
-    </div>
+    {{^is(instance.definition_type, "assessment")}}
+      <div class="span2">
+        <label>
+          Mandatory
+        </label>
+        <input tabindex="3" type="checkbox" class="input-block-level" placeholder="Enter Placeholder" name="mandatory" {{#if mandatory}}checked="checked"{{/if}}>
+      </div>
+    {{/is}}
   </div>
   {{#switch attribute_type}}
   {{#case "Text"}}
