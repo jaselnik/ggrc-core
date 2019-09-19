@@ -20,6 +20,7 @@ import {confirm} from '../../../plugins/utils/modals';
 import {getFetchErrorInfo} from '../../../plugins/utils/errors-utils';
 import {notifier} from '../../../plugins/utils/notifiers-utils';
 import {getCustomAttributeType} from '../../../plugins/utils/ca-utils';
+import loSome from 'lodash/some';
 
 const viewModel = ObjectOperationsBaseVM.extend({
   define: {
@@ -82,7 +83,10 @@ const viewModel = ObjectOperationsBaseVM.extend({
     canBatch.stop();
   },
   onSelectClick() {
-    if (this.attr('hasChangedSelection')) {
+    const hasFilledAttributes = loSome(this.attr('attributeFields'),
+      (field) => field.attr('value') !== field.attr('defaultValue'));
+
+    if (hasFilledAttributes && this.attr('hasChangedSelection')) {
       confirm({
         modal_title: 'Warning',
         modal_description: 'Custom attributes list will be updated ' +
@@ -100,6 +104,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
       title: attribute.title,
       type: getCustomAttributeType(attribute.attribute_type),
       value: attribute.default_value,
+      defaultValue: attribute.default_value,
       labelId: index, // id is needed for input <-> label relation
       placeholder: attribute.placeholder,
       options: typeof attribute.multi_choice_options === 'string'

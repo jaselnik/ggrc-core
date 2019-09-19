@@ -23,6 +23,7 @@
         fieldId:from="labelId"
         placeholder:from="placeholder"
         options:from="options"
+        on:vm:valueChanged="updateFieldValue(scope.event.value, @index)"
         class="form-field__content {{getFieldClass(type)}}" />
       {{#if validation.hasMissingInfo}}
         <div class="form-field__validation-hint-placeholder">
