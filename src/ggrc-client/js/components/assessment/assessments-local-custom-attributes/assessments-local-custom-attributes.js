@@ -12,6 +12,7 @@ import template from './assessments-local-custom-attributes.stache';
 
 const viewModel = canMap.extend({
   fields: [],
+  disabled: false,
   getFieldClass(type) {
     return type === 'checkbox' ? 'custom-attribute-checkbox' : '';
   },
