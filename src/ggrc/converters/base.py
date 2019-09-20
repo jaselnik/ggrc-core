@@ -109,6 +109,8 @@ class ImportConverter(BaseConverter):
         filter_by(name="comment_created").one().id
     super(ImportConverter, self).__init__(ie_job)
     self.exportable.update(get_importables())
+    self.bulk_import = bulk_import
+    self.failed_slugs = []
 
   def get_info(self):
     return self.response_data
