@@ -234,7 +234,7 @@ def handle_import_request():
   """Import request handler"""
   dry_run, file_data = parse_import_request()
   csv_data = fa.get_gdrive_file(file_data)
-  return make_response(make_import(csv_data, dry_run))
+  return make_response(make_import(csv_data, dry_run)["data"])
 
 
 def make_response(data):
@@ -244,14 +244,17 @@ def make_response(data):
   return current_app.make_response((response_json, 200, headers))
 
 
-def make_import(csv_data, dry_run, ie_job=None):
+def make_import(csv_data, dry_run, ie_job=None, bulk_import=False):
   """Make import"""
   try:
     converter = base.ImportConverter(ie_job,
                                      dry_run=dry_run,
-                                     csv_data=csv_data)
+                                     csv_data=csv_data,
+                                     bulk_import=bulk_import)
     converter.import_csv_data()
-    return converter.get_info()
+    return {"data": converter.get_info(),
+            "failed_slugs": converter.failed_slugs}
+
   except models_exceptions.ImportStoppedException:
     raise
   except Exception as e:  # pylint: disable=broad-except
@@ -319,7 +322,7 @@ def run_import_phases(task):
     )
 
     if ie_job.status == "Analysis":
-      info = make_import(csv_data, True, ie_job)
+      info = make_import(csv_data, True, ie_job)["data"]
       db.session.rollback()
       db.session.refresh(ie_job)
       if ie_job.status == "Stopped":
@@ -344,7 +347,7 @@ def run_import_phases(task):
       db.session.commit()
 
     if ie_job.status == "In Progress":
-      info = make_import(csv_data, False, ie_job)
+      info = make_import(csv_data, False, ie_job)["data"]
       if ie_job.status == "Stopped":
         return utils.make_simple_response()
       ie_job.results = json.dumps(info)

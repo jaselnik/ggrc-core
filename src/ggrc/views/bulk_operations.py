@@ -8,10 +8,15 @@ import json
 from collections import OrderedDict
 import flask
 from werkzeug import exceptions
-from ggrc.models import all_models
+
+from ggrc.views import converters
+from ggrc.bulk_operations import csvbuilder
+from ggrc.login import login_required
+from ggrc.models import all_models, background_task
 
 from ggrc import db
 from ggrc import login
+from ggrc import gdrive
 from ggrc.app import app
 
 CAD = all_models.CustomAttributeDefinition
@@ -143,3 +148,69 @@ def bulk_cavs_search():
     return exceptions.BadRequest()
   response = _get_bulk_cad_assessment_data(data)
   return flask.Response(json.dumps(response), mimetype='application/json')
+
+
+def _detect_files(data):
+  """Checks if we need to attach files"""
+  for attr in data:
+    if attr["extra"].get("files"):
+      return True
+  return False
+
+
+def _send_notification(update_errors, complete_errors):
+  """Send bulk complete job finished."""
+  del update_errors
+  del complete_errors
+
+
+@app.route("/bulk_operations/_complete", methods=["POST"])
+@background_task.queued_task
+def bulk_complete(task):
+  """Process bulk complete"""
+  credentials = task.parameters.get("credentials")
+  if credentials:
+    flask.session['credentials'] = credentials
+
+  builder = csvbuilder.CsvBuilder(task.parameters.get("data", {}))
+  update_data = builder.attributes_update_to_csv()
+  update_attrs = converters.make_import(csv_data=update_data,
+                                        dry_run=False,
+                                        bulk_import=True)
+  upd_errors = set(update_attrs["failed_slugs"])
+  complete_data = builder.assessments_complete_to_csv(upd_errors)
+  if complete_data:
+    complete_assmts = converters.make_import(csv_data=complete_data,
+                                             dry_run=False,
+                                             bulk_import=True)
+  complete_errors = set(complete_assmts["failed_slugs"])
+  _send_notification(upd_errors, complete_errors)
+
+
+@app.route('/bulk_operations/complete', methods=['POST'])
+@login_required
+def run_bulk_complete():
+  """Call bulk complete job"""
+  data = flask.request.json
+  parameters = {"data": data}
+
+  if _detect_files(data):
+    try:
+      gdrive.get_http_auth()
+    except gdrive.GdriveUnauthorized:
+      response = app.make_response(("auth", 401,
+                                    [("Content-Type", "text/html")]))
+      return response
+    parameters["credentials"] = flask.session['credentials']
+
+  bg_task = background_task.create_task(
+      name="bulk_complete",
+      url=flask.url_for(bulk_complete.__name__),
+      queued_callback=lambda _: None,
+      parameters=parameters
+  )
+  db.session.commit()
+  return bg_task.make_response(
+      app.make_response(("scheduled %s" % bg_task.name, 200,
+                         [('Content-Type', 'text/html')]))
+  )
