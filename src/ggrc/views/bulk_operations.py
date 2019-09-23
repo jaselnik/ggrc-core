@@ -21,9 +21,9 @@ def _get_bulk_cad_assessment_data(data):
   """Returns CADs and joined assessment data
 
   :param data:
-    [{
+    {
       "ids": list of int assessments ids
-    }]
+    }
   :return:
     [{
       "attribute": {
@@ -57,11 +57,12 @@ def _get_bulk_cad_assessment_data(data):
       all_models.Assessment.title,
       all_models.Assessment.assessment_type,
       CAV.attribute_value,
+  ).join(
+      all_models.Assessment, CAD.definition_id == all_models.Assessment.id
   ).outerjoin(
       CAV, CAD.id == CAV.custom_attribute_id,
   ).filter(
-      CAD.definition_id == all_models.Assessment.id,
-      all_models.Assessment.id.in_(data[0]["ids"]),
+      all_models.Assessment.id.in_(data["ids"]),
       CAD.definition_type == 'assessment',
   )
   response_dict = {}
@@ -128,7 +129,7 @@ def bulk_cavs_search():
   """
 
   data = flask.request.json
-  if not data or not data[0].get("ids"):
+  if not data or not data.get("ids"):
     return exceptions.BadRequest()
   response = _get_bulk_cad_assessment_data(data)
   return flask.Response(json.dumps(response), mimetype='application/json')

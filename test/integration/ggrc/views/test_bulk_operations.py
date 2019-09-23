@@ -21,7 +21,7 @@ class TestBulkOperations(TestCase):
     """Test for the CADs missing query POST data"""
     response = self.client.post(
         self.ENDPOINT_URL,
-        data="[{}]",
+        data="{}",
         headers=self.headers
     )
     self.assert400(response)
@@ -43,9 +43,9 @@ class TestBulkOperations(TestCase):
           definition_id=asmt2.id,
           attribute_type="Text",
       )
-    data = [{
+    data = {
         "ids": [asmt.id]
-    }]
+    }
     expected_response = [{
         "attribute": {
             "attribute_type": "Text",
@@ -91,9 +91,9 @@ class TestBulkOperations(TestCase):
           attributable=asmt,
           attribute_value="test_value",
       )
-    data = [{
+    data = {
         "ids": [asmt.id]
-    }]
+    }
     expected_response = [{
         "attribute": {
             "attribute_type": "Text",
@@ -133,9 +133,9 @@ class TestBulkOperations(TestCase):
           attribute_type="Dropdown",
           multi_choice_options="1,2,3",
       )
-    data = [{
+    data = {
         "ids": [asmt.id]
-    }]
+    }
     expected_response = [{
         "attribute": {
             "attribute_type": "Dropdown",
@@ -183,9 +183,9 @@ class TestBulkOperations(TestCase):
           attributable=asmt,
           attribute_value="1,2",
       )
-    data = [{
+    data = {
         "ids": [asmt.id]
-    }]
+    }
     expected_response = [{
         "attribute": {
             "attribute_type": "Multiselect",
@@ -236,9 +236,9 @@ class TestBulkOperations(TestCase):
           definition_id=asmt2.id,
           attribute_type="Text",
       )
-    data = [{
+    data = {
         "ids": [asmt1.id, asmt2.id]
-    }]
+    }
     expected_response = [{
         "attribute": {
             "attribute_type": "Text",
@@ -290,9 +290,9 @@ class TestBulkOperations(TestCase):
           definition_id=asmt2.id,
           attribute_type="Text",
       )
-    data = [{
+    data = {
         "ids": [asmt1.id, asmt2.id]
-    }]
+    }
     expected_response = [{
         "attribute": {
             "attribute_type": "Text",
@@ -343,9 +343,9 @@ class TestBulkOperations(TestCase):
           definition_id=asmt2.id,
           attribute_type="Text",
       )
-    data = [{
+    data = {
         "ids": [asmt1.id, asmt2.id]
-    }]
+    }
     expected_response = [{
         "attribute": {
             "attribute_type": "Text",
