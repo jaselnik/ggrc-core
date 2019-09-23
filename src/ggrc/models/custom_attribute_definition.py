@@ -95,6 +95,16 @@ class CustomAttributeDefinitionBase(attributevalidator.AttributeValidator,
   def get_indexed_value(self, value):
     return self.value_mapping.get(value, value)
 
+  @property
+  def import_export_title(self):
+    """Get display name for import-export file"""
+    display_name = self.title
+    if self.definition_id and self.definition_type == "assessment":
+      display_name += " ({0}/{1})".format(
+          self.definition.title, self.definition.slug
+      )
+    return display_name
+
   @validates("attribute_type")
   def validate_attribute_type(self, _, value):
     """Check that provided attribute_type is allowed."""

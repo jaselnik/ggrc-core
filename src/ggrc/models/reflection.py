@@ -448,20 +448,22 @@ class AttributeInfo(object):
         )
       elif attr.attribute_type == attr.ValidTypes.CHECKBOX:
         description += u"Allowed values are:\nTRUE\nFALSE"
+      attr_display_name = attr.import_export_title
       if attr.definition_id:
         ca_type = cls.Type.OBJECT_CUSTOM
         attr_name = u"{}{}".format(
-            cls.OBJECT_CUSTOM_ATTR_PREFIX, attr.title).lower()
+            cls.OBJECT_CUSTOM_ATTR_PREFIX, attr_display_name).lower()
       else:
         ca_type = cls.Type.CUSTOM
-        attr_name = u"{}{}".format(cls.CUSTOM_ATTR_PREFIX, attr.title).lower()
+        attr_name = u"{}{}".format(
+            cls.CUSTOM_ATTR_PREFIX, attr_display_name).lower()
 
       definition_ids = definitions.get(attr_name, {}).get("definition_ids", [])
       definition_ids.append(attr.id)
-      if fields is None or attr.title.lower() in fields:
+      if fields is None or attr_display_name.lower() in fields:
         definitions[attr_name] = {
-            "display_name": attr.title,
-            "attr_name": attr.title,
+            "display_name": attr_display_name,
+            "attr_name": attr_display_name,
             "mandatory": attr.mandatory,
             "unique": False,
             "description": description,

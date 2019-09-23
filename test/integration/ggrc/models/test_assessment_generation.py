@@ -232,6 +232,85 @@ class TestAssessmentGeneration(TestAssessmentBase):
     self.assert_assignees("Assignees", response, assignee)
     self.assert_assignees("Creators", response, "user@example.com")
 
+  def test_export_generated_assessments_with_cads(self):
+    """Test if exported generated assessments have valid cads names"""
+    with factories.single_commit():
+      template = factories.AssessmentTemplateFactory()
+      factories.CustomAttributeDefinitionFactory(
+          definition_type="assessment_template",
+          definition_id=template.id,
+          title="test text field",
+          attribute_type="Text",
+          multi_choice_options="",
+      )
+
+    response = self.assessment_post(template)
+    asmt_id = response.json['assessment']['id']
+    asmt = all_models.Assessment.query.get(asmt_id)
+    cad = all_models.CustomAttributeDefinition.query.filter_by(
+        definition_type="assessment", definition_id=asmt_id
+    ).first()
+    cav = factories.CustomAttributeValueFactory(
+        custom_attribute=cad,
+        attributable=asmt,
+        attribute_value="value_1",
+    )
+    db.session.add(cav)
+    db.session.commit()
+    search_request = [{
+        "object_name": "Assessment",
+        "filters": {
+            "expression": {}
+        },
+        "fields": "all",
+    }]
+    self.client.get("/login")
+    parsed_data = self.export_parsed_csv(
+        search_request
+    )["Assessment"]
+    asmt = all_models.Assessment.query.get(asmt_id)
+    cad_display_name = "test text field ({0}/{1})".format(
+        asmt.title, asmt.slug
+    )
+    self.assertTrue(cad_display_name in parsed_data[0])
+    self.assertEqual(parsed_data[0][cad_display_name], "value_1")
+
+  def test_import_generated_assessments_with_cads(self):
+    """Test change generated asmt cad value via import"""
+    with factories.single_commit():
+      template = factories.AssessmentTemplateFactory()
+      factories.CustomAttributeDefinitionFactory(
+          definition_type="assessment_template",
+          definition_id=template.id,
+          title="test text field",
+          attribute_type="Text",
+          multi_choice_options="",
+      )
+      audit = factories.AuditFactory()
+
+    response = self.assessment_post(template)
+    asmt_id = response.json['assessment']['id']
+    asmt = all_models.Assessment.query.get(asmt_id)
+    asmt.audit = audit
+    db.session.add(asmt)
+    db.session.commit()
+    cad = all_models.CustomAttributeDefinition.query.filter_by(
+        definition_type="assessment", definition_id=asmt_id).first()
+    cad_display_name = "test text field ({0}/{1})".format(
+        asmt.title, asmt.slug
+    )
+    response = self.import_data(collections.OrderedDict([
+        ("object_type", "Assessment"),
+        ("Code*", asmt.slug),
+        ("audit", asmt.audit.slug),
+        (cad_display_name, "value_1")
+    ]))
+    self._check_csv_response(response, {})
+    cav = all_models.CustomAttributeValue.query.filter_by(
+        custom_attribute=cad
+    ).first()
+    self.assertEqual(cav.attribute_value, "value_1")
+
   @ddt.data(
       ("Principal Assignees", None, ),
       ("Principal Assignees", "Principal Assignees", ),

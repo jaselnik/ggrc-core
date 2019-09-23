@@ -3,6 +3,7 @@
 
 """Module containing custom attributable mixin."""
 
+import re
 import collections
 from logging import getLogger
 
@@ -511,11 +512,23 @@ class CustomAttributable(CustomAttributableBase):
           sa.or_(cad.definition_id.in_(attributable_ids),
                  cad.definition_id.is_(None)))
     if field_names is not None:
-      filters.append(sa.or_(cad.title.in_(field_names), cad.mandatory))
+      cleaned_field_names = cls._clean_cad_fields(field_names)
+      filters.append(sa.or_(cad.title.in_(cleaned_field_names), cad.mandatory))
 
     return cad.query.filter(*filters).options(
         orm.undefer_group('CustomAttributeDefinition_complete')
     )
+
+  @classmethod
+  def _clean_cad_fields(cls, field_names):
+    """Clean cad dislay_names out of brackets for assessment object_type"""
+    if cls.__name__ != "Assessment":
+      return field_names
+    cleaned_field_names = []
+    reg = r'\([\s\S]*\)'
+    for field in field_names:
+      cleaned_field_names.append(re.sub(reg, '', field).strip())
+    return cleaned_field_names
 
   @classmethod
   def eager_query(cls, **kwargs):

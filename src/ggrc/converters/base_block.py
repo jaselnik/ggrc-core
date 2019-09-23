@@ -155,7 +155,10 @@ class BlockConverter(object):
         field_names=field_names or None,
     )
 
-    return {(cad.definition_id, cad.title): cad for cad in ca_definitions}
+    return {
+        (cad.definition_id, cad.import_export_title): cad
+        for cad in ca_definitions
+    }
 
   def _get_relationships(self):
     """Get all relationships for any of the object in the current block."""
