@@ -103,6 +103,27 @@ class TestEvidence(TestCase):
                      'Expected options are `URL`, `FILE`"',
                      resp.data)
 
+  def test_change_evidence_put(self):
+    """Test change evidence notes via put request"""
+    with factories.single_commit():
+      audit = factories.AuditFactory()
+      assessment = factories.AssessmentFactory(audit=audit)
+      evidence = factories.EvidenceFactory(
+          title='Test title',
+          kind=all_models.Evidence.URL,
+          description='',
+          source_gdrive_id='gdrive_file_id',
+          parent_obj={
+              'id': assessment.id,
+              'type': 'Assessment'
+          }
+      )
+      evidence_id = evidence.id
+    resp = self.api.put(evidence, {"notes": "test_notes"})
+    self.assert200(resp)
+    evidence = all_models.Evidence.query.get(evidence_id)
+    self.assertEqual(evidence.notes, "test_notes")
+
   @mock.patch('ggrc.gdrive.file_actions.process_gdrive_file',
               dummy_gdrive_response)
   def test_get_parent_obj_audit_type(self):

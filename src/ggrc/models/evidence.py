@@ -59,6 +59,8 @@ class Evidence(Roleable, Relatable, mixins.Titled,
   description = deferred(db.Column(db.Text, nullable=False, default=u""),
                          "Evidence")
 
+  notes = deferred(db.Column(db.Text, nullable=True, default=u""), "Notes")
+
   # Override from Commentable mixin (can be removed after GGRC-5192)
   send_by_default = db.Column(db.Boolean, nullable=False, default=True)
 
@@ -72,6 +74,7 @@ class Evidence(Roleable, Relatable, mixins.Titled,
       reflection.Attribute("parent_obj", read=False, update=False),
       reflection.Attribute('archived', create=False, update=False),
       reflection.Attribute('is_uploaded', read=False, update=False),
+      "notes",
   )
 
   _fulltext_attrs = [
