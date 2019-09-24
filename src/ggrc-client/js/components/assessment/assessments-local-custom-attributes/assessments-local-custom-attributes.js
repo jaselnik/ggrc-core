@@ -1,6 +1,6 @@
 /*
-    Copyright (C) 2019 Google Inc.
-    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+  Copyright (C) 2019 Google Inc.
+  Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 */
 import '../../form/form-validation-icon';
 import '../../custom-attributes/custom-attributes-field';
@@ -16,8 +16,13 @@ const viewModel = canMap.extend({
   getFieldClass(type) {
     return type === 'checkbox' ? 'custom-attribute-checkbox' : '';
   },
-  updateFieldValue(value, fieldIndex) {
-    this.attr('fields')[fieldIndex].attr('value', value);
+  fieldValueChanged(value, fieldIndex) {
+    const field = this.attr('fields')[fieldIndex];
+    this.dispatch({
+      type: 'fieldValueChanged',
+      field,
+      value,
+    });
   },
 });
 
