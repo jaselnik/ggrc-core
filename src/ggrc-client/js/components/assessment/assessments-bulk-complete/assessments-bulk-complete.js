@@ -19,8 +19,12 @@ import {request} from '../../../plugins/utils/request-utils';
 import {confirm} from '../../../plugins/utils/modals';
 import {getFetchErrorInfo} from '../../../plugins/utils/errors-utils';
 import {notifier} from '../../../plugins/utils/notifiers-utils';
-import {getCustomAttributeType} from '../../../plugins/utils/ca-utils';
+import {
+  getCustomAttributeType,
+  ddValidationValueToMap,
+} from '../../../plugins/utils/ca-utils';
 import loSome from 'lodash/some';
+import {getPlainText} from '../../../plugins/ggrc_utils';
 
 const viewModel = ObjectOperationsBaseVM.extend({
   define: {
@@ -84,10 +88,10 @@ const viewModel = ObjectOperationsBaseVM.extend({
     canBatch.stop();
   },
   onSelectClick() {
-    const hasFilledAttributes = loSome(this.attr('attributeFields'),
+    const hasUpdatedAttributes = loSome(this.attr('attributeFields'),
       (field) => field.attr('value') !== field.attr('defaultValue'));
 
-    if (hasFilledAttributes && this.attr('hasChangedSelection')) {
+    if (hasUpdatedAttributes && this.attr('hasChangedSelection')) {
       confirm({
         modal_title: 'Warning',
         modal_description: 'Custom attributes list will be updated ' +
@@ -100,35 +104,49 @@ const viewModel = ObjectOperationsBaseVM.extend({
       this.generateAttributes();
     }
   },
-  convertToAttributeFields(attributes) {
-    return attributes.map(({attribute}, index) => ({
+  convertToAttributeField(attribute, labelId) {
+    const attributeType = getCustomAttributeType(attribute.attribute_type);
+    const optionsList = typeof attribute.multi_choice_options === 'string'
+      ? attribute.multi_choice_options.split(',')
+      : [];
+    const optionsStates = typeof attribute.multi_choice_mandatory === 'string'
+      ? attribute.multi_choice_mandatory.split(',')
+      : [];
+    const optionsConfig = optionsStates.reduce((config, state, index) => {
+      const optionValue = optionsList[index];
+      return config.set(optionValue, Number(state));
+    }, new Map());
+
+    return {
+      labelId, // id is needed for input <-> label relation
+      attachments: null,
       title: attribute.title,
-      type: getCustomAttributeType(attribute.attribute_type),
+      type: attributeType,
       value: attribute.default_value,
       defaultValue: attribute.default_value,
-      labelId: index, // id is needed for input <-> label relation
       placeholder: attribute.placeholder,
-      options: typeof attribute.multi_choice_options === 'string'
-        ? attribute.multi_choice_options.split(',')
-        : [],
+      options: {
+        values: optionsList,
+        config: optionsConfig,
+      },
       validation: {
         mandatory: attribute.mandatory,
-        valid: false,
+        valid: !attribute.mandatory,
         requiresAttachment: false,
-        hasMissingInfo: attribute.mandatory,
+        hasMissingInfo: false,
       },
-    }));
+    };
   },
   async generateAttributes() {
     this.attr('isAttributesGenerating', true);
 
     try {
       const rawAttributesList = await this.loadGeneratedAttributes();
-      this.attr('attributeFields', this.convertToAttributeFields(
-        rawAttributesList
-      ));
+      const attributeFields = rawAttributesList.map(({attribute}, index) =>
+        this.convertToAttributeField(attribute, index));
 
       this.attr('isAttributesGenerated', true);
+      this.attr('attributeFields', attributeFields);
       this.attr('showResults', false);
       this.attr('showFields', true);
       this.attr('selectedAfterLastSelection', []);
@@ -144,6 +162,74 @@ const viewModel = ObjectOperationsBaseVM.extend({
       ids: this.attr('selected').serialize()
         .map((selected) => selected.id),
     });
+  },
+  updateAttributeField({field, value}) {
+    field.attr('value', value);
+    this.validateField(field);
+  },
+  validateDropdown(field) {
+    const fieldValue = field.attr('value');
+    const optionBitmask = field.attr('options.config').get(fieldValue);
+    const {
+      comment,
+      attachment,
+      url,
+    } = ddValidationValueToMap(optionBitmask);
+    const requiresAttachment = comment || attachment || url;
+
+    canBatch.start();
+
+    const validation = field.attr('validation');
+    validation.attr('requiresAttachment', requiresAttachment);
+
+    if (requiresAttachment) {
+      field.attr('attachments', {
+        comment: null,
+        files: [],
+        urls: [],
+      });
+      validation.attr({
+        valid: false,
+        hasMissingInfo: true,
+      });
+    } else {
+      field.attr('attachments', null);
+      validation.attr({
+        valid: validation.attr('mandatory')
+          ? fieldValue !== ''
+          : true,
+        hasMissingInfo: false,
+      });
+    }
+
+    canBatch.stop();
+  },
+  performDefaultValidation(field) {
+    const validation = field.attr('validation');
+
+    if (!validation.attr('mandatory')) {
+      return;
+    }
+
+    const value = field.attr('type') === 'text'
+      ? getPlainText(field.attr('value')).trim()
+      : field.attr('value');
+
+    // explicitly check empty values in order to see which real cases exist
+    const isEmptyValue = (
+      value === '' || // for Text, Rich Text, Multiselect cases
+      value === null || // for Person, Date cases
+      value === false // for Checkbox case
+    );
+
+    validation.attr('valid', !isEmptyValue);
+  },
+  validateField(field) {
+    if (field.attr('type') === 'dropdown') {
+      this.validateDropdown(field);
+    } else {
+      this.performDefaultValidation(field);
+    }
   },
 });
 
