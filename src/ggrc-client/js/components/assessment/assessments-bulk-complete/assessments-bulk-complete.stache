@@ -76,7 +76,8 @@
   <collapsible-panel softMode:from="true" titleText:from="'Provide information below to finish bulk completion of assessments'" expanded:bind="showFields">
     <assessments-local-custom-attributes
       fields:from="attributeFields"
-      disabled:from="hasChangedSelection" />
+      disabled:from="hasChangedSelection"
+      on:vm:fieldValueChanged="updateAttributeField(scope.event)" />
   </collapsible-panel>
 </div>
 
