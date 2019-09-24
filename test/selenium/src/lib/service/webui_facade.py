@@ -323,8 +323,8 @@ def edit_gca(selenium, old_ca_type, new_ca_type):
     dict with actual edited CA and expected CA.
   """
   new_ca = rest_facade.create_gcad(definition_type=objects.get_singular(
-      random.choice(objects.EDITABLE_CA_OBJS)), attribute_type=old_ca_type,
-      mandatory=True)
+      random.choice(objects.OBJS_SUPPORTING_MANDATORY_CA)),
+      attribute_type=old_ca_type, mandatory=True)
   expected_ca = entities_factory.CustomAttributeDefinitionsFactory().create(
       attribute_type=new_ca_type, definition_type=new_ca.definition_type,
       helptext=element.Common.TITLE_EDITED_PART, mandatory=False)
