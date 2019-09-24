@@ -100,9 +100,18 @@ class CustomAttributeDefinitionBase(attributevalidator.AttributeValidator,
     """Get display name for import-export file"""
     display_name = self.title
     if self.definition_id and self.definition_type == "assessment":
-      display_name += " ({0}/{1})".format(
-          self.definition.title, self.definition.slug
-      )
+      from ggrc.models import AssessmentTemplate
+
+      cad_template = CustomAttributeDefinition.query.filter_by(
+          definition_type="assessment_template",
+          title=self.title,
+          attribute_type=self.attribute_type,
+          mandatory=self.mandatory,
+          multi_choice_options=self.multi_choice_options,
+          multi_choice_mandatory=self.multi_choice_mandatory,
+      ).one()
+      template = AssessmentTemplate.query.get(cad_template.definition_id)
+      display_name += " ({0}/{1})".format(template.title, template.slug)
     return display_name
 
   @validates("attribute_type")
