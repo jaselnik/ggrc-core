@@ -99,19 +99,33 @@ class CustomAttributeDefinitionBase(attributevalidator.AttributeValidator,
   def import_export_title(self):
     """Get display name for import-export file"""
     display_name = self.title
-    if self.definition_id and self.definition_type == "assessment":
+    if self.definition_id:
       from ggrc.models import AssessmentTemplate
 
-      cad_template = CustomAttributeDefinition.query.filter_by(
-          definition_type="assessment_template",
-          title=self.title,
-          attribute_type=self.attribute_type,
-          mandatory=self.mandatory,
-          multi_choice_options=self.multi_choice_options,
-          multi_choice_mandatory=self.multi_choice_mandatory,
-      ).one()
-      template = AssessmentTemplate.query.get(cad_template.definition_id)
-      display_name += " ({0}/{1})".format(template.title, template.slug)
+      cad = CustomAttributeDefinition
+      if self.definition_type == "assessment":
+        res = db.session.query(
+            cad,
+            AssessmentTemplate.title,
+            AssessmentTemplate.slug,
+        ).outerjoin(
+            AssessmentTemplate,
+            cad.definition_id == AssessmentTemplate.id,
+        ).filter(
+            cad.definition_type == "assessment_template",
+            cad.title == display_name,
+            cad.attribute_type == self.attribute_type,
+            cad.mandatory == self.mandatory,
+            cad.multi_choice_options == self.multi_choice_options,
+            cad.multi_choice_mandatory == self.multi_choice_mandatory,
+        ).first()
+
+        if res and res.title and res.slug:
+          display_name += u" ({0}/{1})".format(res.title, res.slug)
+      elif self.definition_type == "assessment_template":
+        template = AssessmentTemplate.query.get(self.definition_id)
+        if template:
+          display_name += u" ({0}/{1})".format(template.title, template.slug)
     return display_name
 
   @validates("attribute_type")

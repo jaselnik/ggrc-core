@@ -230,8 +230,34 @@ class CustomAttributeColumnHandler(handlers.TextColumnHandler):
 
   def get_ca_definition(self):
     """Get custom attribute definition."""
-    cache = self.row_converter.block_converter.ca_definitions_cache
-    return cache.get((None, self.display_name))
+    cache = self.row_converter.block_converter.row_ca_definition_data(
+        field_names=[self.display_name],
+        object_ids=self._get_object_ids()
+    )
+    cad = cache.get((None, self.display_name))
+    return cad
+
+  def _get_object_ids(self):
+    """Get attributable object_ids for the current cad"""
+    if self.row_converter.obj.id:
+      object_ids = [self.row_converter.obj.id]
+    else:
+      template = self._get_assessment_template()
+      object_ids = [template.id] if template else []
+    return object_ids
+
+  def _get_assessment_template(self):
+    """Collect assessment template from row_converter"""
+    template_handler = self.row_converter.objects.get("assessment_template")
+    if template_handler is None:
+      return None
+
+    templates = template_handler.parse_item()
+    if not templates:
+      return None
+
+    template = templates[0]
+    return template
 
 
 class ObjectCaColumnHandler(CustomAttributeColumnHandler):
@@ -252,7 +278,10 @@ class ObjectCaColumnHandler(CustomAttributeColumnHandler):
 
   def get_ca_definition(self):
     """Get custom attribute definition for a specific object."""
-    cache = self.row_converter.block_converter.ca_definitions_cache
+    cache = self.row_converter.block_converter.row_ca_definition_data(
+        field_names=[self.display_name],
+        object_ids=self._get_object_ids()
+    )
     if self.row_converter.obj.id is None:
       if self.row_converter.object_class == models.all_models.Assessment:
         template = self._get_assessment_template()
@@ -261,16 +290,3 @@ class ObjectCaColumnHandler(CustomAttributeColumnHandler):
 
       return None
     return cache.get((self.row_converter.obj.id, self.display_name))
-
-  def _get_assessment_template(self):
-    """Collect assessment template from row_converter"""
-    template_handler = self.row_converter.objects.get("assessment_template")
-    if template_handler is None:
-      return None
-
-    templates = template_handler.parse_item()
-    if not templates:
-      return None
-
-    template = templates[0]
-    return template

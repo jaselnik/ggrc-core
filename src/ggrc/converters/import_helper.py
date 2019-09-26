@@ -55,6 +55,7 @@ def get_object_column_definitions(object_class, fields=None,
       include_hidden=include_hidden,
       for_template=for_template,
       ca_cache=ca_cache,
+      for_import_export=True,
   )
 
   column_handlers = model_column_handlers(object_class)

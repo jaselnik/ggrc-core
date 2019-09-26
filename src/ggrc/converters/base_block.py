@@ -120,7 +120,11 @@ class BlockConverter(object):
         self._ca_definitions_cache = self._create_ca_definitions_cache()
     return self._ca_definitions_cache
 
-  def _create_ca_definitions_cache(self, field_names=None):
+  def row_ca_definition_data(self, *args, **kwargs):
+    """Get custom attribute definitions data used in specified row or block"""
+    return self._create_ca_definitions_cache(*args, **kwargs)
+
+  def _create_ca_definitions_cache(self, field_names=None, object_ids=None):
     """Create cache for custom attribute definitions used in this block."""
     if not issubclass(self.object_class, (mixins.CustomAttributable,
                                           mixins.ExternalCustomAttributable)):
@@ -144,14 +148,16 @@ class BlockConverter(object):
     def _get_ca_name(field):
       """Helper function to get custom attribute name from header."""
       return self.headers[field]["attr_name"]
-
     if not field_names and self.headers:
       field_names = map(_get_ca_name, filter(_is_ca, self.headers.keys()))
     elif field_names:
       field_names = map(_strip_ca_prefix, filter(_is_ca, field_names))
 
+    object_ids = object_ids or self.object_ids
+    if hasattr(self.object_class, 'clean_cad_fields'):
+      field_names = self.object_class.clean_cad_fields(field_names)
     ca_definitions = self.object_class.get_custom_attribute_definitions(
-        attributable_ids=self.object_ids or None,
+        attributable_ids=object_ids or None,
         field_names=field_names or None,
     )
 

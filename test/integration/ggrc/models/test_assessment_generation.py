@@ -241,7 +241,6 @@ class TestAssessmentGeneration(TestAssessmentBase):
           definition_id=template1.id,
           title="test lca field",
           attribute_type="Text",
-          multi_choice_options="",
       )
       template2 = factories.AssessmentTemplateFactory()
       factories.CustomAttributeDefinitionFactory(
@@ -258,57 +257,36 @@ class TestAssessmentGeneration(TestAssessmentBase):
         template2.title, template2.slug
     )
 
+    def _generate_asmt_with_lca(template, lca_value):
+      """Generate assessment with LCA and set LCA value"""
+      response = self.assessment_post(template)
+      asmt_id = response.json['assessment']['id']
+      asmt = all_models.Assessment.query.get(asmt_id)
+      cad = all_models.CustomAttributeDefinition.query.filter_by(
+          definition_type="assessment", definition_id=asmt_id
+      ).first()
+      cav = factories.CustomAttributeValueFactory(
+          custom_attribute=cad,
+          attributable=asmt,
+          attribute_value=lca_value,
+      )
+      db.session.add(cav)
+
     # generate 1st assessment with 1st template
-    response = self.assessment_post(template1)
-    asmt_id = response.json['assessment']['id']
-    asmt = all_models.Assessment.query.get(asmt_id)
-    cad = all_models.CustomAttributeDefinition.query.filter_by(
-        definition_type="assessment", definition_id=asmt_id
-    ).first()
-    cav = factories.CustomAttributeValueFactory(
-        custom_attribute=cad,
-        attributable=asmt,
-        attribute_value="value_1",
-    )
-    db.session.add(cav)
-
+    _generate_asmt_with_lca(template1, "value_1")
     # generate 2nd assessment with 1st template
-    response = self.assessment_post(template1)
-    asmt_id = response.json['assessment']['id']
-    asmt = all_models.Assessment.query.get(asmt_id)
-    cad = all_models.CustomAttributeDefinition.query.filter_by(
-        definition_type="assessment", definition_id=asmt_id
-    ).first()
-    cav = factories.CustomAttributeValueFactory(
-        custom_attribute=cad,
-        attributable=asmt,
-        attribute_value="value_2",
-    )
-    db.session.add(cav)
-
+    _generate_asmt_with_lca(template1, "value_2")
     # generate 1st assessment with 2nd template
-    response = self.assessment_post(template2)
-    asmt_id = response.json['assessment']['id']
-    asmt = all_models.Assessment.query.get(asmt_id)
-    cad = all_models.CustomAttributeDefinition.query.filter_by(
-        definition_type="assessment", definition_id=asmt_id
-    ).first()
-    cav = factories.CustomAttributeValueFactory(
-        custom_attribute=cad,
-        attributable=asmt,
-        attribute_value="value_3",
-    )
-    db.session.add(cav)
+    _generate_asmt_with_lca(template2, "value_3")
 
     db.session.commit()
 
-    search_request = [{
-        "object_name": "Assessment",
-        "filters": {
-            "expression": {}
-        },
-        "fields": "all",
-    }]
+    search_request = [
+        {"object_name": "Assessment",
+         "filters": {
+             "expression": {}
+         },
+         "fields": "all"}]
     self.client.get("/login")
     parsed_data = self.export_parsed_csv(
         search_request
@@ -332,16 +310,16 @@ class TestAssessmentGeneration(TestAssessmentBase):
           definition_id=template.id,
           title="test text field",
           attribute_type="Text",
-          multi_choice_options="",
       )
       audit = factories.AuditFactory()
+      audit_id = audit.id
 
     response = self.assessment_post(template)
     asmt_id = response.json['assessment']['id']
-    asmt = all_models.Assessment.query.get(asmt_id)
-    asmt.audit = audit
-    db.session.add(asmt)
-    db.session.commit()
+    with factories.single_commit():
+      asmt = all_models.Assessment.query.get(asmt_id)
+      audit = all_models.Audit.query.get(audit_id)
+      factories.RelationshipFactory(source=audit, destination=asmt)
     cad = all_models.CustomAttributeDefinition.query.filter_by(
         definition_type="assessment", definition_id=asmt_id).first()
 
@@ -359,6 +337,56 @@ class TestAssessmentGeneration(TestAssessmentBase):
         custom_attribute=cad
     ).first()
     self.assertEqual(cav.attribute_value, "value_1")
+
+  def test_import_gca_lca_brackets_title(self):
+    """Test import asmt with GCA and LCA title with brackets"""
+    with factories.single_commit():
+      template = factories.AssessmentTemplateFactory()
+      factories.CustomAttributeDefinitionFactory(
+          definition_type="assessment_template",
+          definition_id=template.id,
+          title="test cad (asmt)",
+          attribute_type="Text",
+      )
+      factories.CustomAttributeDefinitionFactory(
+          title="test gca (1)",
+          definition_type="assessment",
+          attribute_type="Text",
+      )
+      audit = factories.AuditFactory()
+    response = self.assessment_post(template)
+    asmt_id = response.json['assessment']['id']
+    asmt = all_models.Assessment.query.get(asmt_id)
+    asmt.audit = audit
+    db.session.add(asmt)
+    db.session.commit()
+    lca = all_models.CustomAttributeDefinition.query.filter_by(
+        definition_type="assessment", definition_id=asmt_id).first()
+    gca = all_models.CustomAttributeDefinition.query.filter_by(
+        definition_type="assessment", title="test gca (1)").first()
+
+    display_name1 = "test cad (asmt) ({}/{})".format(
+        template.title, template.slug
+    )
+    display_name2 = "test gca (1)"
+
+    response = self.import_data(collections.OrderedDict([
+        ("object_type", "Assessment"),
+        ("Code*", asmt.slug),
+        ("audit", asmt.audit.slug),
+        (display_name1, "value_1"),
+        (display_name2, "value_2"),
+    ]))
+    self._check_csv_response(response, {})
+
+    cav1 = all_models.CustomAttributeValue.query.filter_by(
+        custom_attribute=lca
+    ).first()
+    cav2 = all_models.CustomAttributeValue.query.filter_by(
+        custom_attribute=gca
+    ).first()
+    self.assertEqual(cav1.attribute_value, "value_1")
+    self.assertEqual(cav2.attribute_value, "value_2")
 
   @ddt.data(
       ("Principal Assignees", None, ),

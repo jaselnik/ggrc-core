@@ -512,22 +512,22 @@ class CustomAttributable(CustomAttributableBase):
           sa.or_(cad.definition_id.in_(attributable_ids),
                  cad.definition_id.is_(None)))
     if field_names is not None:
-      cleaned_field_names = cls._clean_cad_fields(field_names)
-      filters.append(sa.or_(cad.title.in_(cleaned_field_names), cad.mandatory))
+      filters.append(sa.or_(cad.title.in_(field_names), cad.mandatory))
 
     return cad.query.filter(*filters).options(
         orm.undefer_group('CustomAttributeDefinition_complete')
     )
 
   @classmethod
-  def _clean_cad_fields(cls, field_names):
-    """Clean cad dislay_names out of brackets for assessment object_type"""
-    if cls.__name__ != "Assessment":
+  def clean_cad_fields(cls, field_names):
+    """Clean cad display_names out of brackets for assessment object_type"""
+    if cls.__name__ != "Assessment" or not field_names:
       return field_names
     cleaned_field_names = []
-    reg = r'\([\s\S]*\)'
+    reg = r"(.+) \(.+\/.+\)"
     for field in field_names:
-      cleaned_field_names.append(re.sub(reg, '', field).strip())
+      matches = re.findall(reg, field)
+      cleaned_field_names.append(matches[0] if matches else field)
     return cleaned_field_names
 
   @classmethod

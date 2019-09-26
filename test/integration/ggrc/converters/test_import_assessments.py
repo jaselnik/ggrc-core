@@ -56,6 +56,12 @@ class TestAssessmentImport(TestCase):
           definition_type='assessment_template',
           definition_id=assessment_template.id,
       )
+    display_name1 = "test_attr1 ({0}/{1})".format(
+        assessment_template.title, assessment_template_slug
+    )
+    display_name2 = "test_attr2 ({0}/{1})".format(
+        assessment_template.title, assessment_template_slug
+    )
 
     self.import_data(collections.OrderedDict([
         ("object_type", "Assessment"),
@@ -65,8 +71,8 @@ class TestAssessmentImport(TestCase):
         ("Assignees", "user@example.com"),
         ("Creators", "user@example.com"),
         ("Title", "Assessment 1"),
-        ("test_attr1", "abc"),
-        ("test_attr2", "7/15/2015"),
+        (display_name1, "abc"),
+        (display_name2, "7/15/2015"),
     ]))
 
     assessment = all_models.Assessment.query.filter(

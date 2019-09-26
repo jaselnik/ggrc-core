@@ -407,9 +407,9 @@ class AttributeInfo(object):
     ))
     return definitions
 
-  @classmethod
-  def get_custom_attr_definitions(cls, object_class,
-                                  ca_cache=None, fields=None):
+  @classmethod  # noqa: C901
+  def get_custom_attr_definitions(cls, object_class, ca_cache=None,
+                                  fields=None, for_import_export=False):
     """Get column definitions for custom attributes on object_class.
 
     Args:
@@ -421,10 +421,13 @@ class AttributeInfo(object):
       fields (iterable): Iterable containing names of custom attribute
         definitions to get. If None, all definitions for passed object class
         will be returned. Defaults to None.
+      for_import_export (bool): Flag which specifies if we should prepare cads
+        for the import export functionality.
 
     Returns:
       A dict of custom attribute definitions.
     """
+    # pylint: disable=too-many-locals,too-many-branches
     from ggrc.models import mixins
 
     definitions = {}
@@ -433,10 +436,14 @@ class AttributeInfo(object):
       return definitions
 
     object_name = underscore_from_camelcase(object_class.__name__)
+    if hasattr(object_class, 'clean_cad_fields') and \
+       for_import_export and fields:
+      fields = set().union(fields, object_class.clean_cad_fields(fields))
     if isinstance(ca_cache, dict) and object_name:
       custom_attributes = ca_cache.get(object_name, [])
     else:
-      custom_attributes = object_class.get_custom_attribute_definitions(fields)
+      custom_attributes = object_class.get_custom_attribute_definitions(
+          fields)
     for attr in custom_attributes:
       description = attr.helptext or u""
       if (attr.attribute_type == attr.ValidTypes.DROPDOWN and
@@ -448,22 +455,27 @@ class AttributeInfo(object):
         )
       elif attr.attribute_type == attr.ValidTypes.CHECKBOX:
         description += u"Allowed values are:\nTRUE\nFALSE"
-      attr_display_name = attr.import_export_title
       if attr.definition_id:
         ca_type = cls.Type.OBJECT_CUSTOM
         attr_name = u"{}{}".format(
-            cls.OBJECT_CUSTOM_ATTR_PREFIX, attr_display_name).lower()
+            cls.OBJECT_CUSTOM_ATTR_PREFIX, attr.title).lower()
       else:
         ca_type = cls.Type.CUSTOM
         attr_name = u"{}{}".format(
-            cls.CUSTOM_ATTR_PREFIX, attr_display_name).lower()
+            cls.CUSTOM_ATTR_PREFIX, attr.title).lower()
 
       definition_ids = definitions.get(attr_name, {}).get("definition_ids", [])
       definition_ids.append(attr.id)
-      if fields is None or attr_display_name.lower() in fields:
+      if fields is None or attr.title.lower() in fields:
+        if not for_import_export or not attr.definition_id:
+          display_name = attr.title
+        else:
+          display_name = attr.import_export_title
+          attr_name = u"{}{}".format(
+              cls.OBJECT_CUSTOM_ATTR_PREFIX, display_name).lower()
         definitions[attr_name] = {
-            "display_name": attr_display_name,
-            "attr_name": attr_display_name,
+            "display_name": display_name,
+            "attr_name": display_name,
             "mandatory": attr.mandatory,
             "unique": False,
             "description": description,
@@ -485,7 +497,7 @@ class AttributeInfo(object):
   @classmethod
   def get_object_attr_definitions(cls, object_class, ca_cache=None,
                                   ca_fields=None, include_hidden=False,
-                                  for_template=False):
+                                  for_template=False, for_import_export=False):
     """Get all column definitions for object_class.
 
     This function joins custom attribute definitions, mapping definitions and
@@ -506,6 +518,8 @@ class AttributeInfo(object):
       for_template (bool): Flag which specifies if we should exclude column
         handlers for attributes that marked as 'ship_in_template'
         in _aliases dict.
+      for_import_export (bool): Flag which specifies if we should prepare cads
+        for the import export functionality.
 
     Returns:
       A dict of attribute definitions.
@@ -554,7 +568,8 @@ class AttributeInfo(object):
     definitions.update(cls.get_acl_definitions(object_class))
     if object_class.__name__ not in EXCLUDE_CUSTOM_ATTRIBUTES:
       definitions.update(cls.get_custom_attr_definitions(
-          object_class, ca_cache=ca_cache, fields=ca_fields
+          object_class, ca_cache=ca_cache, fields=ca_fields,
+          for_import_export=for_import_export
       ))
 
     if object_class.__name__ not in EXCLUDE_MAPPINGS:
