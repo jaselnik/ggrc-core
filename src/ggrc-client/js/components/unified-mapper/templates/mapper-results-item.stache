@@ -4,7 +4,8 @@
 }}
 <div class="flex-box list-object-item
      {{#isDisabled}} is-disabled{{/isDisabled}}
-     {{#showDetails}} expanded{{/showDetails}}">
+     {{#showDetails}} expanded{{/showDetails}}
+     {{viewClass}}">
   <div class="item-wrapper" on:el:click="toggleDetails()">
     {{^isSnapshot}}
       <mapper-results-item-status itemData:from="itemData">
@@ -32,10 +33,10 @@
     </button>
   </div>
   {{/drawRelatedAssessments}}
-  {{#searchOnly}}
+  {{#showOpenButton}}
     {{#if displayItem.viewLink}}
       {{^if displayItem.snapshot}}
-        <div class="flex-box-single">
+        <div class="flex-box-single item-wrapper__button-container">
           <a href="{{displayItem.viewLink}}" target="_blank"
             class="btn btn-mini btn-outline">
             Open
@@ -43,7 +44,7 @@
         </div>
       {{/if}}
     {{/if}}
-  {{/searchOnly}}
+  {{/showOpenButton}}
   {{^searchOnly}}
     <object-selection-item isDisabled:from="isDisabled"
                            isSelected:from="markedSelected"
