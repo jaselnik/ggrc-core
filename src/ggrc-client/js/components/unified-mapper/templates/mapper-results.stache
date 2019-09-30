@@ -53,6 +53,7 @@
                              selectedColumns:from="columns.selected"
                              serviceColumns:from="columns.service"
                              drawRelatedAssessments:from="relatedAssessments.show"
+                             itemDetailsViewType:from="itemDetailsViewType"
                              on:vm:itemDataDestroyed="onItemDestroyed(%event)"
                              on:showRelatedAssessments="showRelatedAssessments(scope.event)">
         </mapper-results-item>

@@ -15,12 +15,30 @@ import Snapshot from '../../models/service-models/snapshot';
 import * as businessModels from '../../models/business-models';
 
 const viewModel = canMap.extend({
+  define: {
+    showOpenButton: {
+      get() {
+        return this.attr('searchOnly') || this.attr('isBulkUpdateView');
+      },
+    },
+    isBulkUpdateView: {
+      get() {
+        return this.attr('itemDetailsViewType') === 'bulk-update';
+      },
+    },
+    viewClass: {
+      get() {
+        return this.attr('isBulkUpdateView') ? 'bulk-update-view' : '';
+      },
+    },
+  },
   itemData: {},
   searchOnly: false,
   drawRelatedAssessments: false,
   selectedColumns: [],
   serviceColumns: [],
   showDetails: false,
+  itemDetailsViewType: '',
   title() {
     let displayItem = this.displayItem();
     return displayItem.title ||
