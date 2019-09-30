@@ -6,7 +6,7 @@
 <div class="fields-wrapper flex-box flex-row">
   {{#each fields}}
     <div class="field-wrapper flex-size-1 custom-attribute-{{type}} {{#isInvalidField validation.show validation.valid highlightInvalidFields}}invalid-field{{/isInvalidField}}">
-      <form-validation-icon validation:from="validation" value:from="value"></form-validation-icon>
+      <form-validation-icon validation:from="validation" />
       <div class="field__title form-field__title">
         <label class="field__title-text custom-attribute-{{type}}" for="form-field-{{id}}">
           {{title}}

@@ -31,12 +31,12 @@ export default canComponent.extend({
       iconCls: {
         get: function () {
           let icon = icons.empty;
-          let value = this.attr('value');
 
           if (this.attr('validation.mandatory')) {
-            icon = value ? icons.valid : icons.invalid;
-          }
-          if (this.attr('validation.requiresAttachment')) {
+            icon = this.attr('validation.valid')
+              ? icons.valid
+              : icons.invalid;
+          } else if (this.attr('validation.requiresAttachment')) {
             /* This validation is required for DropDowns with required attachments */
 
             icon = (

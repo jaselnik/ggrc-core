@@ -45,9 +45,17 @@ export default canComponent.extend({
         get: function () {
           let caValues =
             this.attr('selectedAssessment.data.custom_attribute_values');
-          return caValues ? convertValuesToFormFields(caValues) : [];
+          const convertedValues = convertValuesToFormFields(caValues);
+          this.applyValidation(convertedValues);
+
+          return convertedValues;
         },
       },
+    },
+    applyValidation(fields) {
+      fields.forEach((field) => {
+        field.attr('validation.valid', !!field.attr('value'));
+      });
     },
   }),
 });
