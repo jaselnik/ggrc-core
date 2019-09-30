@@ -159,6 +159,20 @@ mapper-results {
       opacity: 0.6;
 
     }
+
+    &.bulk-update-view {
+      .item-wrapper__button-container {
+        width: 76px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      object-selection-item {
+        width: 16px;
+        margin-left: 10px;
+      }
+    }
+    
     reusable-objects-item {
       padding: 0;
       justify-content: flex-end;
