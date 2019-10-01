@@ -73,8 +73,8 @@
   </collapsible-panel>
 </div>
 
-<div class="modal-section {{^if isAttributesGenerated}}disabled-block{{/if}}">
-  <collapsible-panel softMode:from="true" titleText:from="'Provide information below to finish bulk completion of assessments'" expanded:bind="showFields">
+<div class="modal-section">
+  <collapsible-panel class="{{^if isAttributesGenerated}}disabled-block{{/if}}" softMode:from="true" titleText:from="'Provide information below to finish bulk completion of assessments'" expanded:bind="showFields">
     <assessments-local-custom-attributes
       fields:from="attributeFields"
       disabled:from="hasChangedSelection"
@@ -88,3 +88,19 @@
   </collapsible-panel>
 </div>
 
+<div class="modal-section modal-footer">
+  <div class="confirm-buttons">
+    {{#if isCompleting}}
+      <spinner-component toggle:from="isCompleting" />
+      <span class="confirm-buttons__objects-count">
+        Completion is underway
+      </span>
+    {{/if}}
+    <button type="button" class="btn btn-small btn-white" on:el:click="closeModal()">
+      Cancel
+    </button>
+    <button type="button" class="btn btn-small btn-green" on:el:click="onCompleteClick()" {{#if isCompleteButtonDisabled}}disabled{{/if}}>
+      Complete
+    </button>
+  </div>
+</div>
