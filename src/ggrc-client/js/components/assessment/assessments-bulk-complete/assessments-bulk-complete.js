@@ -18,8 +18,14 @@ import ObjectOperationsBaseVM from '../../view-models/object-operations-base-vm'
 import {STATES_KEYS} from '../../../plugins/utils/state-utils';
 import loFindIndex from 'lodash/findIndex';
 import {request} from '../../../plugins/utils/request-utils';
+import {backendGdriveClient} from '../../../plugins/ggrc-gapi-client';
+import {ggrcPost} from '../../../plugins/ajax_extensions';
+import {trackStatus} from '../../../plugins/utils/background-task-utils';
 import {confirm} from '../../../plugins/utils/modals';
-import {getFetchErrorInfo} from '../../../plugins/utils/errors-utils';
+import {
+  getFetchErrorInfo,
+  isConnectionLost,
+} from '../../../plugins/utils/errors-utils';
 import {notifier} from '../../../plugins/utils/notifiers-utils';
 import {
   getCustomAttributeType,
@@ -33,6 +39,20 @@ import {
   create,
   setDefaultStatusConfig,
 } from '../../../plugins/utils/advanced-search-utils';
+import {convertToCaValue} from '../../../plugins/utils/ca-utils';
+
+/**
+ * Map of types from FE to BE format
+ */
+const attributesType = {
+  input: 'Text',
+  text: 'Rich Text',
+  person: 'Map:Person',
+  date: 'Date',
+  checkbox: 'Checkbox',
+  multiselect: 'Multiselect',
+  dropdown: 'Dropdown',
+};
 
 const viewModel = ObjectOperationsBaseVM.extend({
   define: {
@@ -53,7 +73,18 @@ const viewModel = ObjectOperationsBaseVM.extend({
         );
       },
     },
+    isCompleteButtonDisabled: {
+      get() {
+        const hasInvalidFields = loSome(this.attr('attributeFields'),
+          (field) => !field.attr('validation.valid'));
+        return this.attr('selected.length') === 0 ||
+          this.attr('hasChangedSelection') ||
+          this.attr('isCompleting') ||
+          hasInvalidFields;
+      },
+    },
   },
+  element: null,
   showSearch: false,
   showFields: false,
   isMyAssessmentsView: false,
@@ -77,6 +108,8 @@ const viewModel = ObjectOperationsBaseVM.extend({
       files: [],
     },
   },
+  timeoutId: null,
+  isCompleting: false,
   /**
    * Contains selected objects (which have id and type properties)
    */
@@ -194,9 +227,11 @@ const viewModel = ObjectOperationsBaseVM.extend({
   },
   loadGeneratedAttributes() {
     return request('/api/bulk_operations/cavs/search', {
-      ids: this.attr('selected').serialize()
-        .map((selected) => selected.id),
+      ids: this.getSelectedAssessmentsIds(),
     });
+  },
+  getSelectedAssessmentsIds() {
+    return this.attr('selected').serialize().map((selected) => selected.id);
   },
   updateAttributeField({field, value}) {
     field.attr('value', value);
@@ -356,10 +391,127 @@ const viewModel = ObjectOperationsBaseVM.extend({
   init() {
     this.initDefaultFilter();
   },
+  buildBulkCompleteRequest() {
+    const attributes = this.attr('attributeFields')
+      .serialize()
+      .map((field) => {
+        const bulkUpdate = field.relatedAssessments.values
+          .flatMap(({assessments}) => assessments.map((assessment) => ({
+            assessment_id: assessment.id,
+            slug: assessment.slug,
+            attribute_definition_id: assessment.attribute_definition_id,
+          })));
+
+        const {attachments} = field;
+        let extra = null;
+
+        if (attachments) {
+          extra = {
+            urls: attachments.urls.map(({url}) => url),
+            files: attachments.files.map(({id, title}) => ({
+              title,
+              source_gdrive_id: id,
+            })),
+            comment: attachments.commentValue
+              ? {
+                description: attachments.commentValue,
+                modified_by: {
+                  type: 'Person',
+                  id: GGRC.current_user.id,
+                },
+              }
+              : null,
+          };
+        }
+
+        return {
+          extra,
+          attribute_type: attributesType[field.type],
+          attribute_title: field.title,
+          attribute_value: convertToCaValue(
+            field.type,
+            field.value,
+            field.defaultValue),
+          bulk_update: bulkUpdate,
+        };
+      });
+
+    return {
+      attributes,
+      assessments_ids: this.getSelectedAssessmentsIds(),
+    };
+  },
+  trackBackgroundTask(taskId) {
+    notifier('progress', 'Your bulk update is submitted. ' +
+        'Once it is done you will get a notification. ' +
+        'You can continue working with the app.');
+    const url = `/api/background_tasks/${taskId}`;
+    const timeoutId = trackStatus(
+      url,
+      () => this.onSuccessHandler(),
+      () => this.onFailureHandler());
+    this.attr('timeoutId', timeoutId);
+  },
+  completeAssessments() {
+    this.attr('isCompleting', true);
+    backendGdriveClient.withAuth(
+      () => ggrcPost(
+        '/api/bulk_operations/complete',
+        this.buildBulkCompleteRequest()),
+      {responseJSON: {message: 'Unable to Authorize'}})
+      .then(({id}) => {
+        this.closeModal();
+        this.trackBackgroundTask(id);
+      })
+      .fail((error) => {
+        if (isConnectionLost()) {
+          notifier('error', 'Internet connection was lost.');
+        } else if (error && error.responseJSON && error.responseJSON.message) {
+          notifier('error', error.responseJSON.message);
+        } else {
+          notifier('error', 'Bulk update is failed. ' +
+          'Please refresh the page and start bulk update again.');
+        }
+      })
+      .always(() => {
+        this.attr('isCompleting', false);
+      });
+  },
+  onCompleteClick() {
+    const hasChangedAnswers = loSome(this.attr('attributeFields'),
+      (field) => loSome(field.attr('relatedAnswers'),
+        (answer) => field.attr('value') !== answer.attr('attribute_value'))
+    );
+
+    if (hasChangedAnswers) {
+      confirm({
+        modal_title: 'Warning',
+        modal_description: 'You\'ve added new answers for custom attributes ' +
+         'that will replace existing answers.',
+        button_view:
+          `${GGRC.templates_path}/modals/confirm_cancel_buttons.stache`,
+        modal_confirm: 'Proceed',
+      }, () => this.completeAssessments());
+    } else {
+      this.completeAssessments();
+    }
+  },
+  onSuccessHandler() {
+    const reloadLink = window.location.href;
+    notifier('success', 'Bulk update is finished successfully. {reload_link}',
+      {reloadLink});
+  },
+  onFailureHandler() {
+    notifier('error', 'Bulk update is failed.');
+  },
+  closeModal() {
+    this.attr('element').find('.modal-dismiss').trigger('click');
+  },
 });
 
 const events = {
   inserted() {
+    this.viewModel.attr('element', this.element);
     this.viewModel.onSubmit();
   },
   // catch selection of objects by inner components

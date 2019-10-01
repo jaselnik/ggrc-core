@@ -229,20 +229,15 @@ function isUrlRequired(field) {
  * Converts value from UI controls back to CA value.
  * @param {String} type - Custom attribute type
  * @param {Object} value - Control value
+ * @param {Object} defaultValue - Control default value
  * @return {Object} Converted value
  */
-function convertToCaValue(type, value) {
+function convertToCaValue(type, value, defaultValue) {
   if (type === 'checkbox') {
     return value ? '1' : '0';
   }
 
-  if (type === 'person') {
-    if (value) {
-      return 'Person:' + value;
-    }
-    return 'Person:None';
-  }
-  return value || null;
+  return value || defaultValue;
 }
 
 /**
@@ -358,8 +353,11 @@ function setCustomAttributeValue(ca, value) {
     ca.attr('attribute_value', 'Person');
     ca.attr('attribute_object', attributeObject);
   } else {
-    let convertedValue = convertToCaValue(ca.attr('attributeType'), value);
-    ca.attr('attribute_value', convertedValue || ca.def.default_value);
+    let convertedValue = convertToCaValue(
+      ca.attr('attributeType'),
+      value,
+      ca.def.default_value);
+    ca.attr('attribute_value', convertedValue);
   }
 }
 
