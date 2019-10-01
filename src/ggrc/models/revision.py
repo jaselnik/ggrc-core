@@ -31,6 +31,7 @@ class Revision(before_flush_handleable.BeforeFlushHandleable,
                mixins.Base,
                db.Model):
   """Revision object holds a JSON snapshot of the object at a time."""
+  # pylint: disable=too-many-public-methods
 
   __tablename__ = 'revisions'
 
@@ -642,6 +643,17 @@ class Revision(before_flush_handleable.BeforeFlushHandleable,
       automapping_json = flask.g.automappings_cache[automapping_id]
     return {"automapping": automapping_json}
 
+  def populate_type(self):
+    """Add object_types field to content were need it
+    Early created revisions didn't have type field
+    in content data, but we should either add it here from
+    resource_type field.
+    """
+
+    if "type" not in self._content:
+      return {"type": self.resource_type}
+    return {}
+
   @builder.simple_property
   def content(self):
     """Property. Contains the revision content dict.
@@ -662,6 +674,7 @@ class Revision(before_flush_handleable.BeforeFlushHandleable,
     populated_content.update(self.populate_cavs())
     populated_content.update(self.populate_readonly())
     populated_content.update(self.populate_automappings())
+    populated_content.update(self.populate_type())
 
     self.populate_requirements(populated_content)
     self.populate_options(populated_content)
