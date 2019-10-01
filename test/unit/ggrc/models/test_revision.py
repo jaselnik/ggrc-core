@@ -235,6 +235,15 @@ class TestCheckPopulatedContent(unittest.TestCase):
     revision = all_models.Revision(obj, mock.Mock(), mock.Mock(), content)
     self.assertEqual(revision.populate_review_status(), expected_content)
 
+  def test_populate_type(self):
+    """Test populated content with type missing in _content field"""
+    obj = mock.Mock()
+    obj.id = self.object_id
+    obj.__class__.__name__ = "Program"
+
+    revision = all_models.Revision(obj, mock.Mock(), mock.Mock(), {})
+    self.assertEqual(revision.populate_type(), {"type": "Program"})
+
   @ddt.data(
       [
           {"review_status": "a"},
