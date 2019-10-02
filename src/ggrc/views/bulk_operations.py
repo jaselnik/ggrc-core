@@ -40,7 +40,8 @@ def _get_bulk_cad_assessment_data(data):
               "assessments_type": str,
               "assessments": [{
                   "id": int,
-                  "attribute_definition_id": int
+                  "attribute_definition_id": int,
+                  "slug": str,
           }]
       },
       "assessments_with_values": [{
@@ -56,6 +57,7 @@ def _get_bulk_cad_assessment_data(data):
       all_models.Assessment.id,
       all_models.Assessment.title,
       all_models.Assessment.assessment_type,
+      all_models.Assessment.slug,
       CAV.attribute_value,
   ).join(
       all_models.Assessment, CAD.definition_id == all_models.Assessment.id
@@ -66,7 +68,7 @@ def _get_bulk_cad_assessment_data(data):
       CAD.definition_type == 'assessment',
   )
   response_dict = {}
-  for cad, asmt_id, asmt_title, asmt_type, cav_value in all_cads:
+  for cad, asmt_id, asmt_title, asmt_type, asmt_slug, cav_value in all_cads:
     item_key = (cad.title, cad.attribute_type, cad.mandatory,
                 cad.multi_choice_options, cad.multi_choice_mandatory)
     item_response = response_dict.get(
@@ -97,6 +99,7 @@ def _get_bulk_cad_assessment_data(data):
       item_response["related_assessments"][asmt_type].append({
           "id": asmt_id,
           "attribute_definition_id": cad.id,
+          "slug": asmt_slug,
       })
     response_dict[item_key] = item_response
   response = []
