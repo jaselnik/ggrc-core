@@ -3,7 +3,6 @@
 
 """Handlers evidence entries."""
 from logging import getLogger
-import urlparse
 
 from ggrc import db
 from ggrc.models import all_models
@@ -146,6 +145,10 @@ class EvidenceFileHandler(EvidenceHandler, FileHandler,
   def _get_old_map(self):
     return {d.link: d for d in self.row_converter.obj.evidences_file}
 
+  def _get_new_map(self):
+    from ggrc.gdrive.file_actions import get_gdrive_file_link
+    return {get_gdrive_file_link(d): d for d in self.value}
+
   def set_obj_attr(self):
     self.value = self.parse_item()
 
@@ -167,14 +170,14 @@ class EvidenceFileHandler(EvidenceHandler, FileHandler,
     if self.row_converter.ignore or not \
        self.row_converter.block_converter.converter.is_bulk_import():
       return
-    new_link_map = self.value
+    new_link_map = self._get_new_map()
     old_link_map = self._get_old_map()
 
     user_id = get_current_user_id()
 
-    for new_link in new_link_map:
+    for new_link, new_gdrive_id in new_link_map.iteritems():
       if new_link not in old_link_map:
-        self.setup_evidence(new_link, user_id)
+        self.setup_evidence(new_gdrive_id, user_id)
 
     for old_link, old_evidence in old_link_map.iteritems():
       if old_link in new_link_map:
@@ -194,17 +197,12 @@ class EvidenceFileHandler(EvidenceHandler, FileHandler,
       else:
         logger.warning("Invalid relationship state for document URLs.")
 
-  def setup_evidence(self, link, user_id):
+  def setup_evidence(self, source_gdrive_id, user_id):
     """Generate Evidence File object"""
 
     parent = self.row_converter.obj
 
-    parsed = urlparse.urlparse(link)
-    source_gdrive_id = urlparse.parse_qs(parsed.query).get('id')
-    if source_gdrive_id:
-      source_gdrive_id = source_gdrive_id[0]
-
-    evidence = all_models.Evidence(title=link,
+    evidence = all_models.Evidence(title=source_gdrive_id,
                                    modified_by_id=user_id,
                                    context=parent.context,
                                    kind=self.KIND,

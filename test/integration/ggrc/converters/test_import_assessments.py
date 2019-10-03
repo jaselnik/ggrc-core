@@ -226,15 +226,17 @@ class TestAssessmentImport(TestCase):
     self.assertEquals([], response[0]['row_warnings'])
 
   @mock.patch('ggrc.gdrive.file_actions.process_gdrive_file')
-  def test_assessment_bulk_mode(self, process_gdrive_mock):
+  @mock.patch('ggrc.gdrive.file_actions.get_gdrive_file_link')
+  def test_assessment_bulk_mode(self, get_gdrive_link, process_gdrive_mock):
     """Test import assessment evidence file in bulk_import mode"""
 
-    evidence_file = "test_gdrive_url?id=mock_id"
+    evidence_file = "mock_id"
     process_gdrive_mock.return_value = {
         "id": "mock_id",
         "webViewLink": "mock_link",
         "name": "mock_name",
     }
+    get_gdrive_link.return_value = "mock_id"
 
     with factories.single_commit():
       audit = factories.AuditFactory()
@@ -250,6 +252,7 @@ class TestAssessmentImport(TestCase):
           ("Evidence File", evidence_file),
       ]))
     self.assertEqual(process_gdrive_mock.call_count, 1)
+    self.assertEqual(get_gdrive_link.call_count, 1)
     self._check_csv_response(response, {})
     assessment = all_models.Assessment.query.filter_by(
         slug=assessment_slug
