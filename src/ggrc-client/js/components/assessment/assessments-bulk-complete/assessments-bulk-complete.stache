@@ -77,7 +77,13 @@
     <assessments-local-custom-attributes
       fields:from="attributeFields"
       disabled:from="hasChangedSelection"
-      on:vm:fieldValueChanged="updateAttributeField(scope.event)" />
+      on:vm:fieldValueChanged="updateAttributeField(scope.event)"
+      on:vm:updateRequiredInfo="showRequiredInfoModal(scope.event.field)" />
+    <required-info-modal
+      title:from="requiredInfoModal.title"
+      state:from="requiredInfoModal.state"
+      content:from="requiredInfoModal.content"
+      on:vm:submit="updateRequiredInfo(scope.event)" />
   </collapsible-panel>
 </div>
 

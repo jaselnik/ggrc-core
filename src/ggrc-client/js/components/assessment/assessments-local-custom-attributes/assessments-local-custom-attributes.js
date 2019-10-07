@@ -16,6 +16,13 @@ const viewModel = canMap.extend({
   getFieldClass(type) {
     return type === 'checkbox' ? 'custom-attribute-checkbox' : '';
   },
+  updateRequiredInfo(fieldIndex) {
+    const field = this.attr('fields')[fieldIndex];
+    this.dispatch({
+      type: 'updateRequiredInfo',
+      field,
+    });
+  },
   fieldValueChanged(value, fieldIndex) {
     const field = this.attr('fields')[fieldIndex];
     this.dispatch({

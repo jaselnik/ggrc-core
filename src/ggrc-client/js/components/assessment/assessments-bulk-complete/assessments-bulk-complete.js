@@ -7,6 +7,7 @@
 import '../../collapsible-panel/collapsible-panel';
 import '../../advanced-search/advanced-search-container/advanced-search-container';
 import '../../assessment/assessments-local-custom-attributes/assessments-local-custom-attributes';
+import '../../required-info-modal/required-info-modal';
 
 import canComponent from 'can-component';
 import canStache from 'can-stache';
@@ -22,8 +23,10 @@ import {notifier} from '../../../plugins/utils/notifiers-utils';
 import {
   getCustomAttributeType,
   ddValidationValueToMap,
+  getLCAPopupTitle,
 } from '../../../plugins/utils/ca-utils';
 import loSome from 'lodash/some';
+import loFind from 'lodash/find';
 import {getPlainText} from '../../../plugins/ggrc_utils';
 
 const viewModel = ObjectOperationsBaseVM.extend({
@@ -56,6 +59,17 @@ const viewModel = ObjectOperationsBaseVM.extend({
   isAttributesGenerating: false,
   attributeFields: [],
   isAttributesGenerated: false,
+  requiredInfoModal: {
+    title: '',
+    state: {open: false},
+    content: {
+      field: null,
+      requiredInfo: null,
+      commentValue: null,
+      urls: [],
+      files: [],
+    },
+  },
   /**
    * Contains selected objects (which have id and type properties)
    */
@@ -104,7 +118,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
       this.generateAttributes();
     }
   },
-  convertToAttributeField(attribute, labelId) {
+  convertToAttributeField(attribute, fieldIndex) {
     const attributeType = getCustomAttributeType(attribute.attribute_type);
     const optionsList = typeof attribute.multi_choice_options === 'string'
       ? attribute.multi_choice_options.split(',')
@@ -118,7 +132,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
     }, new Map());
 
     return {
-      labelId, // id is needed for input <-> label relation
+      id: fieldIndex,
       attachments: null,
       title: attribute.title,
       type: attributeType,
@@ -168,13 +182,11 @@ const viewModel = ObjectOperationsBaseVM.extend({
     this.validateField(field);
   },
   validateDropdown(field) {
-    const fieldValue = field.attr('value');
-    const optionBitmask = field.attr('options.config').get(fieldValue);
     const {
       comment,
       attachment,
       url,
-    } = ddValidationValueToMap(optionBitmask);
+    } = this.getRequiredInfoStates(field);
     const requiresAttachment = comment || attachment || url;
 
     canBatch.start();
@@ -184,7 +196,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
 
     if (requiresAttachment) {
       field.attr('attachments', {
-        comment: null,
+        commentValue: null,
         files: [],
         urls: [],
       });
@@ -192,17 +204,47 @@ const viewModel = ObjectOperationsBaseVM.extend({
         valid: false,
         hasMissingInfo: true,
       });
+      this.showRequiredInfoModal(field);
     } else {
       field.attr('attachments', null);
       validation.attr({
         valid: validation.attr('mandatory')
-          ? fieldValue !== ''
+          ? field.attr('value') !== ''
           : true,
         hasMissingInfo: false,
       });
     }
 
     canBatch.stop();
+  },
+  validateRequiredInfo(field) {
+    const attachments = field.attr('attachments');
+    const {
+      comment,
+      attachment,
+      url,
+    } = this.getRequiredInfoStates(field);
+
+    const hasValidFiles = attachment
+      ? attachments.attr('files.length') > 0
+      : true;
+    const hasValidUrls = url
+      ? attachments.attr('urls.length') > 0
+      : true;
+    const hasValidComment = comment
+      ? attachments.attr('commentValue') !== null
+      : true;
+
+    const hasValidAttachments = (
+      hasValidFiles &&
+      hasValidUrls &&
+      hasValidComment
+    );
+
+    field.attr('validation').attr({
+      valid: hasValidAttachments,
+      hasMissingInfo: !hasValidAttachments,
+    });
   },
   performDefaultValidation(field) {
     const validation = field.attr('validation');
@@ -230,6 +272,45 @@ const viewModel = ObjectOperationsBaseVM.extend({
     } else {
       this.performDefaultValidation(field);
     }
+  },
+  getRequiredInfoStates(field) {
+    const optionBitmask = field.attr('options.config').get(field.attr('value'));
+    return ddValidationValueToMap(optionBitmask);
+  },
+  updateRequiredInfo({fieldId, changes}) {
+    const field = loFind(this.attr('attributeFields'), (field) =>
+      field.attr('id') === fieldId);
+    const attachments = field.attr('attachments');
+
+    canBatch.start();
+    attachments.attr('commentValue', changes.commentValue);
+    attachments.attr('urls').replace(changes.urls);
+    attachments.attr('files').replace(changes.files);
+    canBatch.stop();
+
+    this.validateRequiredInfo(field);
+  },
+  showRequiredInfoModal(field) {
+    const requiredInfo = this.getRequiredInfoStates(field);
+    const attachments = field.attr('attachments');
+    const requiredInfoModal = this.attr('requiredInfoModal');
+    const modalTitle = `Required ${getLCAPopupTitle(requiredInfo)}`;
+
+    canBatch.start();
+    requiredInfoModal.attr('title', modalTitle);
+    requiredInfoModal.attr('content', {
+      field: {
+        id: field.attr('id'),
+        title: field.attr('title'),
+        value: field.attr('value'),
+      },
+      requiredInfo,
+      urls: attachments.attr('urls'),
+      files: attachments.attr('files'),
+      commentValue: attachments.attr('commentValue'),
+    });
+    requiredInfoModal.attr('state.open', true);
+    canBatch.stop();
   },
 });
 
