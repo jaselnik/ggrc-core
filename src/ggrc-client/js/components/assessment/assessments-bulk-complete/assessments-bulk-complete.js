@@ -105,7 +105,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
     const hasUpdatedAttributes = loSome(this.attr('attributeFields'),
       (field) => field.attr('value') !== field.attr('defaultValue'));
 
-    if (hasUpdatedAttributes && this.attr('hasChangedSelection')) {
+    if (hasUpdatedAttributes) {
       confirm({
         modal_title: 'Warning',
         modal_description: 'Custom attributes list will be updated ' +
