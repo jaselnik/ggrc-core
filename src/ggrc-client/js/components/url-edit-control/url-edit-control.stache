@@ -1,0 +1,18 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<form class="create-form">
+  <fieldset class="create-form__layout">
+    <input el:value:bind="inputValue" class="create-form__input" type="text" placeholder="Add URL" spellcheck="false" autocomplete="false">
+    <div class="create-form__controls">
+      <button type="button" class="create-form__confirm" on:el:click="onAccept()">
+        <i class="fa fa-check"></i>
+      </button>
+      <button type="button" class="create-form__cancel" on:el:click="onDismiss()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+  </fieldset>
+</form>

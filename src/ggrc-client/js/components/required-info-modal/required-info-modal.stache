@@ -1,0 +1,126 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<simple-modal
+  state:from="state"
+  modalTitle:from="title">
+  <div class="required-info-modal">
+    <div class="ca-object-modal-content__body">
+      <form class="simple-modal__body">
+        <div class="simple-modal__section">
+          <div class="field__title form-field__title">
+            <label class="field__title-text">{{content.field.title}}</label>
+          </div>
+          <dropdown-form-field
+            value:from="content.field.value"
+            options:from="dropdownOptions"
+            disabled:from="true" />
+        </div>
+
+        {{#if content.requiredInfo.comment}}
+          <div class="simple-modal__section">
+            <div class="simple-modal__section-title">Comment</div>
+            <comment-input value:bind="commentValue" />
+          </div>
+        {{/if}}
+
+        {{#if content.requiredInfo.attachment}}
+          <div class="simple-modal__section">
+            <div class="simple-modal__section-title">Evidence file</div>
+            {{#each filesList}}
+              <div class="action-toolbar">
+                <div class="action-toolbar__content-item">
+                  <div class="document-object-item">
+                    <div class="document-object-item__body">
+                      <a class="link"
+                        href="{{normalizeLink link}}"
+                        target="_blank"
+                        rel="tooltip"
+                        data-original-title="{{title}}">
+                        {{title}}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="action-toolbar__controls">
+                  <a href="javascript:void(0)" on:el:click="removeItemByIndex('filesList', @index)">
+                    <div class="action-toolbar__controls-item">
+                      <i class="fa fa-trash"></i>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            {{/each}}
+            <button
+              class="btn btn-small btn-white"
+              type="button"
+              on:el:click="addFiles()">
+              Attach
+            </button>
+          </div>
+        {{/if}}
+
+        {{#if content.requiredInfo.url}}
+          <div class="simple-modal__section">
+            <div class="simple-modal__section-title">Evidence url</div>
+            {{#each urlsList}}
+              <div class="action-toolbar">
+                <div class="action-toolbar__content-item">
+                  <div class="document-object-item">
+                    <div class="document-object-item__body">
+                      <a class="link"
+                        href="{{normalizeLink url}}"
+                        target="_blank"
+                        rel="tooltip"
+                        data-original-title="{{url}}">
+                        {{url}}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="action-toolbar__controls">
+                  <a on:el:click="removeItemByIndex('urlsList', @index)">
+                    <div class="action-toolbar__controls-item">
+                      <i class="fa fa-trash"></i>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            {{/each}}
+
+            {{#if urlsEditMode}}
+              <url-edit-control
+                on:vm:accept="addUrl(scope.event.value)"
+                on:vm:dismiss="setUrlEditMode(false)" />
+            {{else}}
+              <button
+                type="button"
+                class="btn btn-small btn-gray"
+                on:el:click="setUrlEditMode(true)">
+                Add
+              </button>
+            {{/if}}
+          </div>
+        {{/if}}
+      </form>
+    </div>
+    <div class="ca-object-modal-content__footer">
+      <div class="simple-modal__footer">
+        <button
+          type="button"
+          class="btn btn-small btn-white"
+          on:el:click="onSave()">
+          Save
+        </button>
+        <button
+          type="button"
+          class="btn btn-small btn-white simple-modal__toolbar-item"
+          on:el:click="closeModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</simple-modal>
