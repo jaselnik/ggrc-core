@@ -106,8 +106,16 @@ class TestBulkOperations(TestCase):
             "placeholder": None,
         },
         "related_assessments": {
-            "count": 0,
-            "values": [],
+            "count": 1,
+            "values": [{
+                "assessments_type": "Control",
+                "assessments": [{
+                    "id": asmt.id,
+                    "attribute_definition_id": cad_text.id,
+                    "slug": asmt.slug,
+                }]
+            }],
+
         },
         "assessments_with_values": [{
             "id": asmt.id,
@@ -199,8 +207,15 @@ class TestBulkOperations(TestCase):
             "placeholder": None,
         },
         "related_assessments": {
-            "count": 0,
-            "values": [],
+            "count": 1,
+            "values": [{
+                "assessments_type": "Control",
+                "assessments": [{
+                    "id": asmt.id,
+                    "attribute_definition_id": cad_obj.id,
+                    "slug": asmt.slug,
+                }]
+            }],
         },
         "assessments_with_values": [{
             "id": asmt.id,
@@ -252,10 +267,14 @@ class TestBulkOperations(TestCase):
             "placeholder": None,
         },
         "related_assessments": {
-            "count": 1,
+            "count": 2,
             "values": [{
                 "assessments_type": "Control",
                 "assessments": [{
+                    "id": asmt1.id,
+                    "attribute_definition_id": cad_obj1.id,
+                    "slug": asmt1.slug,
+                }, {
                     "id": asmt2.id,
                     "attribute_definition_id": cad_obj2.id,
                     "slug": asmt2.slug,
