@@ -61,7 +61,7 @@
                                 context:from="instance.context"
                                 on:setEditMode="setUrlEditMode(false)">
                         <form class="create-form">
-                            <fieldset class="create-form__layout">
+                            <fieldset class="create-form__layout create-form__layout_wide">
                                 <input el:value:bind="value" class="create-form__input" type="text" placeholder="Add URL" spellcheck="false" autocomplete="false">
                                 <div class="create-form__controls">
                                     <button type="button" class="create-form__confirm" on:el:click="create">
