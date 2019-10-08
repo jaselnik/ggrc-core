@@ -78,6 +78,14 @@
 .create-form {
   &__layout {
     display: inline-block;
+
+    &_wide {
+      width: 100%;
+
+      .create-form__input {
+        width: 100%;
+      }
+    }
   }
 
   & .create-form__layout {
@@ -91,6 +99,7 @@
       border-radius: 2px 2px 0 2px;
       margin-bottom: 0;
     }
+
   }
 
   &__controls {
@@ -118,11 +127,5 @@
 
   &__cancel {
     border-left: none;
-  }
-}
-
-ca-object-modal-content {
-  .create-form__layout, .create-form__input {
-    width: 100%;
   }
 }
