@@ -47,6 +47,7 @@ export default canComponent.extend({
       },
       fieldId: {
         type: 'number',
+        value: null,
       },
     },
     isLocalCa: false,
