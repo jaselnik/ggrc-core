@@ -81,6 +81,7 @@ const viewModel = canMap.extend({
     this.closeModal();
   },
   closeModal() {
+    this.setUrlEditMode(false);
     this.attr('state.open', false);
   },
   removeItemByIndex(collectionName, index) {
