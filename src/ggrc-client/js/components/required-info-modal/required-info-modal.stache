@@ -54,7 +54,7 @@
               </div>
             {{/each}}
             <button
-              class="btn btn-small btn-white"
+              class="btn btn-small btn-white required-info-modal__add-button"
               type="button"
               on:el:click="addFiles()">
               Attach
@@ -97,7 +97,7 @@
             {{else}}
               <button
                 type="button"
-                class="btn btn-small btn-gray"
+                class="btn btn-small btn-gray required-info-modal__add-button"
                 on:el:click="setUrlEditMode(true)">
                 Add
               </button>
