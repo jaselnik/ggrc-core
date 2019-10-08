@@ -93,14 +93,13 @@ def _get_bulk_cad_assessment_data(data):
           "title": asmt_title,
           "attribute_value": cav_value,
       })
-    else:
-      if not item_response["related_assessments"].get(asmt_type):
-        item_response["related_assessments"][asmt_type] = []
-      item_response["related_assessments"][asmt_type].append({
-          "id": asmt_id,
-          "attribute_definition_id": cad.id,
-          "slug": asmt_slug,
-      })
+    if not item_response["related_assessments"].get(asmt_type):
+      item_response["related_assessments"][asmt_type] = []
+    item_response["related_assessments"][asmt_type].append({
+        "id": asmt_id,
+        "attribute_definition_id": cad.id,
+        "slug": asmt_slug,
+    })
     response_dict[item_key] = item_response
   response = []
 
