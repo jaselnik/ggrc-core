@@ -407,3 +407,60 @@ class TestBulkOperations(TestCase):
     )
     self.assert200(response)
     self.assertEqual(expected_response, response.json)
+
+  def test_dropdown_same_cads(self):
+    """Test same dropdown CADs with diff multi_choice_options"""
+    with factories.single_commit():
+      asmt1 = factories.AssessmentFactory(assessment_type="Control")
+      cad_obj1 = factories.CustomAttributeDefinitionFactory(
+          title="dropdown_LCA",
+          definition_type="assessment",
+          definition_id=asmt1.id,
+          attribute_type="Dropdown",
+          multi_choice_options="Option 3,Option 2,Option 1",
+      )
+      asmt2 = factories.AssessmentFactory(assessment_type="Control")
+      cad_obj2 = factories.CustomAttributeDefinitionFactory(
+          title="dropdown_LCA",
+          definition_type="assessment",
+          definition_id=asmt2.id,
+          attribute_type="Dropdown",
+          multi_choice_options="option 2,option 1,option 3",
+      )
+    data = {
+        "ids": [asmt1.id, asmt2.id]
+    }
+    expected_response = [{
+        "attribute": {
+            "attribute_type": "Dropdown",
+            "title": "dropdown_LCA",
+            "default_value": "",
+            "multi_choice_options": "Option 3,Option 2,Option 1",
+            "multi_choice_mandatory": None,
+            "mandatory": False,
+            "placeholder": None,
+        },
+        "related_assessments": {
+            "count": 2,
+            "values": [{
+                "assessments_type": "Control",
+                "assessments": [{
+                    "id": asmt1.id,
+                    "attribute_definition_id": cad_obj1.id,
+                    "slug": asmt1.slug,
+                }, {
+                    "id": asmt2.id,
+                    "attribute_definition_id": cad_obj2.id,
+                    "slug": asmt2.slug,
+                }],
+            }],
+        },
+        "assessments_with_values": [],
+    }]
+    response = self.client.post(
+        self.ENDPOINT_URL,
+        data=json.dumps(data),
+        headers=self.headers
+    )
+    self.assert200(response)
+    self.assertEqual(expected_response, response.json)
