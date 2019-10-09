@@ -121,6 +121,7 @@ class TestBulkOperations(TestCase):
             "id": asmt.id,
             "title": asmt.title,
             "attribute_value": cav.attribute_value,
+            "attribute_person_id": None,
         }]
     }]
     response = self.client.post(
@@ -221,6 +222,7 @@ class TestBulkOperations(TestCase):
             "id": asmt.id,
             "title": asmt.title,
             "attribute_value": "1,2",
+            "attribute_person_id": None,
         }]
     }]
     response = self.client.post(
@@ -285,6 +287,7 @@ class TestBulkOperations(TestCase):
             "id": asmt1.id,
             "title": asmt1.title,
             "attribute_value": "test_value",
+            "attribute_person_id": None,
         }]
     }]
     response = self.client.post(
@@ -456,6 +459,63 @@ class TestBulkOperations(TestCase):
             }],
         },
         "assessments_with_values": [],
+    }]
+    response = self.client.post(
+        self.ENDPOINT_URL,
+        data=json.dumps(data),
+        headers=self.headers
+    )
+    self.assert200(response)
+    self.assertEqual(expected_response, response.json)
+
+  def test_map_person_type(self):
+    """Test CAD Map:Person type has attribute_person_id"""
+    with factories.single_commit():
+      person = factories.PersonFactory()
+      asmt = factories.AssessmentFactory(assessment_type="Control")
+      cad_obj = factories.CustomAttributeDefinitionFactory(
+          definition_type="assessment",
+          definition_id=asmt.id,
+          attribute_type="Map:Person",
+          title="Person LCA",
+      )
+      factories.CustomAttributeValueFactory(
+          custom_attribute=cad_obj,
+          attributable=asmt,
+          attribute_value=person.type,
+          attribute_object_id=str(person.id),
+      )
+
+    data = {
+        "ids": [asmt.id]
+    }
+    expected_response = [{
+        "attribute": {
+            "attribute_type": "Map:Person",
+            "title": "Person LCA",
+            "default_value": None,
+            "multi_choice_options": None,
+            "multi_choice_mandatory": None,
+            "mandatory": False,
+            "placeholder": None,
+        },
+        "related_assessments": {
+            "count": 1,
+            "values": [{
+                "assessments_type": "Control",
+                "assessments": [{
+                    "id": asmt.id,
+                    "attribute_definition_id": cad_obj.id,
+                    "slug": asmt.slug,
+                }],
+            }],
+        },
+        "assessments_with_values": [{
+            "id": asmt.id,
+            "title": asmt.title,
+            "attribute_value": "Person",
+            "attribute_person_id": person.id
+        }]
     }]
     response = self.client.post(
         self.ENDPOINT_URL,
