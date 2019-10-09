@@ -51,6 +51,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
   type: 'Assessment',
   isAttributesGenerating: false,
   attributeFields: [],
+  isAttributesGenerated: false,
   /**
    * Contains selected objects (which have id and type properties)
    */
@@ -126,6 +127,8 @@ const viewModel = ObjectOperationsBaseVM.extend({
       this.attr('attributeFields', this.convertToAttributeFields(
         rawAttributesList
       ));
+
+      this.attr('isAttributesGenerated', true);
       this.attr('showResults', false);
       this.attr('showFields', true);
       this.attr('selectedAfterLastSelection', []);
