@@ -49,6 +49,7 @@ def _get_bulk_cad_assessment_data(data):
           "id": int,
           "title": str,
           "attribute_value": any,
+          "attribute_person_id": str,
       }]
     }]
   """
@@ -60,6 +61,7 @@ def _get_bulk_cad_assessment_data(data):
       all_models.Assessment.assessment_type,
       all_models.Assessment.slug,
       CAV.attribute_value,
+      CAV.attribute_object_id,
   ).join(
       all_models.Assessment, CAD.definition_id == all_models.Assessment.id
   ).outerjoin(
@@ -69,7 +71,8 @@ def _get_bulk_cad_assessment_data(data):
       CAD.definition_type == 'assessment',
   )
   response_dict = OrderedDict()
-  for cad, asmt_id, asmt_title, asmt_type, asmt_slug, cav_value in all_cads:
+  for (cad, asmt_id, asmt_title, asmt_type, asmt_slug,
+       cav_value, cav_person_id) in all_cads:
     multi_choice_options = ",".join(
         sorted(cad.multi_choice_options.split(','))
     ).lower() if cad.multi_choice_options else cad.multi_choice_options
@@ -96,6 +99,7 @@ def _get_bulk_cad_assessment_data(data):
           "id": asmt_id,
           "title": asmt_title,
           "attribute_value": cav_value,
+          "attribute_person_id": cav_person_id,
       })
     if not item_response["related_assessments"].get(asmt_type):
       item_response["related_assessments"][asmt_type] = []
