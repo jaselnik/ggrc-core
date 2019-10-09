@@ -5,6 +5,7 @@
 
 import json
 
+from collections import OrderedDict
 import flask
 from werkzeug import exceptions
 from ggrc.models import all_models
@@ -67,10 +68,13 @@ def _get_bulk_cad_assessment_data(data):
       all_models.Assessment.id.in_(data["ids"]),
       CAD.definition_type == 'assessment',
   )
-  response_dict = {}
+  response_dict = OrderedDict()
   for cad, asmt_id, asmt_title, asmt_type, asmt_slug, cav_value in all_cads:
+    multi_choice_options = ",".join(
+        sorted(cad.multi_choice_options.split(','))
+    ).lower() if cad.multi_choice_options else cad.multi_choice_options
     item_key = (cad.title, cad.attribute_type, cad.mandatory,
-                cad.multi_choice_options, cad.multi_choice_mandatory)
+                multi_choice_options, cad.multi_choice_mandatory)
     item_response = response_dict.get(
         item_key,
         {
