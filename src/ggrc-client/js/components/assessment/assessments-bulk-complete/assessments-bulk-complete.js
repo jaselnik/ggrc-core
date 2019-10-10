@@ -12,6 +12,7 @@ import '../../required-info-modal/required-info-modal';
 import canComponent from 'can-component';
 import canStache from 'can-stache';
 import canBatch from 'can-event/batch/batch';
+import canMap from 'can-map';
 import template from './assessments-bulk-complete.stache';
 import ObjectOperationsBaseVM from '../../view-models/object-operations-base-vm';
 import {STATES_KEYS} from '../../../plugins/utils/state-utils';
@@ -28,6 +29,10 @@ import {
 import loSome from 'lodash/some';
 import loFind from 'lodash/find';
 import {getPlainText} from '../../../plugins/ggrc_utils';
+import {
+  create,
+  setDefaultStatusConfig,
+} from '../../../plugins/utils/advanced-search-utils';
 
 const viewModel = ObjectOperationsBaseVM.extend({
   define: {
@@ -315,6 +320,26 @@ const viewModel = ObjectOperationsBaseVM.extend({
     });
     requiredInfoModal.attr('state.open', true);
     canBatch.stop();
+  },
+  initDefaultFilter() {
+    const stateConfig = setDefaultStatusConfig(
+      new canMap,
+      this.attr('type'),
+      this.attr('statesCollectionKey')
+    );
+
+    this.attr('filterItems', [
+      create.state(stateConfig),
+      create.operator('AND'),
+      create.attribute({
+        field: 'Assignees',
+        operator: '~',
+        value: GGRC.current_user.email,
+      }),
+    ]);
+  },
+  init() {
+    this.initDefaultFilter();
   },
 });
 
