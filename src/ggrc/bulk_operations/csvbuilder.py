@@ -97,7 +97,7 @@ class CsvBuilder(object):
       cav_value = cav["attribute_value"]
       cav_title = cav["attribute_title"]
 
-      extra_data = cav.get("extra", {})
+      extra_data = cav["extra"] if cav["extra"] else {}
 
       cav_urls = extra_data.get("urls", [])
       cav_files = [file_data["source_gdrive_id"] for
