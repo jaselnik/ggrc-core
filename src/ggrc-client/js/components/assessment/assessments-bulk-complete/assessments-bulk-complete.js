@@ -39,6 +39,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
     isSelectButtonDisabled: {
       get() {
         return (
+          this.attr('selected.length') === 0 ||
           this.attr('isAttributesGenerating') ||
           !this.attr('hasChangedSelection')
         );
