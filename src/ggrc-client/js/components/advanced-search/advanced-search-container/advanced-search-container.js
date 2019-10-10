@@ -15,6 +15,7 @@ import {getAvailableAttributes} from '../../../plugins/utils/tree-view-utils';
 
 const viewModel = canMap.extend({
   filterItems: [],
+  defaultFilterItems: [],
   availableAttributes: [],
   statesCollectionKey: [],
   mappingItems: [],
@@ -22,7 +23,7 @@ const viewModel = canMap.extend({
   mappedToItems: [],
   disabled: false,
   resetFilters() {
-    this.attr('filterItems', []);
+    this.attr('filterItems', this.attr('defaultFilterItems').serialize());
     this.attr('mappingItems', []);
   },
   onSubmit() {

@@ -18,6 +18,7 @@
       statesCollectionKey:from="statesCollectionKey"
       disabled:from="is_loading"
       mappedToItems:from="mappedToItems"
+      defaultFilterItems:from="defaultFilterItems"
       filterItems:bind="filterItems"
       mappingItems:to="mappingItems"
       on:vm:onSubmit="onSubmit()">

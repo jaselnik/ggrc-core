@@ -59,6 +59,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
   isMyAssessmentsView: false,
   mappedToItems: [],
   filterItems: [],
+  defaultFilterItems: [],
   mappingItems: [],
   statesCollectionKey: STATES_KEYS.BULK_COMPLETE,
   type: 'Assessment',
@@ -339,8 +340,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
       this.attr('type'),
       this.attr('statesCollectionKey')
     );
-
-    this.attr('filterItems', [
+    const items = [
       create.state(stateConfig),
       create.operator('AND'),
       create.attribute({
@@ -348,7 +348,10 @@ const viewModel = ObjectOperationsBaseVM.extend({
         operator: '~',
         value: GGRC.current_user.email,
       }),
-    ]);
+    ];
+
+    this.attr('filterItems', items);
+    this.attr('defaultFilterItems', items);
   },
   init() {
     this.initDefaultFilter();
