@@ -10,9 +10,9 @@
                 <label class="field__title-text">{{content.title}}</label>
             </div>
             <custom-attributes-field type:from="content.type"
-                                     value:from="content.value"
-                                     options:from="content.options"
-                                     disabled:from="true">
+                                      value:from="content.value"
+                                      options:from="content.options"
+                                      disabled:from="true">
             </custom-attributes-field>
         </div>
         {{#if comment}}
@@ -82,19 +82,17 @@
         {{/if}}
     </form>
 </div>
-<div class="ca-object-modal-content__footer">
-    <div class="simple-modal__footer">
-        <div class="simple-modal__toolbar">
-        {{#if comment}}
-            <comment-add-button class="simple-modal__toolbar-item"
-                                value:bind="scope.vars.commentValue"
-                                isSaving:to="scope.vars.isSaving"
-                                on:commentCreated="onCommentCreated(scope.event)"
-                                isDisabled:from="isUpdatingEvidences">
-              Save
-            </comment-add-button>
-        {{/if}}
-            <button type="button" class="btn btn-small btn-white simple-modal__toolbar-item" on:el:click="hide; setUrlEditMode(false)">Close</button>
-        </div>
+<div class="simple-modal__footer">
+    <div class="simple-modal__toolbar">
+    {{#if comment}}
+        <comment-add-button class="simple-modal__toolbar-item"
+                            value:bind="scope.vars.commentValue"
+                            isSaving:to="scope.vars.isSaving"
+                            on:commentCreated="onCommentCreated(scope.event)"
+                            isDisabled:from="isUpdatingEvidences">
+          Save
+        </comment-add-button>
+    {{/if}}
+        <button type="button" class="btn btn-small btn-white simple-modal__toolbar-item" on:el:click="hide; setUrlEditMode(false)">Close</button>
     </div>
 </div>
