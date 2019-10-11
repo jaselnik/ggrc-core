@@ -22,7 +22,7 @@
         value:bind="value"
         fieldId:from="id"
         placeholder:from="placeholder"
-        options:from="options.values"
+        options:from="multiChoiceOptions.values"
         on:vm:valueChanged="fieldValueChanged(scope.event.value, @index)"
         class="form-field__content {{getFieldClass(type)}}" />
       {{#if attachments}}
