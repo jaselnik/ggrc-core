@@ -118,14 +118,13 @@ const viewModel = ObjectOperationsBaseVM.extend({
       this.generateAttributes();
     }
   },
+  convertToArray(value) {
+    return typeof value === 'string' ? value.split(',') : [];
+  },
   convertToAttributeField(attribute, fieldIndex) {
     const attributeType = getCustomAttributeType(attribute.attribute_type);
-    const optionsList = typeof attribute.multi_choice_options === 'string'
-      ? attribute.multi_choice_options.split(',')
-      : [];
-    const optionsStates = typeof attribute.multi_choice_mandatory === 'string'
-      ? attribute.multi_choice_mandatory.split(',')
-      : [];
+    const optionsList = this.convertToArray(attribute.multi_choice_options);
+    const optionsStates = this.convertToArray(attribute.multi_choice_mandatory);
     const optionsConfig = optionsStates.reduce((config, state, index) => {
       const optionValue = optionsList[index];
       return config.set(optionValue, Number(state));
