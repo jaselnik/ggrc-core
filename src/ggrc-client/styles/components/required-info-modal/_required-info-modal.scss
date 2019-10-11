@@ -4,10 +4,12 @@
  */
 
 .required-info-modal {
-  .document-object-item {
-    margin: 0;
-    height: 28px;
-    justify-content: center;
+  &__body {
+    .document-object-item {
+      margin: 0;
+      height: 28px;
+      justify-content: center;
+    }
   }
 
   &__add-button {

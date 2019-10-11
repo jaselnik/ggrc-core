@@ -3,12 +3,8 @@
  * Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
  */
 
-ca-object-modal-content {
-  .ca-object-modal-content {
-    &__body {
-      height: calc(100% - 54px - 45px);
-      overflow-y: auto;
-    }
-  }
+.ca-object-modal-content__body {
+  height: calc(100% - 54px - 45px);
+  overflow-y: auto;
 }
 
