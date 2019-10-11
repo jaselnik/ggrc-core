@@ -152,10 +152,7 @@ def bulk_cavs_search():
 
 def _detect_files(data):
   """Checks if we need to attach files"""
-  for attr in data:
-    if attr["extra"].get("files"):
-      return True
-  return False
+  return any(attr["extra"].get("files") for attr in data if attr["extra"])
 
 
 def _send_notification(update_errors, complete_errors):
@@ -168,9 +165,7 @@ def _send_notification(update_errors, complete_errors):
 @background_task.queued_task
 def bulk_complete(task):
   """Process bulk complete"""
-  credentials = task.parameters.get("credentials")
-  if credentials:
-    flask.session['credentials'] = credentials
+  flask.session['credentials'] = task.parameters.get("credentials")
 
   builder = csvbuilder.CsvBuilder(task.parameters.get("data", {}))
   update_data = builder.attributes_update_to_csv()

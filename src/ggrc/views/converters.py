@@ -312,6 +312,7 @@ def run_import_phases(task):
   """Execute import phases"""
   # pylint: disable=too-many-return-statements
   # pylint: disable=too-many-branches
+  # pylint: disable=too-many-statements
   ie_id = task.parameters.get("ie_id")
   user = login.get_current_user()
   try:
