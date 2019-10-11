@@ -68,11 +68,15 @@ const viewModel = canMap.extend({
     }
   },
   onSave() {
+    const commentValue = this.attr('commentValue');
+
     this.dispatch({
       type: 'submit',
       fieldId: this.attr('content.field.id'),
       changes: {
-        commentValue: this.attr('commentValue'),
+        commentValue: commentValue
+          ? commentValue
+          : null,
         files: this.attr('filesList'),
         urls: this.attr('urlsList'),
       },
