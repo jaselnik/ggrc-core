@@ -142,7 +142,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
       type: attributeType,
       defaultValue: attribute.default_value,
       placeholder: attribute.placeholder,
-      options: {
+      multiChoiceOptions: {
         values: optionsList,
         config: optionsConfig,
       },
@@ -277,7 +277,8 @@ const viewModel = ObjectOperationsBaseVM.extend({
     }
   },
   getRequiredInfoStates(field) {
-    const optionBitmask = field.attr('options.config').get(field.attr('value'));
+    const optionBitmask = field.attr('multiChoiceOptions.config')
+      .get(field.attr('value'));
     return ddValidationValueToMap(optionBitmask);
   },
   updateRequiredInfo({fieldId, changes}) {
