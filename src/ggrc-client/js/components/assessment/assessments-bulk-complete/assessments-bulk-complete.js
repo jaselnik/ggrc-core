@@ -130,13 +130,17 @@ const viewModel = ObjectOperationsBaseVM.extend({
       const optionValue = optionsList[index];
       return config.set(optionValue, Number(state));
     }, new Map());
+    const defaultValue = attribute.default_value;
+    const value = attributeType === 'checkbox'
+      ? defaultValue === '1'
+      : defaultValue;
 
     return {
+      value,
       id: fieldIndex,
       attachments: null,
       title: attribute.title,
       type: attributeType,
-      value: attribute.default_value,
       defaultValue: attribute.default_value,
       placeholder: attribute.placeholder,
       options: {
