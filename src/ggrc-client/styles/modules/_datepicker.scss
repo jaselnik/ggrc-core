@@ -16,8 +16,7 @@
   max-width: 100%;
   width: 100% !important;
   margin-bottom: 0;
-  // This is not good, but our global inputs have fixed height and paddings
-  height: 26px !important;
+  height: 28px;
 
   &--denied {
     background: $white;
@@ -37,7 +36,7 @@
   .datepicker__remove-value {
     cursor: pointer;
     position: absolute;
-    top: 4px;
+    top: 5px;
     right: 5px;
     i {
       font-size: 16px;
