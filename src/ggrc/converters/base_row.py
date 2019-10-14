@@ -196,6 +196,11 @@ class ImportRowConverter(RowConverter):
     """
     message = template.format(line=self.line, **kwargs)
     self.block_converter.row_errors.append(message)
+    key = self.get_value(self.id_key)
+
+    if key is not None:
+      self.block_converter.converter.failed_slugs.append(key)
+
     if self.is_new_object_set:
       new_objects = self.block_converter.converter.new_objects[
           self.object_class

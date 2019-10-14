@@ -189,11 +189,18 @@ class CsvBuilder(object):
     self._build_lca_block(prepared_csv)
     return prepared_csv
 
-  def assessments_complete_to_csv(self):
+  def assessments_complete_to_csv(self, errors):
     """Prepare csv to complete assessments in bulk via import"""
-    result_csv = []
-    result_csv.append([u"Object type"])
-    result_csv.append([u"Assessment", u"Code", u"State"])
+
+    assessments_list = []
     for assessment in self.assessments.values():
-      result_csv.append(self._prepare_assmt_complete_row(assessment))
+      if assessment.slug not in errors:
+        assessments_list.append(self._prepare_assmt_complete_row(assessment))
+
+    result_csv = []
+    if assessments_list:
+      result_csv.append([u"Object type"])
+      result_csv.append([u"Assessment", u"Code", u"State"])
+      result_csv.extend(assessments_list)
+
     return result_csv
