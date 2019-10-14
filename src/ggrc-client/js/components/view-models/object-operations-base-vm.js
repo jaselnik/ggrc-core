@@ -139,6 +139,8 @@ const ObjectOperationsBaseVM = canMap.extend({
     this.attr('is_loading', true);
     this.attr('entries').replace([]);
     this.attr('resultsRequested', true);
+    this.attr('showResults', true);
+
     if (this.onSearchCallback) {
       this.onSearchCallback();
     }
