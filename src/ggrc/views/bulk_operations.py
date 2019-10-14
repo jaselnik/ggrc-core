@@ -182,7 +182,7 @@ def bulk_complete(task):
   _send_notification(upd_errors, complete_errors)
 
 
-@app.route('/bulk_operations/complete', methods=['POST'])
+@app.route('/api/bulk_operations/complete', methods=['POST'])
 @login_required
 def run_bulk_complete():
   """Call bulk complete job"""
