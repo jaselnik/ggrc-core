@@ -115,6 +115,12 @@ def get_importables():
   return importable
 
 
+def get_importables_visible():
+  """ Get a dict of visible importable objects from all modules """
+  importable = _get_importables_exportables()
+  return importable
+
+
 def get_exportables():
   """ Get a dict of all exportable objects from all modules """
   exportable = GGRC_EXPORTABLE
