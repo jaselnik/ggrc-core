@@ -131,12 +131,18 @@ const viewModel = canMap.extend({
         attributeOptions: fields[index].attr('multiChoiceOptions.values'),
       }));
   },
+  initPopovers() {
+    this.initRelatedObjectsPopover();
+    this.initRelatedAnswersPopover();
+  },
+  init() {
+    this.initPopovers();
+  },
 });
 
 const events = {
   '{viewModel} fields'() {
-    this.viewModel.initRelatedObjectsPopover();
-    this.viewModel.initRelatedAnswersPopover();
+    this.viewModel.initPopovers();
   },
 };
 
