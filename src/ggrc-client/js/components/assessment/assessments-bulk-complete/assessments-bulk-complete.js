@@ -161,6 +161,16 @@ const viewModel = ObjectOperationsBaseVM.extend({
   convertToArray(value) {
     return typeof value === 'string' ? value.split(',') : [];
   },
+  prepareAttributeValue(type, value) {
+    return type === 'checkbox' ? value === '1' : value;
+  },
+  prepareRelatedAnswers(relatedAnswers, answersType) {
+    return relatedAnswers.map((answer) => ({
+      title: answer.title,
+      attributeValue: answer.attribute_person_id ||
+        this.prepareAttributeValue(answersType, answer.attribute_value),
+    }));
+  },
   convertToAttributeField({
     attribute,
     related_assessments: relatedAssessments,
@@ -173,18 +183,18 @@ const viewModel = ObjectOperationsBaseVM.extend({
       const optionValue = optionsList[index];
       return config.set(optionValue, Number(state));
     }, new Map());
-    const defaultValue = attribute.default_value;
-    const value = attributeType === 'checkbox'
-      ? defaultValue === '1'
-      : defaultValue;
+    const defaultValue = this.prepareAttributeValue(
+      attributeType,
+      attribute.default_value
+    );
 
     return {
-      value,
+      defaultValue,
+      value: defaultValue,
       id: fieldIndex,
       attachments: null,
       title: attribute.title,
       type: attributeType,
-      defaultValue: attribute.default_value,
       placeholder: attribute.placeholder,
       multiChoiceOptions: {
         values: optionsList,
@@ -197,12 +207,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
         hasMissingInfo: false,
       },
       relatedAssessments,
-      relatedAnswers: relatedAnswers.map((answer) => ({
-        title: answer.title,
-        attributeValue: answer.attribute_person_id === null
-          ? answer.attribute_value
-          : answer.attribute_person_id,
-      })),
+      relatedAnswers: this.prepareRelatedAnswers(relatedAnswers, attributeType),
     };
   },
   async generateAttributes() {
