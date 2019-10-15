@@ -1,0 +1,25 @@
+{{!
+    Copyright (C) 2019 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<ul class="popover-content__list">
+  {{#relatedAnswers}}
+    <li>
+      <div class="fields-wrapper">
+        <div class="field-wrapper {{#is(attributeType, 'checkbox')}}custom-attribute-checkbox{{/is}}">
+          <div class="field__title form-field__title">
+            <label class="field__title-text popover-content__item-title {{#is(attributeType, 'checkbox')}}custom-attribute-checkbox{{/is}}">
+              {{title}}
+            </label>
+          </div>
+        <custom-attributes-field-view
+          type:from="attributeType"
+          value:from="attributeValue"
+          options:from="attributeOptions"
+          class="form-field__content popover-content__item-value {{#is(attributeType, 'checkbox')}}custom-attribute-checkbox{{/is}}" />
+        </div>
+      </div>
+    </li>
+  {{/relatedAnswers}}
+</ul>
