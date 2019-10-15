@@ -18,7 +18,8 @@
       statesCollectionKey:from="statesCollectionKey"
       disabled:from="is_loading"
       mappedToItems:from="mappedToItems"
-      filterItems:to="filterItems"
+      defaultFilterItems:from="defaultFilterItems"
+      filterItems:bind="filterItems"
       mappingItems:to="mappingItems"
       on:vm:onSubmit="onSubmit()">
         <can-template name="mapped-to-section">
