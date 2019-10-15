@@ -718,7 +718,7 @@ def get_import_types(export_only=False):
     A list of models with model_singular and title_plural as keys.
   """
   # pylint: disable=protected-access
-  types = ggrc_converters.get_importables
+  types = ggrc_converters.get_importables_visible
   if export_only:
     types = ggrc_converters.get_exportables
   data = []

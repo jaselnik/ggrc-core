@@ -545,6 +545,7 @@ def check_import_filename(filename):
 
 def handle_import_post(**kwargs):
   """ Handle import post """
+  # pylint: disable=unused-argument
   check_import_export_headers()
   import_export.delete_previous_imports()
   file_meta = request.json
