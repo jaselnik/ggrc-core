@@ -75,16 +75,20 @@
 
 <div class="modal-section">
   <collapsible-panel class="{{^if isAttributesGenerated}}disabled-block{{/if}}" softMode:from="true" titleText:from="'Provide information below to finish bulk completion of assessments'" expanded:bind="showFields">
-    <assessments-local-custom-attributes
-      fields:from="attributeFields"
-      disabled:from="hasChangedSelection"
-      on:vm:fieldValueChanged="updateAttributeField(scope.event)"
-      on:vm:updateRequiredInfo="showRequiredInfoModal(scope.event.field)" />
-    <required-info-modal
-      title:from="requiredInfoModal.title"
-      state:from="requiredInfoModal.state"
-      content:from="requiredInfoModal.content"
-      on:vm:submit="updateRequiredInfo(scope.event)" />
+    {{#if attributeFields.length}}
+      <assessments-local-custom-attributes
+        fields:from="attributeFields"
+        disabled:from="hasChangedSelection"
+        on:vm:fieldValueChanged="updateAttributeField(scope.event)"
+        on:vm:updateRequiredInfo="showRequiredInfoModal(scope.event.field)" />
+      <required-info-modal
+        title:from="requiredInfoModal.title"
+        state:from="requiredInfoModal.state"
+        content:from="requiredInfoModal.content"
+        on:vm:submit="updateRequiredInfo(scope.event)" />
+    {{else}}
+      <div class="well well-small spacing-top">No attributes were found</div>
+    {{/if}}
   </collapsible-panel>
 </div>
 

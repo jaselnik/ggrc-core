@@ -14,14 +14,14 @@
             <i class="fa fa-asterisk field__mandatory"></i>
           {{/if}}
           <div class="popover-component__container">
-            <popover-component 
+            <popover-component
               header:from="popovers.relObjectsHeader(@index)"
               content:from="popovers.relObjectsContent(@index)"
             >
               <i class="fa fa-question-circle" data-popover-trigger></i>
             </popover-component>
             {{#if relatedAnswers.length}}
-              <popover-component 
+              <popover-component
                 header:from="popovers.relAnswersHeader(@index)"
                 content:from="popovers.relAnswersContent(@index)"
               >

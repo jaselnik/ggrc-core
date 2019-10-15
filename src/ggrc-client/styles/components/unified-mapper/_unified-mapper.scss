@@ -172,7 +172,7 @@ mapper-results {
         margin-left: 10px;
       }
     }
-    
+
     reusable-objects-item {
       padding: 0;
       justify-content: flex-end;
@@ -207,7 +207,7 @@ mapper-results {
         }
       }
     }
- 
+
     .details__wrapper {
       display: block;
       padding: 8px 16px 20px;
@@ -216,49 +216,49 @@ mapper-results {
                     $item-status-width +
                     2 * $icon-width;
       cursor: auto;
-  
+
       &.is-snapshot {
         padding-left: $list-item-padding +
                       2 * $icon-width;
       }
-  
+
       .col-container {
         display: flex;
         flex: 1 1;
         flex-direction: column;
         justify-content: space-between;
-  
+
         &:first-child {
           padding-right: 15px;
         }
-  
+
         .attr-container {
           h6 {
             margin: 4px 0;
           }
-  
+
           .attr-value {
             white-space: normal;
             word-break: break-all;
             overflow: hidden;
           }
-  
+
           &.description .attr-value,
           &.notes .attr-value {
             line-height: 18px;
           }
         }
       }
-  
+
       .open-link-container,
       .menu-button-container{
         display: flex;
         justify-content: flex-end;
       }
-  
+
       .open-link-container {
         margin-top: 3px;
-  
+
         a {
           i {
             color: $linkColor;
@@ -266,13 +266,13 @@ mapper-results {
           }
         }
       }
-  
+
       .dropdown-toggle {
         width: 32px;
         background-color: transparent;
         border: 1px solid #e0e4e5;
       }
-  
+
       a {
         cursor: pointer;
       }
@@ -582,13 +582,10 @@ mapper-results-columns-configuration {
         margin: 0;
       }
     }
+
     .modal-footer {
       border-top: 1px solid #E0E0E0;
 
-      .well.well-small {
-        font-size: 13px;
-        padding: 9px 16px 7px;
-      }
       &.modal-filter {
         padding-bottom: 0;
       }
@@ -597,6 +594,14 @@ mapper-results-columns-configuration {
     .modal-section {
       border-top: 1px solid $itemBorder;
       padding: 20px;
+    }
+
+    .modal-footer,
+    .modal-section {
+      .well.well-small {
+        font-size: 13px;
+        padding: 9px 16px 7px;
+      }
     }
 
     .modal-footer {
