@@ -15,6 +15,7 @@ import template from './required-info-modal.stache';
 import {uploadFiles} from '../../plugins/utils/gdrive-picker-utils';
 import {notifier} from '../../plugins/utils/notifiers-utils';
 import {isConnectionLost} from '../../plugins/utils/errors-utils';
+import {getPlainText} from '../../plugins/ggrc_utils';
 
 const viewModel = canMap.extend({
   define: {
@@ -69,14 +70,13 @@ const viewModel = canMap.extend({
   },
   onSave() {
     const commentValue = this.attr('commentValue');
+    const hasText = getPlainText(commentValue).trim().length !== 0;
 
     this.dispatch({
       type: 'submit',
       fieldId: this.attr('content.field.id'),
       changes: {
-        commentValue: commentValue
-          ? commentValue
-          : null,
+        commentValue: hasText ? commentValue : null,
         files: this.attr('filesList'),
         urls: this.attr('urlsList'),
       },
