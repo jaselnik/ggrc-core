@@ -118,9 +118,6 @@ class CsvBuilder(object):
 
       for assessment in cav["bulk_update"]:
         assessment_id = assessment["assessment_id"]
-        assessment_slug = assessment["slug"]
-
-        self.assessments[assessment_id].slug = assessment_slug
 
         self.assessments[assessment_id].urls.extend(cav_urls)
         self.assessments[assessment_id].files.extend(cav_files)
