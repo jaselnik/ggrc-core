@@ -20,6 +20,7 @@ class AssessmentStub(object):
     self.cavs = {}
     self.slug = ""
     self.needs_verification = False
+    self.only_status = False
 
   def __str__(self):
     return str({
@@ -38,24 +39,28 @@ class CsvBuilder(object):
     """
       Args:
         cav_data:
-          [{"attribute_value": str,
-            "attribute_title": str,
-            "extra":
-              "comment": {"description": str
-                          "modified_by": {"type": "Person",
-                                          "id": int}
-                          },
-              "urls": [url,],
-              "files": [{source_gdrive_id: str,
-                        title: str}, ]},
-            "bulk_update": [{"assessment_id": int,
-                             "attribute_definition_id": int,
-                             "slug": str},]},]
+          assessments_ids: [Number, ...]
+          attributes:
+            [{"attribute_value": str,
+              "attribute_title": str,
+              "extra":
+                "comment": {"description": str
+                            "modified_by": {"type": "Person",
+                                            "id": int}
+                            },
+                "urls": [url,],
+                "files": [{source_gdrive_id: str,
+                          title: str}, ]},
+              "bulk_update": [{"assessment_id": int,
+                               "attribute_definition_id": int,
+                               "slug": str},]},]
     """
     self.assessments = collections.defaultdict(AssessmentStub)
     self.cav_keys = []
     self.assessment_ids = []
-    self.convert_data(cav_data)
+    self.attr_data = cav_data.get("attributes", [])
+    self.assmt_ids = cav_data.get("assessments_ids", [])
+    self.convert_data()
 
   THIS_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
   CSV_DIR = os.path.join(THIS_ABS_PATH, "builder_csvs/")
@@ -84,16 +89,23 @@ class CsvBuilder(object):
       verifiers = assessment.get_person_ids_for_rolename("Verifiers")
       needs_verification = True if verifiers else False
       self.assessments[assessment.id].needs_verification = needs_verification
+      self.assessments[assessment.id].slug = assessment.slug
 
-  def convert_data(self, cav_data):
+  def _collect_assmts_status_change(self):
+    """Collect data for assessments that could be only completed."""
+    for assessment_id in self.assmt_ids:
+      self.assessments[assessment_id].only_status = True
+
+  def convert_data(self):
     """Convert request data to appropriate format.
 
       expected output format:
         self.assessments:
             {"assessment_id (int)": assessment_stub,}
     """
+    self._collect_assmts_status_change()
 
-    for cav in cav_data:
+    for cav in self.attr_data:
       cav_value = cav["attribute_value"]
       cav_title = cav["attribute_title"]
 
@@ -157,7 +169,8 @@ class CsvBuilder(object):
                        u"Evidence File"] + self.cav_keys)
 
     for assessment in self.assessments.values():
-      result_csv.append(self._prepare_attributes_row(assessment))
+      if not assessment.only_status:
+        result_csv.append(self._prepare_attributes_row(assessment))
 
   def _need_lca_update(self):
     """Check if we need LCA Comment import section in import data"""
