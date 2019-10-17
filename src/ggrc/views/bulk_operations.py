@@ -17,8 +17,8 @@ from ggrc.models import all_models, background_task
 from ggrc import db
 from ggrc import login
 from ggrc import gdrive
+from ggrc import utils
 from ggrc.app import app
-from ggrc.utils import as_json
 
 CAD = all_models.CustomAttributeDefinition
 CAV = all_models.CustomAttributeValue
@@ -207,6 +207,6 @@ def run_bulk_complete():
   )
   db.session.commit()
   return bg_task.make_response(
-      app.make_response((as_json(bg_task), 200,
+      app.make_response((utils.as_json(bg_task), 200,
                          [('Content-Type', 'text/html')]))
   )
