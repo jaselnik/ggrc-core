@@ -153,7 +153,8 @@ def bulk_cavs_search():
 
 def _detect_files(data):
   """Checks if we need to attach files"""
-  return any(attr["extra"].get("files") for attr in data if attr["extra"])
+  return any(attr["extra"].get("files")
+             for attr in data.get("attributes") if attr["extra"])
 
 
 def _send_notification(update_errors, complete_errors):
