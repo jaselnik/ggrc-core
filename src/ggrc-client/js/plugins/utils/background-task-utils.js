@@ -33,9 +33,7 @@ const getStatus = (url) => {
 
 const checkStatus = (url, onSuccessHandler, onFailureHandler, timeout) => {
   getStatus(url)
-    .done((task) => {
-      const status = task.status;
-
+    .done(({background_task: {status}}) => {
       switch (status) {
         case 'Running':
         case 'Pending': {
