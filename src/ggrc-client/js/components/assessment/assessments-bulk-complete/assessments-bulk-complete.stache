@@ -74,7 +74,7 @@
 </div>
 
 <div class="modal-section">
-  <collapsible-panel class="{{^if isAttributesGenerated}}disabled-block{{/if}}" softMode:from="true" titleText:from="'Provide information below to finish bulk completion of assessments'" expanded:bind="showFields">
+  <collapsible-panel {{^if isAttributesGenerated}}class="disabled-block"{{/if}} softMode:from="true" titleText:from="'Provide information below to finish bulk completion of assessments'" expanded:bind="showFields">
     {{#if attributeFields.length}}
       <assessments-local-custom-attributes
         fields:from="attributeFields"
