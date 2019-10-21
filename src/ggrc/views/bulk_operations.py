@@ -182,6 +182,7 @@ def bulk_complete(task):
                                              bulk_import=True)
   complete_errors = set(complete_assmts["failed_slugs"])
   _send_notification(upd_errors, complete_errors)
+  return app.make_response(('success', 200, [("Content-Type", "text/json")]))
 
 
 @app.route('/api/bulk_operations/complete', methods=['POST'])
