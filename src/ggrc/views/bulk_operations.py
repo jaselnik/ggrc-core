@@ -176,11 +176,12 @@ def bulk_complete(task):
                                         bulk_import=True)
   upd_errors = set(update_attrs["failed_slugs"])
   complete_data = builder.assessments_complete_to_csv(upd_errors)
+  complete_errors = []
   if complete_data:
     complete_assmts = converters.make_import(csv_data=complete_data,
                                              dry_run=False,
                                              bulk_import=True)
-  complete_errors = set(complete_assmts["failed_slugs"])
+    complete_errors = set(complete_assmts["failed_slugs"])
   _send_notification(upd_errors, complete_errors)
   return app.make_response(('success', 200, [("Content-Type", "text/json")]))
 

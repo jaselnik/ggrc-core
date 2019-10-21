@@ -4,7 +4,6 @@
 """Building csv for bulk updates via import."""
 
 import collections
-import os
 import copy
 
 from ggrc import models
@@ -55,6 +54,10 @@ class CsvBuilder(object):
                                "attribute_definition_id": int,
                                "slug": str},]},]
     """
+    self.needs_populate = {
+        "Checkbox": self._populate_checkbox,
+        "Map:Person": self._populate_people,
+    }
     self.assessments = collections.defaultdict(AssessmentStub)
     self.cav_keys = []
     self.assessment_ids = []
@@ -62,8 +65,18 @@ class CsvBuilder(object):
     self.assmt_ids = cav_data.get("assessments_ids", [])
     self.convert_data()
 
-  THIS_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
-  CSV_DIR = os.path.join(THIS_ABS_PATH, "builder_csvs/")
+  @staticmethod
+  def _populate_checkbox(raw_value):
+    """Populate checkbox value. We receive 0/1 from FE"""
+    if raw_value:
+      return "yes"
+    return "no"
+
+  @staticmethod
+  def _populate_people(raw_value):
+    """Take person email. We receive person id instead of email from FE"""
+    person = models.Person.query.filter_by(id=raw_value).first()
+    return person.email
 
   def _collect_keys(self):
     """Collect all CAD titles and assessment ids to create import file"""
@@ -94,7 +107,17 @@ class CsvBuilder(object):
   def _collect_assmts_status_change(self):
     """Collect data for assessments that could be only completed."""
     for assessment_id in self.assmt_ids:
-      self.assessments[assessment_id].only_status = True
+      self.assessments[assessment_id].slug = None
+
+  def _populate_value(self, raw_value, cav_type):
+    """Populate values to be applicable for our import"""
+    value = None
+    if raw_value is not None:
+      if cav_type in self.needs_populate:
+        value = self.needs_populate[cav_type](raw_value)
+      else:
+        value = raw_value
+    return value
 
   def convert_data(self):
     """Convert request data to appropriate format.
@@ -106,8 +129,9 @@ class CsvBuilder(object):
     self._collect_assmts_status_change()
 
     for cav in self.attr_data:
-      cav_value = cav["attribute_value"]
       cav_title = cav["attribute_title"]
+      cav_type = cav["attribute_type"]
+      cav_value = self._populate_value(cav["attribute_value"], cav_type)
 
       extra_data = cav["extra"] if cav["extra"] else {}
 
@@ -122,8 +146,7 @@ class CsvBuilder(object):
         self.assessments[assessment_id].urls.extend(cav_urls)
         self.assessments[assessment_id].files.extend(cav_files)
 
-        if cav_value and cav_title:
-          self.assessments[assessment_id].cavs[cav_title] = cav_value
+        self.assessments[assessment_id].cavs[cav_title] = cav_value
 
         if cav_comment.get("description"):
           comment = copy.copy(cav_comment)
@@ -161,13 +184,18 @@ class CsvBuilder(object):
 
   def _build_assessment_block(self, result_csv):
     """Prepare block for assessment import to update CAVs and evidences"""
-    result_csv.append([u"Object type"])
-    result_csv.append([u"Assessment", u"Code", u"Evidence URL",
-                       u"Evidence File"] + self.cav_keys)
 
+    attributes_rows = []
     for assessment in self.assessments.values():
-      if not assessment.only_status:
-        result_csv.append(self._prepare_attributes_row(assessment))
+      if assessment.cavs:
+        attributes_rows.append(self._prepare_attributes_row(assessment))
+
+    if attributes_rows:
+      result_csv.append([u"Object type"])
+      result_csv.append([u"Assessment", u"Code", u"Evidence URL",
+                         u"Evidence File"] + self.cav_keys)
+      result_csv.extend(attributes_rows)
+      return
 
   def _need_lca_update(self):
     """Check if we need LCA Comment import section in import data"""
