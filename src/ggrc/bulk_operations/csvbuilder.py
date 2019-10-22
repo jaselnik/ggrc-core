@@ -19,7 +19,6 @@ class AssessmentStub(object):
     self.cavs = {}
     self.slug = ""
     self.needs_verification = False
-    self.only_status = False
 
   def __str__(self):
     return str({
@@ -28,7 +27,7 @@ class AssessmentStub(object):
         "comments": self.comments,
         "cavs": self.cavs,
         "slug": self.slug,
-        "verif": self.needs_verification,
+        "verification": self.needs_verification,
     })
 
 
@@ -54,7 +53,7 @@ class CsvBuilder(object):
                                "attribute_definition_id": int,
                                "slug": str},]},]
     """
-    self.needs_populate = {
+    self.populate_fields = {
         "Checkbox": self._populate_checkbox,
         "Map:Person": self._populate_people,
     }
@@ -76,7 +75,7 @@ class CsvBuilder(object):
   def _populate_people(raw_value):
     """Take person email. We receive person id instead of email from FE"""
     person = models.Person.query.filter_by(id=raw_value).first()
-    return person.email
+    return person.email if person else ""
 
   def _collect_keys(self):
     """Collect all CAD titles and assessment ids to create import file"""
@@ -104,19 +103,19 @@ class CsvBuilder(object):
       self.assessments[assessment.id].needs_verification = needs_verification
       self.assessments[assessment.id].slug = assessment.slug
 
-  def _collect_assmts_status_change(self):
-    """Collect data for assessments that could be only completed."""
+  def _collect_assmts(self):
+    """Collect data for assessments that would be updated."""
     for assessment_id in self.assmt_ids:
-      self.assessments[assessment_id].slug = None
+      self.assessments[assessment_id] = AssessmentStub()
+
+  @staticmethod
+  def _populate_raw(raw_value):
+    """Populate raw attributes values w/o special logic"""
+    return raw_value if raw_value else ""
 
   def _populate_value(self, raw_value, cav_type):
     """Populate values to be applicable for our import"""
-    value = None
-    if raw_value is not None:
-      if cav_type in self.needs_populate:
-        value = self.needs_populate[cav_type](raw_value)
-      else:
-        value = raw_value
+    value = self.populate_fields.get(cav_type, self._populate_raw)(raw_value)
     return value
 
   def convert_data(self):
@@ -126,7 +125,7 @@ class CsvBuilder(object):
         self.assessments:
             {"assessment_id (int)": assessment_stub,}
     """
-    self._collect_assmts_status_change()
+    self._collect_assmts()
 
     for cav in self.attr_data:
       cav_title = cav["attribute_title"]
