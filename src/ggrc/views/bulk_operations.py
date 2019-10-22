@@ -13,12 +13,15 @@ from ggrc.views import converters
 from ggrc.bulk_operations import csvbuilder
 from ggrc.login import login_required
 from ggrc.models import all_models, background_task
+from ggrc.notifications.data_handlers import get_object_url
 
 from ggrc import db
 from ggrc import login
 from ggrc import gdrive
+from ggrc import settings
 from ggrc import utils
 from ggrc.app import app
+from ggrc.notifications import common
 
 CAD = all_models.CustomAttributeDefinition
 CAV = all_models.CustomAttributeValue
@@ -157,10 +160,40 @@ def _detect_files(data):
              for attr in data["attributes"] if attr["extra"])
 
 
-def _send_notification(update_errors, complete_errors):
+def _create_notif_data(assessments):
+  result = [
+      {"title": assessment.title,
+       "url": get_object_url(assessment)} for assessment in assessments
+  ]
+  return result
+
+
+def _send_notification(update_errors, complete_errors, ids):
   """Send bulk complete job finished."""
-  del update_errors
-  del complete_errors
+  not_updated_asmnts = db.session.query(all_models.Assessment).filter(
+      all_models.Assessment.slug.in_(update_errors)
+  ).all()
+  not_completed_asmnts = db.session.query(all_models.Assessment).filter(
+      all_models.Assessment.slug.in_(complete_errors)
+  ).all()
+
+  not_updated_ids = set([asmnt.id for asmnt in not_updated_asmnts])
+  not_completed_ids = set([asmnt.id for asmnt in not_completed_asmnts])
+  success_ids = set(ids) - not_updated_ids - not_completed_ids
+
+  success_asmnts = db.session.query(all_models.Assessment).filter(
+      all_models.Assessment.id.in_(success_ids)
+  ).all()
+
+  bulk_data = {
+      "update_errors": _create_notif_data(not_updated_asmnts),
+      "complete_errors": _create_notif_data(not_completed_asmnts),
+      "succeeded": _create_notif_data(success_asmnts),
+  }
+  body = settings.EMAIL_BULK_COMPLETE.render(sync_data=bulk_data)
+  common.send_email(login.get_current_user().email,
+                    "Bulk update of Assessments is finished",
+                    body)
 
 
 @app.route("/_background_tasks/bulk_complete", methods=["POST"])
@@ -182,7 +215,7 @@ def bulk_complete(task):
                                              dry_run=False,
                                              bulk_import=True)
     complete_errors = set(complete_assmts["failed_slugs"])
-  _send_notification(upd_errors, complete_errors)
+  _send_notification(upd_errors, complete_errors, builder.assessment_ids)
   return app.make_response(('success', 200, [("Content-Type", "text/json")]))
 
 
@@ -205,7 +238,7 @@ def run_bulk_complete():
   bg_task = background_task.create_task(
       name="bulk_complete",
       url=flask.url_for(bulk_complete.__name__),
-      queued_callback=lambda _: None,
+      queued_callback=bulk_complete,
       parameters=parameters
   )
   db.session.commit()
