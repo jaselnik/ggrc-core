@@ -33,7 +33,7 @@
     </button>
   </div>
   {{/drawRelatedAssessments}}
-  {{#showOpenButton}}
+  {{#if showOpenButton}}
     {{#if displayItem.viewLink}}
       {{^if displayItem.snapshot}}
         <div class="flex-box-single item-wrapper__button-container">
@@ -44,7 +44,7 @@
         </div>
       {{/if}}
     {{/if}}
-  {{/showOpenButton}}
+  {{/if}}
   {{^searchOnly}}
     <object-selection-item isDisabled:from="isDisabled"
                            isSelected:from="markedSelected"
