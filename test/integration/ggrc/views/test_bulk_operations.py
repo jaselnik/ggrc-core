@@ -31,14 +31,14 @@ class TestBulkOperations(TestCase):
     with factories.single_commit():
       asmt = factories.AssessmentFactory(assessment_type="Control")
       cad_text = factories.CustomAttributeDefinitionFactory(
-          title="text_LCA",
+          title="test_text_LCA",
           definition_type="assessment",
           definition_id=asmt.id,
           attribute_type="Text",
       )
       asmt2 = factories.AssessmentFactory(assessment_type="Control")
       factories.CustomAttributeDefinitionFactory(
-          title="text_LCA",
+          title="test_text_LCA",
           definition_type="assessment",
           definition_id=asmt2.id,
           attribute_type="Text",
@@ -49,7 +49,7 @@ class TestBulkOperations(TestCase):
     expected_response = [{
         "attribute": {
             "attribute_type": "Text",
-            "title": "text_LCA",
+            "title": "test_text_LCA",
             "default_value": "",
             "multi_choice_options": None,
             "multi_choice_mandatory": None,
