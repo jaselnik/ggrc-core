@@ -41,6 +41,7 @@ class CsvBuilder(object):
           attributes:
             [{"attribute_value": str,
               "attribute_title": str,
+              "attribute_type": str,
               "extra":
                 "comment": {"description": str
                             "modified_by": {"type": "Person",

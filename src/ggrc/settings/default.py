@@ -135,6 +135,10 @@ EMAIL_MENTIONED_PERSON = JINJA2.get_template(
     "notifications/email_mentioned.html"
 )
 
+EMAIL_BULK_COMPLETE = JINJA2.get_template(
+    "notifications/bulk_complete.html"
+)
+
 USE_APP_ENGINE_ASSETS_SUBDOMAIN = False
 
 BACKGROUND_COLLECTION_POST_SLEEP = 0
