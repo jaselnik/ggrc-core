@@ -18,17 +18,12 @@ const viewModel = canMap.extend({
   define: {
     showOpenButton: {
       get() {
-        return this.attr('searchOnly') || this.attr('isBulkUpdateView');
-      },
-    },
-    isBulkUpdateView: {
-      get() {
-        return this.attr('itemDetailsViewType') === 'bulk-update';
+        return this.attr('searchOnly') || this.isBulkUpdateView();
       },
     },
     viewClass: {
       get() {
-        return this.attr('isBulkUpdateView') ? 'bulk-update-view' : '';
+        return this.isBulkUpdateView() ? 'bulk-update-view' : '';
       },
     },
   },
@@ -64,6 +59,9 @@ const viewModel = canMap.extend({
   },
   isSnapshot() {
     return this.attr('itemData.type') === Snapshot.model_singular;
+  },
+  isBulkUpdateView() {
+    return this.attr('itemDetailsViewType') === 'bulk-update';
   },
   objectType() {
     if (this.isSnapshot()) {
