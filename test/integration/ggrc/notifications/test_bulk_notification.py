@@ -3,6 +3,7 @@
 """Test notification for assessments bulk operations"""
 import json
 import mock
+
 from integration.ggrc import TestCase
 from integration.ggrc.models import factories
 
@@ -35,7 +36,7 @@ class TestBulkCompleteNotification(TestCase):
                                   headers=self.headers)
     self.assert200(response)
     send_mock.assert_called_once()
-    (_, mail_title, body) = send_mock.call_args[0]
+    _, mail_title, body = send_mock.call_args[0]
     self.assertEqual(mail_title, "Bulk update of Assessments is finished")
     self.assertIn("Bulk Assesments update is finished successfully", body)
     self.assertNotIn("Bulk Assesments update is finished partitially", body)
@@ -67,7 +68,7 @@ class TestBulkCompleteNotification(TestCase):
                                   headers=self.headers)
     self.assert200(response)
     send_mock.assert_called_once()
-    (_, mail_title, body) = send_mock.call_args[0]
+    _, mail_title, body = send_mock.call_args[0]
     self.assertEqual(mail_title, "Bulk update of Assessments is finished")
     self.assertNotIn("Bulk Assesments update is finished successfully", body)
     self.assertNotIn("Bulk Assesments update has failed", body)
@@ -111,7 +112,7 @@ class TestBulkCompleteNotification(TestCase):
                                   headers=self.headers)
     self.assert200(response)
     send_mock.assert_called_once()
-    (_, mail_title, body) = send_mock.call_args[0]
+    _, mail_title, body = send_mock.call_args[0]
     self.assertEqual(mail_title, "Bulk update of Assessments is finished")
     self.assertNotIn("Bulk Assesments update is finished successfully", body)
     self.assertNotIn("Bulk Assesments update is finished partitially", body)
