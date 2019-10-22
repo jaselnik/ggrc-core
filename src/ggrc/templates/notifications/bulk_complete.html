@@ -1,0 +1,156 @@
+{#
+Copyright (C) 2019 Google Inc.
+Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+#}
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+{% import 'notifications/style.html' as style %}
+
+<html xmlns="http://www.w3.org/1999/xhtml" style="margin: 0; padding: 0;">
+<head>
+  <meta name="viewport" content="width=device-width" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Google GRC Email</title>
+</head>
+
+<body {{ style.body_style() }}>
+<div {{ style.notification_container() }} >
+  <table cellspacing="0" cellpadding="0" border="0" style="
+      width: 100%;
+      background-color: #ffffff;
+    ">
+    <tbody>
+    {% if sync_data.succeeded %}
+    <tr>
+      <td>
+        <div style="
+              max-width: 600px !important;
+              padding: 20px;
+              border-bottom: 1px solid #dedede;
+              overflow-wrap: break-word;
+            ">
+          <h2  style="
+                margin: 0;
+                padding: 0;
+                margin-bottom: 10px;
+                font-weight: normal;
+                font-size: 16px;
+                line-height: 1.6;
+                color: #000000;
+              ">Bulk Assesments update is finished successfully for the following Assessments.</h2>
+          <ul  style="
+                margin: 0;
+                padding: 0;
+                font-weight: normal;
+                font-size: 14px;
+                line-height: 1.6;
+              ">
+            {% for asmnt in sync_data.succeeded %}
+              <li style="
+                    margin: 0;
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    list-style-position: inside;
+                    list-style: none;
+                  ">
+                <a href="{{ asmnt.url }}" target="_blank" style="
+                      text-decoration: none;
+                      color: #0288D1;
+                    ">{{ asmnt.title|e }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </td>
+    </tr>
+    {% endif %}
+    {% if sync_data.complete_errors %}
+    <tr>
+      <td>
+        <div style="
+              padding: 20px;
+            ">
+          <h2  style="
+                margin: 0;
+                padding: 0;
+                margin-bottom: 10px;
+                font-weight: normal;
+                font-size: 16px;
+                line-height: 1.6;
+                color: #000000;
+              ">Bulk Assesments update is finished partitially for the following Assessments.</h2>
+          <ul  style="
+                margin: 0;
+                padding: 0;
+                font-weight: normal;
+                font-size: 14px;
+                line-height: 1.6;
+              ">
+            {% for asmnt in sync_data.complete_errors %}
+              <li style="
+                    margin: 0;
+                    padding-top: 2px;
+                    padding-bottom: 2px;
+                    list-style-position: inside;
+                    list-style: none;
+                  ">
+                <a href="{{ asmnt.url }}" target="_blank" style="
+                      text-decoration: none;
+                      color: #0288D1;
+                    ">{{ asmnt.title|e }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </td>
+    </tr>
+    {% endif %}
+    {% if sync_data.update_errors %}
+    <tr>
+      <td>
+        <div style="
+              padding: 20px;
+            ">
+          <h2  style="
+                margin: 0;
+                padding: 0;
+                margin-bottom: 10px;
+                font-weight: normal;
+                font-size: 16px;
+                line-height: 1.6;
+                color: #000000;
+              ">Bulk Assesments update has failed for the following Assessments.</h2>
+          <ul  style="
+                margin: 0;
+                padding: 0;
+                font-weight: normal;
+                font-size: 14px;
+                line-height: 1.6;
+              ">
+            {% for asmnt in sync_data.update_errors %}
+              <li style="
+                      margin: 0;
+                      padding-top: 2px;
+                      padding-bottom: 2px;
+                      list-style-position: inside;
+                      list-style: none;
+                    ">
+                <a href="{{ asmnt.url }}" target="_blank" style="
+                        text-decoration: none;
+                        color: #0288D1;
+                      ">{{ asmnt.title|e }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </td>
+    </tr>
+    {% endif %}
+    </tbody>
+  </table>
+  <div {{ style.notification_footer() }}>Google GRC</div>
+</div>
+</body>
+</html>
