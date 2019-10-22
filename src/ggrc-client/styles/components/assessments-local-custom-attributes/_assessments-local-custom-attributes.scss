@@ -19,8 +19,9 @@
   .field__title-text {
     font-size: 13px;
 
-    > * {
-      vertical-align: middle;
+    label {
+      display: inline;
+      line-height: 16px;
     }
   }
 
@@ -33,6 +34,7 @@
     display: inline-flex;
     flex-wrap: nowrap;
     margin-left: 3px;
+    vertical-align: middle;
 
     .fa-exclamation-circle {
       margin-left: 6px;
@@ -94,7 +96,7 @@
 
     .form-field__content {
       @extend .popover-content__item-value;
-        
+
       .view-wrapper {
         word-break: break-word;
       }
