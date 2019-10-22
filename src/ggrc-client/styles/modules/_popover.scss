@@ -363,5 +363,5 @@
 }
 
 .modal-open .popover.popover-help-wrap {
-  z-index: 3001;
+  z-index: zIndex(popover);
 }
