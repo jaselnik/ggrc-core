@@ -32,6 +32,10 @@
         font-weight: bold;
         font-size: 12px;
         text-transform: uppercase;
+
+        &.custom-attribute-checkbox {
+          padding: 7px 0 5px;
+        }
       }
 
       .form-field__content {
