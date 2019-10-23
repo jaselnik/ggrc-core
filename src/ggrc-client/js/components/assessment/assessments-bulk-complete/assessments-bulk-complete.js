@@ -39,7 +39,6 @@ import {
   create,
   setDefaultStatusConfig,
 } from '../../../plugins/utils/advanced-search-utils';
-import {convertToCaValue} from '../../../plugins/utils/ca-utils';
 
 /**
  * Map of types from FE to BE format
@@ -162,7 +161,14 @@ const viewModel = ObjectOperationsBaseVM.extend({
     return typeof value === 'string' ? value.split(',') : [];
   },
   prepareAttributeValue(type, value) {
-    return type === 'checkbox' ? value === '1' : value;
+    switch (type) {
+      case 'checkbox':
+        return value === '1';
+      case 'date':
+        return value || null;
+      default:
+        return value;
+    }
   },
   prepareRelatedAnswers(relatedAnswers, answersType) {
     return relatedAnswers.map((answer) => ({
@@ -396,6 +402,16 @@ const viewModel = ObjectOperationsBaseVM.extend({
   init() {
     this.initDefaultFilter();
   },
+  getValForCompleteRequest(type, value) {
+    switch (type) {
+      case 'checkbox':
+        return value ? '1' : '0';
+      case 'date':
+        return value || '';
+      default:
+        return value;
+    }
+  },
   buildBulkCompleteRequest() {
     const attributes = this.attr('attributeFields')
       .serialize()
@@ -433,7 +449,7 @@ const viewModel = ObjectOperationsBaseVM.extend({
           extra,
           attribute_type: attributesType[field.type],
           attribute_title: field.title,
-          attribute_value: convertToCaValue(
+          attribute_value: this.getValForCompleteRequest(
             field.type,
             field.value,
             field.defaultValue),
