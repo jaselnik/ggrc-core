@@ -148,7 +148,7 @@ class CsvBuilder(object):
 
         self.assessments[assessment_id].cavs[cav_title] = cav_value
 
-        if cav_comment.get("description"):
+        if cav_comment:
           comment = copy.copy(cav_comment)
           comment["cad_id"] = assessment["attribute_definition_id"]
           self.assessments[assessment_id].comments.append(comment)
