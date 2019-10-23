@@ -213,7 +213,7 @@ class TestBulkComplete(ggrc.TestCase):
             multi_choice_mandatory="2,2",
         )
         assmts.append(assmt)
-        assmts_ids.append(assmt)
+        assmts_ids.append(assmt.id)
 
     bulk_update = [{"assessment_id": asmt.id,
                     "attribute_definition_id": None,

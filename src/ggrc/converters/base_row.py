@@ -184,6 +184,13 @@ class ImportRowConverter(RowConverter):
         self.obj.__class__
     ] = self.obj
 
+  def add_error_slug(self, key=None):
+    if not key:
+      key = self.get_value(self.id_key)
+
+    if key and self.block_converter.converter.bulk_import:
+      self.block_converter.converter.failed_slugs.append(key)
+
   def add_error(self, template, **kwargs):
     """Add error for current row.
 
@@ -198,8 +205,7 @@ class ImportRowConverter(RowConverter):
     self.block_converter.row_errors.append(message)
     key = self.get_value(self.id_key)
 
-    if key is not None:
-      self.block_converter.converter.failed_slugs.append(key)
+    self.add_error_slug(key)
 
     if self.is_new_object_set:
       new_objects = self.block_converter.converter.new_objects[
