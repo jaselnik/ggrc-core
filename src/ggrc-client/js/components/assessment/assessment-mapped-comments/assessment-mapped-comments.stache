@@ -9,7 +9,7 @@
   {{#if isInitialized}}
     <div class="mapped-comments__wrapper">
       {{#if mappedComments.length}}
-        <mapped-comments 
+        <mapped-comments
           mappedItems:from="mappedComments"
           baseInstance:from="instance"
           showNoItemsText:from="false" />

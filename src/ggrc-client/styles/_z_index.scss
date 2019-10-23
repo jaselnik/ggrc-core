@@ -20,7 +20,8 @@ $zindex: (
   'simple-model-overlay': 3299,
   'flash': 9000,
   'dropdown-menu': 9999,
-  'lhn-pin': 9999
+  'lhn-pin': 9999,
+  'popover': 3001,
 );
 
 @function zIndex($name) {
