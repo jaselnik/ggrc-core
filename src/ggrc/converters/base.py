@@ -81,6 +81,7 @@ class BaseConverter(object):
 
 
 class ImportConverter(BaseConverter):
+  # pylint:disable=too-many-instance-attributes
   """Import Converter.
 
   This class contains and handles all block converters and makes sure that
