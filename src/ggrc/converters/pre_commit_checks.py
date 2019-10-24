@@ -138,6 +138,7 @@ def secondary_check_assessment(row_converter):
   new_value = obj.status
   if old_value in obj.NOT_DONE_STATES and new_value in obj.DONE_STATES:
     if hasattr(obj, "preconditions_failed") and obj.preconditions_failed:
+      row_converter.add_error_slug()
       row_converter.add_warning(errors.NO_REQUIRED_ANSWERS_WARNING)
       obj.status = old_value or obj.default_status()
 

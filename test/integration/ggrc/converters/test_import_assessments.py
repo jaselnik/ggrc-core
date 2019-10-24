@@ -246,7 +246,7 @@ class TestAssessmentImport(TestCase):
 
     with mock.patch("ggrc.converters.base.ImportConverter.is_bulk_import",
                     return_value=True):
-      response = self.import_data(OrderedDict([
+      response = self.import_data(collections.OrderedDict([
           ("object_type", "Assessment"),
           ("Code*", assessment_slug),
           ("Evidence File", evidence_file),

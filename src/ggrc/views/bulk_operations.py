@@ -198,7 +198,7 @@ def run_bulk_complete():
       response = app.make_response(("auth", 401,
                                     [("Content-Type", "text/html")]))
       return response
-    parameters["credentials"] = flask.session['credentials']
+    parameters["credentials"] = flask.session.get('credentials')
 
   bg_task = background_task.create_task(
       name="bulk_complete",
