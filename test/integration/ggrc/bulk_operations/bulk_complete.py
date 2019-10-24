@@ -9,23 +9,20 @@ import mock
 from ggrc import models
 from integration import ggrc
 from integration.ggrc.models import factories
-from integration.ggrc import api_helper
 
 
 class TestBulkComplete(ggrc.TestCase):
   """Test assessment bulk complete"""
   def setUp(self):
     super(TestBulkComplete, self).setUp()
-    self.api = api_helper.Api()
     self.client.get('/login')
 
   def test_successfully_completed(self):
     """Test all assessments completed successfully"""
     with factories.single_commit():
-      assmts = []
+      asmts_ids = []
       for _ in range(2):
-        assmts.append(factories.AssessmentFactory(status="Not Started"))
-      asmts_ids = [assessment.id for assessment in assmts]
+        asmts_ids.append(factories.AssessmentFactory(status="Not Started").id)
 
     data = {
         "assessments_ids": asmts_ids,
@@ -39,6 +36,7 @@ class TestBulkComplete(ggrc.TestCase):
 
     self.assert200(response)
     assessments = models.Assessment.query.all()
+    self.assertEqual(len(assessments), 2)
     for assessment in assessments:
       self.assertEqual(assessment.status, "Completed")
 
@@ -92,9 +90,9 @@ class TestBulkComplete(ggrc.TestCase):
                                 headers=self.headers)
 
     self.assert200(response)
-    failed = models.Assessment.query.filter_by(id=failed_id).first().status
+    failed = models.Assessment.query.get(failed_id).status
     self.assertEqual(failed, "Not Started")
-    success = models.Assessment.query.filter_by(id=success_id).first().status
+    success = models.Assessment.query.get(success_id).status
     self.assertEqual(success, "Completed")
 
   def test_mapped_comment(self):
@@ -146,7 +144,7 @@ class TestBulkComplete(ggrc.TestCase):
       self.assertEqual(assessment.status, "Completed")
 
   def test_urls_mapped(self):
-    """Test urls were mapped to assessments and """
+    """Test urls were mapped to assessments and assessments were completed"""
     assmts = []
     assmts_ids = []
     with factories.single_commit():
@@ -192,7 +190,7 @@ class TestBulkComplete(ggrc.TestCase):
   @mock.patch('ggrc.gdrive.file_actions.get_gdrive_file_link')
   @mock.patch('ggrc.gdrive.get_http_auth')
   def test_evidences_mapped(self, _, get_gdrive_link, process_gdrive_mock):
-    """Test urls were mapped to assessments and """
+    """Test files were mapped to assessments and completed successfully"""
     process_gdrive_mock.return_value = {
         "id": "mock_id",
         "webViewLink": "mock_link",
@@ -231,9 +229,9 @@ class TestBulkComplete(ggrc.TestCase):
         }],
     }
     self.init_taskqueue()
-    response = self.api.client.post("/api/bulk_operations/complete",
-                                    data=json.dumps(data),
-                                    headers=self.headers)
+    response = self.client.post("/api/bulk_operations/complete",
+                                data=json.dumps(data),
+                                headers=self.headers)
     self.assert200(response)
     assmts = models.Assessment.query.all()
     for assmt in assmts:

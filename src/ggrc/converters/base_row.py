@@ -185,7 +185,7 @@ class ImportRowConverter(RowConverter):
     ] = self.obj
 
   def add_error_slug(self, key=None):
-    """Add failed to complete assessment slug to list for bulk operations"""
+    """Add failed assessments slug to list for bulk operations"""
     if not key:
       key = self.get_value(self.id_key)
 
