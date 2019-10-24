@@ -3,8 +3,9 @@
 
 """This module provides endpoints to calc cavs in bulk"""
 
-import json
 from collections import OrderedDict
+import json
+import logging
 
 import flask
 from werkzeug import exceptions
@@ -19,11 +20,14 @@ from ggrc.login import login_required
 from ggrc.models import all_models
 from ggrc.models import background_task
 from ggrc.notifications import bulk_notifications
+from ggrc.utils import benchmark
 from ggrc.views import converters
 
 
 CAD = all_models.CustomAttributeDefinition
 CAV = all_models.CustomAttributeValue
+
+logger = logging.getLogger(__name__)
 
 
 def _get_bulk_cad_assessment_data(data):
@@ -159,28 +163,55 @@ def _detect_files(data):
              for attr in data["attributes"] if attr["extra"])
 
 
+def _log_import(data):
+  """Log messages that happened during imports"""
+  warning_messages = ("block_warnings", "row_warnings")
+  error_messages = ("block_errors", "row_errors")
+  for block in data:
+    for message in warning_messages:
+      if block[message]:
+        logger.warning("Warnings during bulk operations: %s", block[message])
+
+    for message in error_messages:
+      if block[message]:
+        logger.error("Errors during bulk operations %s", block[message])
+
+
 @app.route("/_background_tasks/bulk_complete", methods=["POST"])
 @background_task.queued_task
 def bulk_complete(task):
   """Process bulk complete"""
   flask.session['credentials'] = task.parameters.get("credentials")
 
-  builder = csvbuilder.CsvBuilder(task.parameters.get("data", {}))
-  update_data = builder.attributes_update_to_csv()
-  update_attrs = converters.make_import(csv_data=update_data,
-                                        dry_run=False,
-                                        bulk_import=True)
+  with benchmark("Create CsvBuilder"):
+    builder = csvbuilder.CsvBuilder(task.parameters.get("data", {}))
+
+  with benchmark("Prepare import data for attributes update"):
+    update_data = builder.attributes_update_to_csv()
+
+  with benchmark("Update assessments attributes"):
+    update_attrs = converters.make_import(csv_data=update_data,
+                                          dry_run=False,
+                                          bulk_import=True)
+    _log_import(update_attrs["data"])
+
   upd_errors = set(update_attrs["failed_slugs"])
-  complete_data = builder.assessments_complete_to_csv(upd_errors)
+
+  with benchmark("Prepare import data for attributes update"):
+    complete_data = builder.assessments_complete_to_csv(upd_errors)
+
   complete_errors = []
   if complete_data:
-    complete_assmts = converters.make_import(csv_data=complete_data,
-                                             dry_run=False,
-                                             bulk_import=True)
+    with benchmark("Update assessments attributes"):
+      complete_assmts = converters.make_import(csv_data=complete_data,
+                                               dry_run=False,
+                                               bulk_import=True)
     complete_errors = set(complete_assmts["failed_slugs"])
+
   bulk_notifications.send_notification(upd_errors,
                                        complete_errors,
                                        builder.assessment_ids)
+
   return app.make_response(('success', 200, [("Content-Type", "text/json")]))
 
 
