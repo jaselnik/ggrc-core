@@ -426,3 +426,46 @@ class TestCsvBuilder(TestCase):
     }
     self.assert_assessments(builder, expected_data)
     self.assertEqual(builder.assessment_ids, asmt_ids)
+
+  @ddt.data(None, {})
+  def test_attributes_extra_null(self, extra_data):
+    """Test attributes extra data empty"""
+    with factories.single_commit():
+      asmt = factories.AssessmentFactory()
+      cad = factories.CustomAttributeDefinitionFactory(
+          title="Test_LCA",
+          definition_type="assessment",
+          definition_id=asmt.id,
+          attribute_type="Text",
+      )
+    data = {
+        "assessments_ids": [asmt.id],
+        "attributes": [
+            {
+                "attribute_value": "cav_value",
+                "attribute_title": cad.title,
+                "attribute_type": "Text",
+                "extra": extra_data,
+                "bulk_update": [
+                    {
+                        "assessment_id": asmt.id,
+                        "attribute_definition_id": cad.id,
+                        "slug": asmt.slug,
+                    },
+                ]
+            }
+        ]
+    }
+    builder = csvbuilder.CsvBuilder(data)
+    expected_data = {
+        asmt.id: {
+            "files": [],
+            "urls": [],
+            "cavs": {"Test_LCA": "cav_value"},
+            "slug": asmt.slug,
+            "verification": False,
+            "comments": []
+        }
+    }
+    self.assert_assessments(builder, expected_data)
+    self.assertEqual(builder.assessment_ids, [asmt.id])

@@ -5,12 +5,14 @@
 
 import json
 import mock
+import ddt
 
 from ggrc import models
 from integration import ggrc
 from integration.ggrc.models import factories
 
 
+@ddt.ddt
 class TestBulkComplete(ggrc.TestCase):
   """Test assessment bulk complete"""
   def setUp(self):
@@ -193,8 +195,8 @@ class TestBulkComplete(ggrc.TestCase):
     """Test files were mapped to assessments and completed successfully"""
     process_gdrive_mock.return_value = {
         "id": "mock_id",
-        "webViewLink": "link",
-        "name": "name",
+        "webViewLink": "test_mock_link",
+        "name": "mock_name",
     }
     get_gdrive_link.return_value = "mock_id"
     assmts = []
