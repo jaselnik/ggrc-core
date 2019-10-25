@@ -193,8 +193,8 @@ class TestBulkComplete(ggrc.TestCase):
     """Test files were mapped to assessments and completed successfully"""
     process_gdrive_mock.return_value = {
         "id": "mock_id",
-        "webViewLink": "mock_link",
-        "name": "mock_name",
+        "webViewLink": "link",
+        "name": "name",
     }
     get_gdrive_link.return_value = "mock_id"
     assmts = []
@@ -229,6 +229,7 @@ class TestBulkComplete(ggrc.TestCase):
         }],
     }
     self.init_taskqueue()
+
     response = self.client.post("/api/bulk_operations/complete",
                                 data=json.dumps(data),
                                 headers=self.headers)

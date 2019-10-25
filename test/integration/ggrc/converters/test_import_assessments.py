@@ -1210,7 +1210,7 @@ class TestAssessmentImport(TestCase):
           mandatory=True,
       )
       factories.AssessmentFactory(slug=asmt_slug)
-    response = self.import_data(OrderedDict([
+    response = self.import_data(collections.OrderedDict([
         ("object_type", "Assessment"),
         ("Code", asmt_slug),
         ("multiselect_GCA", ""),
@@ -1242,7 +1242,7 @@ class TestAssessmentImport(TestCase):
       asmt = factories.AssessmentFactory(slug=asmt_slug)
       asmt_id = asmt.id
     # update given assessment with empty GCA multiselect type
-    response = self.import_data(OrderedDict([
+    response = self.import_data(collections.OrderedDict([
         ("object_type", "Assessment"),
         ("Code", asmt_slug),
         ("multiselect_GCA", "option 1"),
