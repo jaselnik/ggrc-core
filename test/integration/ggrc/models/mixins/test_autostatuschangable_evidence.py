@@ -5,6 +5,7 @@
 import collections
 
 import ddt
+import mock
 
 from ggrc import models
 from integration.ggrc.access_control import acl_helper
@@ -313,3 +314,21 @@ class TestEvidences(asc.TestMixinAutoStatusChangeableBase):
     evidence = self.refresh_object(evidence, evidence_id)
     self.assertEqual(assessment.status, models.Assessment.PROGRESS_STATE)
     self.assertEqual(getattr(evidence, attr_name), "test text")
+
+  def test_acl_not_implemented(self):
+    """Test error due to tracking mocked evidence and asmt object"""
+    from ggrc.utils.statusaffected import statusaffected
+
+    evindece = mock.MagicMock()
+    evindece.__class__.__name__ = "Evidence"
+    affected_obj = mock.MagicMock()
+    affected_obj.__class__.__name__ = "Assessment"
+
+    with self.assertRaises(NotImplementedError) as exception:
+      statusaffected.StatusAffectedChanges(
+        evindece, affected_obj).was_affected()
+
+      self.assertEqual(
+          exception.exception.message,
+          'Only Roleable instances can be tracked in a current tracker'
+      )

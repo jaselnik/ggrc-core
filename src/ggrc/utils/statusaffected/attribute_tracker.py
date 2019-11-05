@@ -30,6 +30,8 @@ class AttributeChangesTracker(object):
 
     Args:
       obj: Instance tracked by the attr
+    Returns:
+      A boolean response obj has changes for self.attr
     """
     return self._has_changes(obj, self.attr)
 
@@ -38,11 +40,16 @@ class ACLAttributeTracker(AttributeChangesTracker):
   """Changes tracker for acl attributes"""
 
   def track_changes(self, obj):
+    """Check if the obj has had any changes in ACL"""
     # pylint: disable=protected-access
-    for acl in obj._access_control_list:
-      if self._has_changes(acl, 'access_control_people'):
-        return True
-    return False
+
+    from ggrc.access_control import roleable
+
+    if isinstance(obj, roleable.Roleable):
+      return any([self._has_changes(acl, 'access_control_people')
+                  for acl in obj._access_control_list])
+    raise NotImplementedError('Only Roleable instances can be tracked '
+                              'in a current tracker')
 
 
 class AttributesGroupTracker(dict):

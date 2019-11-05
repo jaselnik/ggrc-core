@@ -29,9 +29,14 @@ AFFECTED_MAP = {
 
 class StatusAffectedChanges(object):
   # pylint: disable=too-many-instance-attributes
-  """Validator to change id obj changes are affected"""
+  """Validator obj changes for affected_obj status"""
 
   def __init__(self, obj, affected_obj):
+    """
+    Args:
+      obj: object which has attribute updates
+      affected_obj: object which was affected by changed object
+    """
     self.obj = obj
     self.object_class = obj.__class__.__name__
     self.affected_obj = affected_obj
