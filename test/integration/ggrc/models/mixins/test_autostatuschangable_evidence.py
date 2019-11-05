@@ -7,6 +7,7 @@ import collections
 import ddt
 
 from ggrc import models
+from integration.ggrc.access_control import acl_helper
 from integration.ggrc.models import factories
 from integration.ggrc.models.mixins import test_autostatuschangable as asc
 
@@ -189,3 +190,126 @@ class TestEvidences(asc.TestMixinAutoStatusChangeableBase):
     self._check_csv_response(response, {})
     assessment = self.refresh_object(assessment)
     self.assertEqual(expected_status, assessment.status)
+
+  @ddt.data(
+      models.Assessment.DONE_STATE,
+      models.Assessment.FINAL_STATE,
+  )
+  def test_put_empty_evidence_data(self, status):
+    """Test put empty evidence data assessment status changed"""
+    with factories.single_commit():
+      assessment = factories.AssessmentFactory(status=status)
+      assessment_id = assessment.id
+      evidence = factories.EvidenceUrlFactory()
+      factories.RelationshipFactory(destination=assessment,
+                                    source=evidence)
+    self.api.put(evidence, {})
+    assessment = self.refresh_object(assessment, assessment_id)
+    self.assertEqual(assessment.status, models.Assessment.PROGRESS_STATE)
+
+  @ddt.data(
+      ("notes", models.Assessment.DONE_STATE),
+      ("notes", models.Assessment.FINAL_STATE),
+      ("description", models.Assessment.DONE_STATE),
+      ("description", models.Assessment.FINAL_STATE),
+  )
+  @ddt.unpack
+  def test_put_no_affect_evidence(self, attr_name, status):
+    """Test assessment status not changed unimportant evidence attr changed"""
+    with factories.single_commit():
+      assessment = factories.AssessmentFactory(status=status)
+      assessment_id = assessment.id
+      evidence = factories.EvidenceUrlFactory()
+      evidence_id = evidence.id
+      factories.RelationshipFactory(destination=assessment,
+                                    source=evidence)
+    self.api.put(evidence, {attr_name: "test text"})
+    assessment = self.refresh_object(assessment, assessment_id)
+    evidence = self.refresh_object(evidence, evidence_id)
+    self.assertEqual(assessment.status, status)
+    self.assertEqual(getattr(evidence, attr_name), "test text")
+
+  @ddt.data(
+      models.Assessment.DONE_STATE,
+      models.Assessment.FINAL_STATE,
+  )
+  def test_put_affected_evidence(self, status):
+    """Test put affected of evidence data assessment status changed"""
+    with factories.single_commit():
+      assessment = factories.AssessmentFactory(status=status)
+      assessment_id = assessment.id
+      evidence = factories.EvidenceUrlFactory()
+      factories.RelationshipFactory(destination=assessment,
+                                    source=evidence)
+      person_id = factories.PersonFactory().id
+      role_id = models.AccessControlRole.query.filter(
+          models.AccessControlRole.object_type == "Evidence",
+          models.AccessControlRole.name == 'Admin',
+      ).one().id
+    self.api.put(
+        evidence,
+        {
+            "access_control_list": [
+                acl_helper.get_acl_json(role_id, person_id),
+            ]
+        }
+    )
+    assessment = self.refresh_object(assessment, assessment_id)
+    self.assertEqual(assessment.status, models.Assessment.PROGRESS_STATE)
+
+  @ddt.data(
+      models.Assessment.DONE_STATE,
+      models.Assessment.FINAL_STATE,
+  )
+  def test_put_acl_evidence(self, status):
+    """Test put acl of evidence data assessment status changed"""
+    with factories.single_commit():
+      assessment = factories.AssessmentFactory(status=status)
+      assessment_id = assessment.id
+      evidence = factories.EvidenceUrlFactory()
+      factories.RelationshipFactory(destination=assessment,
+                                    source=evidence)
+      person = factories.PersonFactory()
+      role = models.AccessControlRole.query.filter(
+          models.AccessControlRole.object_type == "Evidence",
+          models.AccessControlRole.name == 'Admin',
+      ).one()
+      assessment.add_person_with_role(person, role)
+    self.api.put(evidence, {"access_control_list": []})
+    assessment = self.refresh_object(assessment, assessment_id)
+    self.assertEqual(assessment.status, models.Assessment.PROGRESS_STATE)
+
+  @ddt.data(
+      ("notes", models.Assessment.DONE_STATE),
+      ("notes", models.Assessment.FINAL_STATE),
+      ("description", models.Assessment.DONE_STATE),
+      ("description", models.Assessment.FINAL_STATE),
+  )
+  @ddt.unpack
+  def test_put_all_affected_evidence(self, attr_name, status):
+    """Test put all affected of evidence data assessment status changed"""
+    with factories.single_commit():
+      assessment = factories.AssessmentFactory(status=status)
+      assessment_id = assessment.id
+      evidence = factories.EvidenceUrlFactory()
+      evidence_id = evidence.id
+      factories.RelationshipFactory(destination=assessment,
+                                    source=evidence)
+      person_id = factories.PersonFactory().id
+      role_id = models.AccessControlRole.query.filter(
+          models.AccessControlRole.object_type == "Evidence",
+          models.AccessControlRole.name == 'Admin',
+      ).one().id
+    self.api.put(
+        evidence,
+        {
+            attr_name: "test text",
+            "access_control_list": [
+                acl_helper.get_acl_json(role_id, person_id),
+            ]
+        }
+    )
+    assessment = self.refresh_object(assessment, assessment_id)
+    evidence = self.refresh_object(evidence, evidence_id)
+    self.assertEqual(assessment.status, models.Assessment.PROGRESS_STATE)
+    self.assertEqual(getattr(evidence, attr_name), "test text")

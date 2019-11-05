@@ -17,6 +17,7 @@ from ggrc.models import relationship
 from ggrc.models.mixins import statusable
 from ggrc.services import signals
 from ggrc.utils import benchmark
+from ggrc.utils.statusaffected import statusaffected
 
 
 Transition = collections.namedtuple('Transition',
@@ -404,7 +405,10 @@ class AutoStatusChangeable(object):
       key = related_settings['key'](obj)
       monitor_states = related_settings['mappings'].get(key, set())
       for auto_changeable in auto_changeables:
-        if auto_changeable.status in monitor_states:
+        if auto_changeable.status in monitor_states and \
+           statusaffected.StatusAffectedChanges(
+                obj, auto_changeable
+           ).was_affected():
           auto_changeable._reset_to_status = auto_changeable.PROGRESS_STATE
           auto_changeable.change_status()
 
