@@ -37,7 +37,7 @@
     </div>
 
     <div class="row-fluid">
-      <div class="span6 {{#instance.computed_errors.title}}field-failure{{/instance.computed_errors.title}}">
+      <div {{#if instance.computed_errors.title}}class="field-failure"{{/if}}>
         <label class="form-label">
           Title
           <i class="fa fa-asterisk"></i>
@@ -62,25 +62,13 @@
     </div>
 
     <div class="row-fluid">
-      <div class="span6">
-        <label>Audit</label>
-        <input type="text" class="input-block-level" value="{{instance.audit.title}}" disabled>
-      </div>
-      <div class="span6">
-        {{#showCaptainAlert}}
-          <div class="width-80">
-            <div class="alert alert-nomargin">
-              <p>If default assignee can not be determined, Audit Captain will become the assignee.</p>
-            </div>
-          </div>
-        {{/showCaptainAlert}}
-      </div>
+      <label>Audit</label>
+      <input type="text" class="input-block-level" value="{{instance.audit.title}}" disabled>
     </div>
 
-    <br />
-
     <div class="row-fluid">
-      <div class="span6 hidable">
+      {{! "span12" class is added to save "hidable" function}}
+      <div class="span12 hidable">
         <label>
           Default assessment procedure
           <i class="grcicon-help-black" rel="tooltip"
@@ -97,8 +85,28 @@
           </rich-text>
         </div>
       </div>
+    </div>
 
-      <div class="span6">
+    {{#if showCaptainAlert}}
+      <div class="row-fluid">
+        <div class="alert">
+          <p>If default assignee can not be determined, Audit Captain will become the assignee.</p>
+        </div>
+      </div>
+    {{/if}}
+
+    <div class="row-fluid">
+      <div class="span4">
+        <label>
+          Assessment workflow
+          <i class="fa fa-asterisk"></i>
+        </label>
+        <dropdown-component
+          optionsList:from="assessmentWorkflows"
+          name:bind="instance.verification_workflow">
+        </dropdown-component>
+      </div>
+      <div class="span8">
         <div class="row-fluid choose-from-select">
           <people-list
             instance:from="instance"
@@ -106,22 +114,57 @@
             labelName:from="'Default Assignees'"
             peopleListAttr:from="'default_people.assignees'"
             peopleValues:from="peopleValues"
-            mandatory:from="true"
-          ></people-list>
-        </div>
-
-        <div class="row-fluid choose-from-select">
-          <people-list
-            instance:from="instance"
-            listName:from="'verifiers'"
-            labelName:from="'Default Verifiers'"
-            peopleListAttr:from="'default_people.verifiers'"
-            hasEmptyValue:from="true"
-            peopleValues:from="peopleValues"
-            mandatory:from="false"
-          ></people-list>
+            mandatory:from="true">
+          </people-list>
         </div>
       </div>
+    </div>
+
+    {{#is_sox_302_verification_flow instance}}
+      <div class="row-fluid">
+        <div class="alert">
+          By checking this checkbox:
+          <p>
+            - Assignees will have read only permissions upon assessment completion.
+          </p>
+          <p>
+            - Verification step will be skipped if only positive answers are given for the assessment. Specify negative answers below.
+          </p>
+        </div>
+      </div>
+    {{/is_sox_302_verification_flow}}
+
+    <div class="row-fluid">
+      <div class="span4 bottom-spacing">
+        {{#if isMultiLevelVerification}}
+          <label>
+            Verification levels
+            <i class="fa fa-question-circle"
+              rel="tooltip"
+              title="Assessment with multiple verification levels needs to be verified by each level sequentially in order to be completed">
+            </i>
+          </label>
+          <dropdown-component
+            optionsList:from="verificationLevels"
+            name:bind="instance.review_levels_count">
+          </dropdown-component>
+        {{/if}}
+      </div>
+      {{^if isMultiLevelVerification}}
+        <div class="span8">
+          <div class="row-fluid choose-from-select">
+            <people-list
+              instance:from="instance"
+              listName:from="'verifiers'"
+              labelName:from="'Default Verifiers'"
+              peopleListAttr:from="'default_people.verifiers'"
+              hasEmptyValue:from="true"
+              peopleValues:from="peopleValues"
+              mandatory:from="false">
+            </people-list>
+          </div>
+        </div>
+      {{/if}}
     </div>
 
     <div class="row-fluid">
@@ -145,37 +188,6 @@
                   tabindex="23">
         </dropdown-component>
       </div>
-    </div>
-
-    <div class="sox-302-enabled">
-      <div class="row-fluid hidable sox-302-enabled__checkbox-content">
-        <label class="sox-302-label">
-          <input type="checkbox"
-            class="sox-302-label__checkbox"
-            el:checked:bind="instance.sox_302_enabled"/>
-              Enable SOX 302 assessment workflow
-        </label>
-        <i class="fa fa-question-circle sox-302-icon"
-          rel="tooltip"
-          title="SOX 302 assessment workflow enables:
-            - Assignees can only read assessment upon its completion.
-            - Autocomplete for positive responses (skip verification).">
-        </i>
-      </div>
-
-      {{#if instance.sox_302_enabled}}
-        <div class="row-fluid hidable">
-          <div class="alert alert-nomargin sox-302-enabled__note">
-            By checking this checkbox:
-            <p>
-              - Assignees will have read only permissions upon assessment completion.
-            </p>
-            <p>
-              - Verification step will be skipped if only positive answers are given for the assessment. Specify negative answers below.
-            </p>
-          </div>
-        </div>
-      {{/if}}
     </div>
 
     <div class="spacing-top row-fluid hidable">

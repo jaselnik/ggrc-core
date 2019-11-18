@@ -5,11 +5,22 @@
 
 import canMap from 'can-map';
 import canComponent from 'can-component';
+import {
+  isMultiLevelFlow,
+  getAssessmentFlows,
+} from '../../plugins/utils/verification-flow-utils';
+
 const peopleTitlesList = [
   'Auditors', 'Principal Assignees', 'Secondary Assignees',
   'Primary Contacts', 'Secondary Contacts', 'Control Operators',
   'Control Owners', 'Risk Owners',
 ];
+const VERIFICATION_LEVELS = [
+  '2', '3', '4', '5', '6', '7', '8', '9', '10',
+];
+
+const DEFAULT_REVIEW_LEVEL = '2';
+
 const PEOPLE_VALUES_OPTIONS = Object.freeze({
   Control: [
     {value: 'Admin', title: 'Object Admins'},
@@ -49,6 +60,8 @@ export default canComponent.extend({
   leakScope: true,
   viewModel: canMap.extend({
     instance: {},
+    assessmentWorkflows: [],
+    verificationLevels: [],
     define: {
       showCaptainAlert: {
         type: Boolean,
@@ -82,6 +95,28 @@ export default canComponent.extend({
           return labels[verifiers];
         },
       },
+      isMultiLevelVerification: {
+        get() {
+          const isMultiLevelVerification =
+            isMultiLevelFlow(this.attr('instance'));
+
+          if (!isMultiLevelVerification) {
+            this.attr('instance.review_levels_count', null);
+          } else {
+            if (!this.attr('instance.review_levels_count')) {
+              this.attr('instance.review_levels_count', DEFAULT_REVIEW_LEVEL);
+            }
+          }
+
+          return isMultiLevelVerification;
+        },
+      },
     },
   }),
+  events: {
+    inserted() {
+      this.viewModel.attr('assessmentWorkflows', getAssessmentFlows());
+      this.viewModel.attr('verificationLevels', VERIFICATION_LEVELS);
+    },
+  },
 });

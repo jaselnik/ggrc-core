@@ -24,11 +24,11 @@
             <div class="template-grid__row-item template-grid__row-item_checkbox">
               <input type="checkbox" el:checked:bind="comment" {{^if editMode}}disabled{{/if}}>
             </div>
-            {{#if instance.sox_302_enabled}}
+            {{#is_sox_302_verification_flow instance}}
               <div class="template-grid__row-item template-grid__row-item_checkbox">
                 <input type="checkbox" el:checked:bind="isNegativeResponse" {{^if editMode}}disabled{{/if}}>
               </div>
-            {{/if}}
+            {{/is_sox_302_verification_flow}}
           {{/is}}
         </div>
       {{/attrs}}

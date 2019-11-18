@@ -25,11 +25,11 @@
         <div class="template-grid__row-item template-grid__row-item_checkbox">
           <h6>Comment required</h6>
         </div>
-        {{#if instance.sox_302_enabled}}
+        {{#is_sox_302_verification_flow instance}}
           <div class="template-grid__row-item template-grid__row-item_checkbox">
             <h6>Is Negative Response</h6>
           </div>
-        {{/if}}
+        {{/is_sox_302_verification_flow}}
       </div>
     </div>
     <div class="template-grid__row-item template-grid__row-item_mandatory-checkbox">

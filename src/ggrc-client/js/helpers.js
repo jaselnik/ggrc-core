@@ -37,6 +37,11 @@ import {
   formatDate,
 } from './plugins/utils/date-utils';
 import {validateAttr, isValidAttr} from './plugins/utils/validation-utils';
+import {
+  isStandardFlow,
+  isSox302Flow,
+  isMultiLevelFlow,
+} from './plugins/utils/verification-flow-utils';
 
 /**
  * Builds class name of two segments - prefix and computed value
@@ -728,3 +733,39 @@ canStache.registerHelper('is_edit_denied', (instance, options) => {
     ? options.fn(options.context)
     : options.inverse(options.context);
 });
+
+/*
+ * Returns true when Standard Verification flow is turned ON for instance.
+ */
+canStache.registerHelper('is_standard_verification_flow',
+  (instance, options) => {
+    instance = isFunction(instance) ? instance(): instance;
+    return isStandardFlow(instance)
+      ? options.fn(options.context)
+      : options.inverse(options.context);
+  }
+);
+
+/*
+ * Returns true when SOX 302 Verification flow is turned ON for instance.
+ */
+canStache.registerHelper('is_sox_302_verification_flow',
+  (instance, options) => {
+    instance = isFunction(instance) ? instance(): instance;
+    return isSox302Flow(instance)
+      ? options.fn(options.context)
+      : options.inverse(options.context);
+  }
+);
+
+/*
+ * Returns true when Multi-level Verification flow is turned ON for instance.
+ */
+canStache.registerHelper('is_ML_verification_flow',
+  (instance, options) => {
+    instance = isFunction(instance) ? instance(): instance;
+    return isMultiLevelFlow(instance)
+      ? options.fn(options.context)
+      : options.inverse(options.context);
+  }
+);

@@ -16,6 +16,7 @@ import {
   ddValidationMapToValue,
 } from '../../../plugins/utils/ca-utils';
 import template from './template-field.stache';
+import {isSox302Flow} from '../../../plugins/utils/verification-flow-utils';
 
 const TEXT_FIELDS = [
   'Text',
@@ -48,8 +49,7 @@ export default canComponent.extend({
         get() {
           const isTextField =
             TEXT_FIELDS.includes(this.attr('field.attribute_type'));
-          return isTextField &&
-            this.attr('instance.sox_302_enabled');
+          return isTextField && isSox302Flow(this.attr('instance'));
         },
       },
     },
@@ -152,7 +152,7 @@ export default canComponent.extend({
       const normalized = this.viewModel.normalizeMandatory(attrs);
       this.viewModel.field.attr('multi_choice_mandatory', normalized);
     },
-    '{viewModel.instance} sox_302_enabled'() {
+    '{viewModel.instance} verification_workflow'() {
       const vm = this.viewModel;
       if (!vm.attr('isTextFieldOptionsVisible')) {
         return;

@@ -89,11 +89,11 @@ describe('template-field component', function () {
   });
 
   describe('emitting events', function () {
-    describe('"{viewModel.instance} sox_302_enabled" event', () => {
+    describe('"{viewModel.instance} verification_workflow" event', () => {
       let event;
 
       beforeEach(() => {
-        const eventName = '{viewModel.instance} sox_302_enabled';
+        const eventName = '{viewModel.instance} verification_workflow';
         event = Component.prototype.events[eventName].bind({viewModel});
       });
 

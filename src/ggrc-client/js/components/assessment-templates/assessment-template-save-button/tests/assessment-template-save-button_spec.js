@@ -183,7 +183,7 @@ describe('assessment-template-save-button component', () => {
 
     it('should call "showConfirm" function when definitions have ' +
     'all negative or positive responses', () => {
-      const instance = {sox_302_enabled: true};
+      const instance = {verification_workflow: 'SOX302'};
       viewModel.attr('instance', instance);
 
       spyOn(viewModel, 'validateNegativeResponses').and.returnValue({
@@ -201,7 +201,7 @@ describe('assessment-template-save-button component', () => {
 
     it('should call "saveInstance" function when definitions do NOT have ' +
     'all negative or positive responses', () => {
-      const instance = {sox_302_enabled: true};
+      const instance = {verification_workflow: 'SOX302'};
       viewModel.attr('instance', instance);
 
       spyOn(viewModel, 'validateNegativeResponses').and.returnValue(null);
@@ -213,18 +213,17 @@ describe('assessment-template-save-button component', () => {
         .toHaveBeenCalledBefore(viewModel.saveInstance);
     });
 
-    it('should call "saveInstance" function when sox_302_enabled is false',
-      () => {
-        const instance = {sox_302_enabled: false};
-        viewModel.attr('instance', instance);
+    it('should call "saveInstance" function when verification_workflow is ' +
+    'NOT SOX302', () => {
+      const instance = {verification_workflow: 'STANDARD'};
+      viewModel.attr('instance', instance);
 
-        save(saveButtonElement, eventSpy);
+      save(saveButtonElement, eventSpy);
 
-        expect(viewModel.showConfirm).not.toHaveBeenCalled();
-        expect(viewModel.saveInstance).toHaveBeenCalled();
-        expect(eventSpy.stopPropagation)
-          .toHaveBeenCalledBefore(viewModel.saveInstance);
-      }
-    );
+      expect(viewModel.showConfirm).not.toHaveBeenCalled();
+      expect(viewModel.saveInstance).toHaveBeenCalled();
+      expect(eventSpy.stopPropagation)
+        .toHaveBeenCalledBefore(viewModel.saveInstance);
+    });
   });
 });

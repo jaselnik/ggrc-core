@@ -47,6 +47,8 @@ export default Cacheable.extend({
       verifiers: 'Auditors',
     },
     status: 'Draft',
+    verification_workflow: 'STANDARD',
+    review_levels_count: null,
   },
   statuses: ['Draft', 'Deprecated', 'Active'],
   tree_view_options: {

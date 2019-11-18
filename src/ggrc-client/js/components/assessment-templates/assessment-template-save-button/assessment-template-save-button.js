@@ -9,6 +9,7 @@ import canStache from 'can-stache';
 import template from './assessment-template-save-button.stache';
 import {confirm} from '../../../plugins/utils/modals';
 import {ddValidationValueToMap} from '../../../plugins/utils/ca-utils';
+import {isSox302Flow} from '../../../plugins/utils/verification-flow-utils';
 
 const NEGATIVE_RESPONSE_TYPES = [
   'Dropdown',
@@ -32,7 +33,7 @@ export default canComponent.extend({
     save(saveButtonElement, ev) {
       ev.stopPropagation();
 
-      if (!this.attr('instance.sox_302_enabled')) {
+      if (!isSox302Flow(this.attr('instance'))) {
         this.saveInstance(saveButtonElement);
         return;
       }
