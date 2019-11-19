@@ -76,6 +76,7 @@ class Program(mega.Mega,
       "documents_file": None,
       "owners": None
   }
+  SORT_DEPEND_ATTRS = {'recipients'}
 
   @classmethod
   def eager_query(cls, **kwargs):

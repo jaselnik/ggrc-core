@@ -161,7 +161,18 @@ class UpdateAttrHandler(object):
       cls._do_update_collection(obj, value, attr_name)
     else:
       try:
-        setattr(obj, attr_name, value)
+        if not(
+           attr_name in getattr(obj.__class__, 'SORT_DEPEND_ATTRS', set()) and
+           value == getattr(obj, attr_name)):
+          # Note: This if-statement was added because of method `setattr`
+          # malfunctioning here. Overrided `setattr` method in sqlalchemy
+          # sets unexpecting value to Text Column.
+          # Issue was defined on a Program.recipients column. Ex:
+          # > value = 'Program Editors,Primary Contacts,Secondary Contacts'
+          # > setattr(program_obj, 'recipients', value)
+          # > print(obj.value)
+          # 'Secondary Contacts,Program Editors,Primary Contacts'
+          setattr(obj, attr_name, value)
       except AttributeError as error:
         logger.error('Unable to set attribute %s: %s', attr_name, error)
         raise

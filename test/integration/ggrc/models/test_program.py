@@ -12,6 +12,7 @@ from ggrc.utils import errors
 from integration.ggrc import api_helper
 from integration.ggrc.models import factories
 from integration.ggrc import TestCase
+from integration.ggrc import review
 
 
 class TestProgram(TestCase):
@@ -162,6 +163,42 @@ class TestProgramVersionHistory(TestCase):
         self.program.custom_attribute_values[0].attribute_value,
         prev_cav_value
     )
+
+  def test_review_not_changed(self):
+    """Test review status and recipients not changed after restore obj"""
+    instance = factories.ProgramFactory()
+
+    def mark_as_reviewed(instance):
+      """Helper function to mark `instance` as reviewed."""
+      response = self.api.post(
+          all_models.Review,
+          {
+              "review": {
+                  "reviewable": {
+                      "type": instance.type,
+                      "id": instance.id,
+                  },
+                  "context": None,
+                  "notification_type": "email",
+                  "status": all_models.Review.STATES.REVIEWED,
+                  "access_control_list": review.build_reviewer_acl(),
+              },
+          },
+      )
+      self.assertStatus(response, 201)
+
+    mark_as_reviewed(instance)
+    instance = self.refresh_object(all_models.Program, instance.id)
+    initial_recipients = instance.recipients
+    initial_review_state = instance.review.status
+    response = self.api.put(
+        instance,
+        self.api.get(all_models.Program, instance.id).json
+    )
+    self.assert200(response)
+    instance = self.refresh_object(all_models.Program, instance.id)
+    self.assertEqual(initial_recipients, instance.recipients)
+    self.assertEqual(initial_review_state, instance.review.status)
 
 
 class TestMegaProgram(TestCase):
