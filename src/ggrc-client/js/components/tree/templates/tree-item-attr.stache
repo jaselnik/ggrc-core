@@ -228,13 +228,9 @@
     </span>
   {{/case}}
 
-  {{#case 'sox_302_enabled'}}
+  {{#case 'verification_workflow'}}
     <span>
-      {{#if instance.sox_302_enabled}}
-        Yes
-      {{else}}
-        No
-      {{/if}}
+      {{get_verification_flow_name instance}}
     </span>
   {{/case}}
 
