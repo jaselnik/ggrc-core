@@ -9,6 +9,7 @@ import collections
 
 import ddt
 
+from ggrc import sox
 from ggrc.models import all_models
 from ggrc.models.mixins import statusable
 from ggrc.models.mixins import with_sox_302
@@ -129,9 +130,18 @@ class TestImportWithSOX302(BaseTestWithSOX302):
   """Test import of `WithSOX302Flow` objects."""
 
   @ddt.data(
-      {"imported_value": "yes", "exp_value": True},
-      {"imported_value": "no", "exp_value": False},
-      {"imported_value": "", "exp_value": False},
+      {
+          "imported_value": sox.VerificationWorkflow.SOX302,
+          "exp_value": True,
+      },
+      {
+          "imported_value": sox.VerificationWorkflow.STANDARD,
+          "exp_value": False,
+      },
+      {
+          "imported_value": sox.VerificationWorkflow.MLV,
+          "exp_value": False,
+      },
   )
   @ddt.unpack
   def test_sox_302_tmpl_create(self, imported_value, exp_value):
@@ -146,7 +156,7 @@ class TestImportWithSOX302(BaseTestWithSOX302):
         ("Title", "AssessmentTemplate Title"),
         ("Default Assessment Type*", "Control"),
         ("Default Assignees*", "Auditors"),
-        ("SOX 302 assessment workflow", imported_value),
+        ("Verification Workflow", imported_value),
     ])
 
     self._login()
@@ -158,24 +168,34 @@ class TestImportWithSOX302(BaseTestWithSOX302):
     self._assert_sox_302_enabled_flag(tmpl, exp_value)
 
   @ddt.data(
-      {"init_value": True, "imported_value": "yes", "exp_value": True},
-      {"init_value": True, "imported_value": "no", "exp_value": False},
-      {"init_value": True, "imported_value": "", "exp_value": True},
-      {"init_value": False, "imported_value": "yes", "exp_value": True},
-      {"init_value": False, "imported_value": "no", "exp_value": False},
-      {"init_value": False, "imported_value": "", "exp_value": False},
+      {
+          "init_workflow": sox.VerificationWorkflow.STANDARD,
+          "imported_value": sox.VerificationWorkflow.SOX302,
+          "exp_value": True,
+      },
+      {
+          "init_workflow": sox.VerificationWorkflow.MLV,
+          "imported_value": sox.VerificationWorkflow.SOX302,
+          "exp_value": True,
+      },
+      {
+          "init_workflow": sox.VerificationWorkflow.STANDARD,
+          "imported_value": sox.VerificationWorkflow.MLV,
+          "exp_value": False,
+      },
   )
   @ddt.unpack
-  def test_sox_302_tmpl_update(self, init_value, imported_value, exp_value):
+  def test_sox_302_tmpl_update(self, init_workflow, imported_value, exp_value):
     """Test SOX302 enabled={exp_value} when update asmt tmpl via import."""
     tmpl = ggrc_factories.AssessmentTemplateFactory(
-        sox_302_enabled=init_value)
+        verification_workflow=init_workflow,
+    )
     tmpl_id = tmpl.id
 
     asmt_tmpl_data = collections.OrderedDict([
         ("object_type", "Assessment Template"),
         ("Code*", tmpl.slug),
-        ("SOX 302 assessment workflow", imported_value),
+        ("Verification Workflow", imported_value),
     ])
 
     self._login()
@@ -186,17 +206,83 @@ class TestImportWithSOX302(BaseTestWithSOX302):
     self._assert_sox_302_enabled_flag(tmpl, exp_value)
 
   @ddt.data(
-      {"imported_value": "yes", "exp_value": False},
-      {"imported_value": "no", "exp_value": False},
-      {"imported_value": "", "exp_value": False},
+      {
+          "asmt_workflow": sox.VerificationWorkflow.SOX302,
+          "tmpl_workflow": sox.VerificationWorkflow.SOX302,
+          "exp_value": True,
+      },
+      {
+          "asmt_workflow": sox.VerificationWorkflow.SOX302,
+          "tmpl_workflow": sox.VerificationWorkflow.STANDARD,
+          "exp_value": True,
+      },
+      {
+          "asmt_workflow": sox.VerificationWorkflow.STANDARD,
+          "tmpl_workflow": sox.VerificationWorkflow.SOX302,
+          "exp_value": False,
+      },
+      {
+          "asmt_workflow": sox.VerificationWorkflow.STANDARD,
+          "tmpl_workflow": sox.VerificationWorkflow.STANDARD,
+          "exp_value": False,
+      },
+  )
+  @ddt.unpack
+  def test_sox_302_asmt_with_tmpl_upd(self, asmt_workflow,
+                                      tmpl_workflow, exp_value):
+    """Test SOX 302 enabled is immutable when update asmt with tmpl via import.
+
+    Test `sox_302_enabled` on Assessment could not be set via import during
+    Assessment update if there is an AssessmentTemplate provided in import
+    data. SOX 302 enabled flag is read only on Assessment and could not be
+    updated in noway.
+    """
+    with ggrc_factories.single_commit():
+      asmt = ggrc_factories.AssessmentFactory(
+          verification_workflow=asmt_workflow,
+      )
+      tmpl = ggrc_factories.AssessmentTemplateFactory(
+          audit=asmt.audit,
+          verification_workflow=tmpl_workflow,
+      )
+
+    asmt_id = asmt.id
+
+    asmt_data = collections.OrderedDict([
+        ("object_type", "Assessment"),
+        ("Code*", asmt.slug),
+        ("Template", tmpl.slug),
+    ])
+
+    self._login()
+    response = self.import_data(asmt_data)
+
+    self._check_csv_response(response, {})
+    asmt = self._refresh_object(asmt.__class__, asmt_id)
+    self._assert_sox_302_enabled_flag(asmt, exp_value)
+
+  @ddt.data(
+      {
+          "imported_value": sox.VerificationWorkflow.SOX302,
+          "exp_value": False,
+      },
+      {
+          "imported_value": sox.VerificationWorkflow.STANDARD,
+          "exp_value": False,
+      },
+      {
+          "imported_value": "",
+          "exp_value": False,
+      },
   )
   @ddt.unpack
   def test_sox_302_immut_asmt_create(self, imported_value, exp_value):
-    """Test SOX 302 enabled is immutable when create asmt via import.
+    """
+      Test SOX 302 enabled is immutable when create asmt via import.
 
-    Test `sox_302_enabled` on Assessment could not be set via import if there
-    isn't any AssessmentTemplate provided in import data. SOX 302 enabled flag
-    is read only on Assessment and could be set only from template.
+      Test `sox_302_enabled` on Assessment could not be set via import if there
+      isn't any AssessmentTemplate provided in import data. SOX 302 enabled
+      flag is read only on Assessment and could be set only from template.
     """
     audit = ggrc_factories.AuditFactory()
     audit_id = audit.id
@@ -209,7 +295,7 @@ class TestImportWithSOX302(BaseTestWithSOX302):
         ("Title", "Assessment Title"),
         ("Assignees", "user@example.com"),
         ("Creators", "user@example.com"),
-        ("SOX 302 assessment workflow", imported_value),
+        ("Verification Workflow", imported_value),
     ])
 
     self._login()
@@ -220,109 +306,51 @@ class TestImportWithSOX302(BaseTestWithSOX302):
     self._assert_sox_302_enabled_flag(asmt, exp_value)
 
   @ddt.data(
-      {"tmpl_value": True, "imported_value": "yes", "exp_value": True},
-      {"tmpl_value": True, "imported_value": "no", "exp_value": True},
-      {"tmpl_value": True, "imported_value": "", "exp_value": True},
-      {"tmpl_value": False, "imported_value": "yes", "exp_value": False},
-      {"tmpl_value": False, "imported_value": "no", "exp_value": False},
-      {"tmpl_value": False, "imported_value": "", "exp_value": False},
-  )
-  @ddt.unpack
-  def test_sox_302_asmt_with_tmpl_create(self, tmpl_value, imported_value,
-                                         exp_value):
-    # pylint: disable=invalid-name
-    """Test SOX 302 enabled is mutable when create asmt with tmpl via import.
-
-    Test `sox_302_enabled` on Assessment could be set via import if there is an
-    AssessmentTemplate provided in import data. SOX 302 enabled flag is read
-    only on Assessment and could be set only from template.
-    """
-    with ggrc_factories.single_commit():
-      audit = ggrc_factories.AuditFactory()
-      tmpl = ggrc_factories.AssessmentTemplateFactory(
-          audit=audit,
-          sox_302_enabled=tmpl_value,
-      )
-    audit_id = audit.id
-
-    asmt_data = collections.OrderedDict([
-        ("object_type", "Assessment"),
-        ("Code*", ""),
-        ("Template", tmpl.slug),
-        ("Audit*", audit.slug),
-        ("Title", "Assessment Title"),
-        ("Assignees", "user@example.com"),
-        ("Creators", "user@example.com"),
-        ("SOX 302 assessment workflow", imported_value),
-    ])
-
-    self._login()
-    response = self.import_data(asmt_data)
-
-    self._check_csv_response(response, {})
-    asmt = self._get_query_by_audit_for(all_models.Assessment, audit_id).one()
-    self._assert_sox_302_enabled_flag(asmt, exp_value)
-
-  @ddt.data(
-      {"init_value": True, "imported_value": "yes", "exp_value": True},
-      {"init_value": True, "imported_value": "no", "exp_value": True},
-      {"init_value": True, "imported_value": "", "exp_value": True},
-      {"init_value": False, "imported_value": "yes", "exp_value": False},
-      {"init_value": False, "imported_value": "no", "exp_value": False},
-      {"init_value": False, "imported_value": "", "exp_value": False},
+      {
+          "init_value": sox.VerificationWorkflow.SOX302,
+          "imported_value": sox.VerificationWorkflow.STANDARD,
+          "exp_value": True,
+      },
+      {
+          "init_value": sox.VerificationWorkflow.SOX302,
+          "imported_value": "",
+          "exp_value": True,
+      },
+      {
+          "init_value": sox.VerificationWorkflow.STANDARD,
+          "imported_value": sox.VerificationWorkflow.SOX302,
+          "exp_value": False,
+      },
+      {
+          "init_value": sox.VerificationWorkflow.SOX302,
+          "imported_value": "",
+          "exp_value": True,
+      },
+      {
+          "init_value": sox.VerificationWorkflow.STANDARD,
+          "imported_value": "",
+          "exp_value": False,
+      },
   )
   @ddt.unpack
   def test_sox_302_immut_asmt_upd(self, init_value, imported_value, exp_value):
-    """Test SOX 302 enabled is immutable when update asmt via import.
-
-    Test `sox_302_enabled` on Assessment could not be set via import during
-    Assessment update if there isn't any AssessmentTemplate provided in import
-    data. SOX 302 enabled flag is read only on Assessment and could not be
-    updated in noway.
     """
-    asmt = ggrc_factories.AssessmentFactory(sox_302_enabled=init_value)
+      Test SOX 302 enabled is immutable when update asmt via import.
+
+      Test `sox_302_enabled` on Assessment could not be set via import during
+      Assessment update if there isn't any AssessmentTemplate provided in
+      import data. SOX 302 enabled flag is read only on Assessment and could
+      not be updated in noway.
+    """
+    asmt = ggrc_factories.AssessmentFactory(
+        verification_workflow=init_value,
+    )
     asmt_id = asmt.id
 
     asmt_data = collections.OrderedDict([
         ("object_type", "Assessment"),
         ("Code*", asmt.slug),
-        ("SOX 302 assessment workflow", imported_value),
-    ])
-
-    self._login()
-    response = self.import_data(asmt_data)
-
-    self._check_csv_response(response, {})
-    asmt = self._refresh_object(asmt.__class__, asmt_id)
-    self._assert_sox_302_enabled_flag(asmt, exp_value)
-
-  @ddt.data(
-      {"init_value": True, "tmpl_value": True, "exp_value": True},
-      {"init_value": True, "tmpl_value": False, "exp_value": True},
-      {"init_value": False, "tmpl_value": True, "exp_value": False},
-      {"init_value": False, "tmpl_value": False, "exp_value": False},
-  )
-  @ddt.unpack
-  def test_sox_302_asmt_with_tmpl_upd(self, init_value, tmpl_value, exp_value):
-    """Test SOX 302 enabled is immutable when update asmt with tmpl via import.
-
-    Test `sox_302_enabled` on Assessment could not be set via import during
-    Assessment update if there is an AssessmentTemplate provided in import
-    data. SOX 302 enabled flag is read only on Assessment and could not be
-    updated in noway.
-    """
-    with ggrc_factories.single_commit():
-      asmt = ggrc_factories.AssessmentFactory(sox_302_enabled=init_value)
-      tmpl = ggrc_factories.AssessmentTemplateFactory(
-          audit=asmt.audit,
-          sox_302_enabled=tmpl_value,
-      )
-    asmt_id = asmt.id
-
-    asmt_data = collections.OrderedDict([
-        ("object_type", "Assessment"),
-        ("Code*", asmt.slug),
-        ("Template", tmpl.slug),
+        ("Verification Workflow", imported_value),
     ])
 
     self._login()
@@ -392,8 +420,8 @@ class TestExportWithSOX302(query_helper.WithQueryApi,
                            BaseTestWithSOX302):
   """Test export of of `WithSOX302Flow` objects."""
 
-  def _assert_sox_302_enabled_flag_expored(self, exported_data, obj_name,
-                                           expected_value):
+  def _assert_sox_302_enabled_flag_exported(self, exported_data, obj_name,
+                                            expected_value):
     # type: (dict, str, str) -> None
     # pylint: disable=invalid-name
     """Assert that `sox_302_enabled` has expected value in exported data.
@@ -415,18 +443,20 @@ class TestExportWithSOX302(query_helper.WithQueryApi,
     self.assertEqual(1, len(exported_data[obj_name]))
     exported_obj_data = exported_data[obj_name][0]
     self.assertEqual(
-        exported_obj_data["SOX 302 assessment workflow"],
+        exported_obj_data["Verification Workflow"],
         expected_value,
     )
 
   @ddt.data(
-      {"obj_value": True, "exp_value": "yes"},
-      {"obj_value": False, "exp_value": "no"},
+      sox.VerificationWorkflow.SOX302,
+      sox.VerificationWorkflow.STANDARD,
+      sox.VerificationWorkflow.MLV,
   )
-  @ddt.unpack
-  def test_sox_302_tmpl_export(self, obj_value, exp_value):
+  def test_sox_302_tmpl_export(self, workflow):
     """Test `SOX 302 assessment workflow` is exported correctly for tmpl."""
-    tmpl = ggrc_factories.AssessmentTemplateFactory(sox_302_enabled=obj_value)
+    tmpl = ggrc_factories.AssessmentTemplateFactory(
+        verification_workflow=workflow,
+    )
     tmpl_id = tmpl.id
 
     self._login()
@@ -437,23 +467,26 @@ class TestExportWithSOX302(query_helper.WithQueryApi,
         )
     ])
 
-    self._assert_sox_302_enabled_flag_expored(
+    self._assert_sox_302_enabled_flag_exported(
         exported_data,
         "Assessment Template",
-        exp_value,
+        workflow,
     )
 
   @ddt.data(
-      {"obj_value": True, "exp_value": "yes"},
-      {"obj_value": False, "exp_value": "no"},
+      sox.VerificationWorkflow.SOX302,
+      sox.VerificationWorkflow.STANDARD,
+      sox.VerificationWorkflow.MLV,
   )
-  @ddt.unpack
-  def test_sox_302_asmt_export(self, obj_value, exp_value):
+  def test_sox_302_asmt_export(self, workflow):
     """Test `SOX 302 assessment workflow` is exported correctly for asmt."""
-    asmt = ggrc_factories.AssessmentFactory(sox_302_enabled=obj_value)
+    asmt = ggrc_factories.AssessmentFactory(
+        verification_workflow=workflow,
+    )
     asmt_id = asmt.id
 
     self._login()
+
     exported_data = self.export_parsed_csv([
         self._make_query_dict(
             "Assessment",
@@ -461,10 +494,10 @@ class TestExportWithSOX302(query_helper.WithQueryApi,
         )
     ])
 
-    self._assert_sox_302_enabled_flag_expored(
+    self._assert_sox_302_enabled_flag_exported(
         exported_data,
         "Assessment",
-        exp_value,
+        workflow,
     )
 
 
@@ -478,11 +511,17 @@ class TestApiWithSOX302(BaseTestWithSOX302):
     self.api = api_helper.Api()
 
   @ddt.data(
-      {"sent_value": True, "exp_value": True},
-      {"sent_value": False, "exp_value": False},
+      {
+          "workflow": sox.VerificationWorkflow.SOX302,
+          "exp_value": True,
+      },
+      {
+          "workflow": sox.VerificationWorkflow.STANDARD,
+          "exp_value": False,
+      },
   )
   @ddt.unpack
-  def test_sox_302_tmpl_create(self, sent_value, exp_value):
+  def test_sox_302_tmpl_create(self, workflow, exp_value):
     """Test SOX302 enabled={exp_value} when create asmt tmpl via API."""
     audit = ggrc_factories.AuditFactory()
     audit_id = audit.id
@@ -498,7 +537,7 @@ class TestApiWithSOX302(BaseTestWithSOX302):
                     "verifiers": "Admin",
                 },
                 "title": "AssessmentTemplate Title",
-                "sox_302_enabled": sent_value,
+                "verification_workflow": workflow,
             },
         },
     )
@@ -509,22 +548,40 @@ class TestApiWithSOX302(BaseTestWithSOX302):
     self._assert_sox_302_enabled_flag(tmpl, exp_value)
 
   @ddt.data(
-      {"init_value": True, "sent_value": True, "exp_value": True},
-      {"init_value": True, "sent_value": False, "exp_value": False},
-      {"init_value": False, "sent_value": True, "exp_value": True},
-      {"init_value": False, "sent_value": False, "exp_value": False},
+      {
+          "init_workflow": sox.VerificationWorkflow.SOX302,
+          "sent_workflow": sox.VerificationWorkflow.SOX302,
+          "exp_value": True,
+      },
+      {
+          "init_workflow": sox.VerificationWorkflow.SOX302,
+          "sent_workflow": sox.VerificationWorkflow.STANDARD,
+          "exp_value": False,
+      },
+      {
+          "init_workflow": sox.VerificationWorkflow.STANDARD,
+          "sent_workflow": sox.VerificationWorkflow.SOX302,
+          "exp_value": True,
+      },
+      {
+          "init_workflow": sox.VerificationWorkflow.STANDARD,
+          "sent_workflow": sox.VerificationWorkflow.STANDARD,
+          "exp_value": False,
+      },
   )
   @ddt.unpack
-  def test_sox_302_tmpl_update(self, init_value, sent_value, exp_value):
+  def test_sox_302_tmpl_update(self, init_workflow, sent_workflow, exp_value):
     """Test SOX302 enabled={exp_value} when update asmt tmpl via API."""
+
     tmpl = ggrc_factories.AssessmentTemplateFactory(
-        sox_302_enabled=init_value)
+        verification_workflow=init_workflow,
+    )
     tmpl_id = tmpl.id
 
     response = self.api.put(
         tmpl,
         {
-            "sox_302_enabled": sent_value,
+            "verification_workflow": sent_workflow,
         },
     )
 
@@ -533,14 +590,16 @@ class TestApiWithSOX302(BaseTestWithSOX302):
     self._assert_sox_302_enabled_flag(tmpl, exp_value)
 
   @ddt.data(
-      {"orig_value": True, "exp_value": True},
-      {"orig_value": False, "exp_value": False},
+      {"orig_value": sox.VerificationWorkflow.SOX302, "exp_value": True},
+      {"orig_value": sox.VerificationWorkflow.STANDARD, "exp_value": False},
   )
   @ddt.unpack
   def test_sox_302_tmpl_clone(self, orig_value, exp_value):
     """Test AssessmentTemplate SOX 302 enabled={0} when clone via API."""
+
     tmpl = ggrc_factories.AssessmentTemplateFactory(
-        sox_302_enabled=orig_value)
+        verification_workflow=orig_value,
+    )
     audit_id = tmpl.audit.id
     tmpl_id = tmpl.id
 
@@ -565,8 +624,8 @@ class TestApiWithSOX302(BaseTestWithSOX302):
     self._assert_sox_302_enabled_flag(tmpl_clone, exp_value)
 
   @ddt.data(
-      {"sent_value": True, "exp_value": False},
-      {"sent_value": False, "exp_value": False},
+      {"sent_value": sox.VerificationWorkflow.SOX302, "exp_value": False},
+      {"sent_value": sox.VerificationWorkflow.STANDARD, "exp_value": False},
   )
   @ddt.unpack
   def test_sox_302_immut_asmt_create(self, sent_value, exp_value):
@@ -585,7 +644,7 @@ class TestApiWithSOX302(BaseTestWithSOX302):
             "assessment": {
                 "audit": {"id": audit.id},
                 "title": "Assessment Title",
-                "sox_302_enabled": sent_value,
+                "verification_workflow": sent_value,
             },
         },
     )
@@ -595,10 +654,26 @@ class TestApiWithSOX302(BaseTestWithSOX302):
     self._assert_sox_302_enabled_flag(asmt, exp_value)
 
   @ddt.data(
-      {"tmpl_value": True, "sent_value": True, "exp_value": True},
-      {"tmpl_value": False, "sent_value": True, "exp_value": False},
-      {"tmpl_value": True, "sent_value": False, "exp_value": True},
-      {"tmpl_value": False, "sent_value": False, "exp_value": False},
+      {
+          "tmpl_value": sox.VerificationWorkflow.SOX302,
+          "sent_value": sox.VerificationWorkflow.SOX302,
+          "exp_value": True,
+      },
+      {
+          "tmpl_value": sox.VerificationWorkflow.STANDARD,
+          "sent_value": sox.VerificationWorkflow.SOX302,
+          "exp_value": False,
+      },
+      {
+          "tmpl_value": sox.VerificationWorkflow.SOX302,
+          "sent_value": sox.VerificationWorkflow.STANDARD,
+          "exp_value": True,
+      },
+      {
+          "tmpl_value": sox.VerificationWorkflow.STANDARD,
+          "sent_value": sox.VerificationWorkflow.STANDARD,
+          "exp_value": False,
+      },
   )
   @ddt.unpack
   def test_sox_302_asmt_with_tmpl_create(self, tmpl_value, sent_value,
@@ -614,7 +689,7 @@ class TestApiWithSOX302(BaseTestWithSOX302):
       audit = ggrc_factories.AuditFactory()
       asmt_tmpl = ggrc_factories.AssessmentTemplateFactory(
           audit=audit,
-          sox_302_enabled=tmpl_value,
+          verification_workflow=tmpl_value,
       )
     audit_id = audit.id
 
@@ -625,7 +700,7 @@ class TestApiWithSOX302(BaseTestWithSOX302):
                 "audit": {"id": audit.id},
                 "template": {"id": asmt_tmpl.id},
                 "title": "Assessment Title",
-                "sox_302_enabled": sent_value,
+                "verification_workflow": sent_value,
             },
         },
     )
@@ -635,10 +710,24 @@ class TestApiWithSOX302(BaseTestWithSOX302):
     self._assert_sox_302_enabled_flag(asmt, exp_value)
 
   @ddt.data(
-      {"init_value": True, "sent_value": True, "exp_value": True},
-      {"init_value": True, "sent_value": False, "exp_value": True},
-      {"init_value": False, "sent_value": True, "exp_value": False},
-      {"init_value": False, "sent_value": False, "exp_value": False},
+      {
+          "init_value": sox.VerificationWorkflow.SOX302,
+          "sent_value": sox.VerificationWorkflow.SOX302, "exp_value": True},
+      {
+          "init_value": sox.VerificationWorkflow.SOX302,
+          "sent_value": sox.VerificationWorkflow.STANDARD,
+          "exp_value": True,
+      },
+      {
+          "init_value": sox.VerificationWorkflow.STANDARD,
+          "sent_value": sox.VerificationWorkflow.SOX302,
+          "exp_value": False,
+      },
+      {
+          "init_value": sox.VerificationWorkflow.STANDARD,
+          "sent_value": sox.VerificationWorkflow.STANDARD,
+          "exp_value": False,
+      },
   )
   @ddt.unpack
   def test_sox_302_immut_asmt_upd(self, init_value, sent_value, exp_value):
@@ -648,13 +737,15 @@ class TestApiWithSOX302(BaseTestWithSOX302):
     SOX 302 enabled flag is read only on Assessment and could be set only
     during creation with AssessmentTemplate.
     """
-    asmt = ggrc_factories.AssessmentFactory(sox_302_enabled=init_value)
+    asmt = ggrc_factories.AssessmentFactory(
+        verification_workflow=init_value,
+    )
     asmt_id = asmt.id
 
     response = self.api.put(
         asmt,
         {
-            "sox_302_enabled": sent_value,
+            "verification_workflow": sent_value,
         },
     )
 
@@ -695,23 +786,27 @@ class TestQueriesWithSOX302(query_helper.WithQueryApi,
     )
 
   @ddt.data(
-      {"obj_value": True, "filter_by_value": "yes"},
-      {"obj_value": False, "filter_by_value": "no"},
+      sox.VerificationWorkflow.STANDARD,
+      sox.VerificationWorkflow.SOX302,
   )
-  @ddt.unpack
-  def test_sox_302_enabled_filter_tmpl(self, obj_value, filter_by_value):
+  def test_sox_302_enabled_filter_tmpl(self, filter_by_value):
     # pylint: disable=invalid-name
     """Test tmpl could be filtered by sox_302_enabled field."""
+
     with ggrc_factories.single_commit():
       tmpl = ggrc_factories.AssessmentTemplateFactory(
-          sox_302_enabled=obj_value)
-      ggrc_factories.AssessmentTemplateFactory(sox_302_enabled=(not obj_value))
+          verification_workflow=filter_by_value,
+      )
+      ggrc_factories.AssessmentTemplateFactory(
+          verification_workflow=sox.VerificationWorkflow.MLV,
+      )
+
     searched_tmpl_id = tmpl.id
 
     query_request_data = [
         self._make_query_dict(
             "AssessmentTemplate",
-            expression=["SOX 302 assessment workflow", "=", filter_by_value],
+            expression=["Verification Workflow", "=", filter_by_value],
         ),
     ]
 
@@ -727,21 +822,24 @@ class TestQueriesWithSOX302(query_helper.WithQueryApi,
     )
 
   @ddt.data(
-      {"obj_value": True, "filter_by_value": "yes"},
-      {"obj_value": False, "filter_by_value": "no"},
+      sox.VerificationWorkflow.STANDARD,
+      sox.VerificationWorkflow.SOX302,
   )
-  @ddt.unpack
-  def test_sox_302_enabled_filter(self, obj_value, filter_by_value):
+  def test_sox_302_enabled_filter(self, filter_by_value):
     """Test asmt could be filtered by sox_302_enabled field."""
     with ggrc_factories.single_commit():
-      asmt = ggrc_factories.AssessmentFactory(sox_302_enabled=obj_value)
-      ggrc_factories.AssessmentFactory(sox_302_enabled=(not obj_value))
+      asmt = ggrc_factories.AssessmentFactory(
+          verification_workflow=filter_by_value,
+      )
+      ggrc_factories.AssessmentFactory(
+          verification_workflow=sox.VerificationWorkflow.MLV,
+      )
     searched_amst_id = asmt.id
 
     query_request_data = [
         self._make_query_dict(
             "Assessment",
-            expression=["SOX 302 assessment workflow", "=", filter_by_value],
+            expression=["Verification Workflow", "=", filter_by_value],
         ),
     ]
 
@@ -881,8 +979,8 @@ class TestStatusFlowWithSOX302(BaseTestWithSOX302):
     """Test status change flow via API for SOX 302 objects."""
     with ggrc_factories.single_commit():
       asmt = ggrc_factories.AssessmentFactory(
-          sox_302_enabled=True,
           status=start_status,
+          verification_workflow=sox.VerificationWorkflow.SOX302,
       )
       verifier = ggrc_factories.PersonFactory()
       asmt.add_person_with_role_name(verifier, "Verifiers")
@@ -977,8 +1075,8 @@ class TestStatusFlowWithSOX302(BaseTestWithSOX302):
     """Test status change flow via import for SOX 302 objects."""
     with ggrc_factories.single_commit():
       asmt = ggrc_factories.AssessmentFactory(
-          sox_302_enabled=True,
           status=start_status,
+          verification_workflow=sox.VerificationWorkflow.SOX302,
       )
       verifier = ggrc_factories.PersonFactory()
       asmt.add_person_with_role_name(verifier, "Verifiers")

@@ -124,7 +124,7 @@ def set_sox_302_enabled(assessment, template):
    # type: (models.Assessment, models.AssessmentTemplate) -> None
   """Set sox_302_enabled flag from template."""
   if template:
-    assessment.sox_302_enabled = template.sox_302_enabled
+    assessment.verification_workflow = template.verification_workflow
 
 
 # pylint: disable=too-many-arguments

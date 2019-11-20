@@ -9,6 +9,7 @@ from sqlalchemy import orm
 import sqlalchemy as sa
 
 from ggrc import db
+from ggrc import sox
 from ggrc import utils
 from ggrc.builder import simple_property
 from ggrc.fulltext import mixin
@@ -43,32 +44,35 @@ from ggrc.models.relationship import Relatable
 from ggrc.fulltext.mixin import Indexed
 
 
-class Assessment(Assignable,
-                 statusable.Statusable,
-                 AuditRelationship,
-                 AutoStatusChangeable,
-                 TestPlanned,
-                 CustomAttributable,
-                 WithEvidence,
-                 Commentable,
-                 Personable,
-                 reminderable.Reminderable,
-                 Relatable,
-                 LastDeprecatedTimeboxed,
-                 WithSimilarityScore,
-                 FinishedDate,
-                 VerifiedDate,
-                 Notifiable,
-                 WithAction,
-                 labeled.Labeled,
-                 with_last_comment.WithLastComment,
-                 issue_tracker_mixins.IssueTrackedWithUrl,
-                 base.ContextRBAC,
-                 BusinessObject,
-                 with_sox_302.WithSOX302FlowReadOnly,
-                 WithCustomRestrictions,
-                 Indexed,
-                 db.Model):
+class Assessment(
+    Assignable,
+    statusable.Statusable,
+    AuditRelationship,
+    AutoStatusChangeable,
+    TestPlanned,
+    CustomAttributable,
+    WithEvidence,
+    Commentable,
+    Personable,
+    reminderable.Reminderable,
+    Relatable,
+    LastDeprecatedTimeboxed,
+    WithSimilarityScore,
+    FinishedDate,
+    VerifiedDate,
+    Notifiable,
+    WithAction,
+    labeled.Labeled,
+    with_last_comment.WithLastComment,
+    issue_tracker_mixins.IssueTrackedWithUrl,
+    base.ContextRBAC,
+    BusinessObject,
+    with_sox_302.WithSOX302Flow,
+    WithCustomRestrictions,
+    Indexed,
+    db.Model,
+):
+
   """Class representing Assessment.
 
   Assessment is an object representing an individual assessment performed on
@@ -109,49 +113,24 @@ class Assessment(Assignable,
   # whether to use the object test plan on snapshot mapping
   test_plan_procedure = db.Column(db.Boolean, nullable=False, default=True)
 
-  @declared_attr
-  def object_level_definitions(cls):  # pylint: disable=no-self-argument
-    """Set up a backref so that we can create an object level custom
-       attribute definition without the need to do a flush to get the
-       assessment id.
+  verification_workflow = db.Column(
+      db.String,
+      nullable=False,
+      default=sox.VerificationWorkflow.STANDARD,
+  )
 
-      This is used in the relate_ca method in hooks/assessment.py.
-    """
-    cad = custom_attribute_definition.CustomAttributeDefinition
-    current_type = cls.__name__
-
-    def join_expr():
-      return sa.and_(
-          orm.foreign(orm.remote(cad.definition_id)) == cls.id,
-          cad.definition_type == utils.underscore_from_camelcase(current_type),
-      )
-
-    # Since there is some kind of generic relationship on CAD side, correct
-    # join expression for backref should be provided. If default, every call of
-    # "{}_definition".format(definition_type) on CAD will produce a lot of
-    # unnecessary DB queries returning nothing.
-    def backref_join_expr():
-      return orm.remote(cls.id) == orm.foreign(cad.definition_id)
-
-    return db.relationship(
-        "CustomAttributeDefinition",
-        primaryjoin=join_expr,
-        backref=db.backref(
-            "{}_definition".format(
-                utils.underscore_from_camelcase(current_type)
-            ),
-            lazy="joined",
-            primaryjoin=backref_join_expr,
-        ),
-        cascade="all, delete-orphan",
-    )
+  review_levels_count = db.Column(
+      db.Integer,
+  )
 
   object = {}  # we add this for the sake of client side error checking
 
-  VALID_CONCLUSIONS = ("Effective",
-                       "Ineffective",
-                       "Needs improvement",
-                       "Not Applicable")
+  VALID_CONCLUSIONS = (
+      "Effective",
+      "Ineffective",
+      "Needs improvement",
+      "Not Applicable",
+  )
 
   # REST properties
   _api_attrs = reflection.ApiAttributes(
@@ -160,6 +139,11 @@ class Assessment(Assignable,
       'audit',
       'assessment_type',
       'test_plan_procedure',
+      reflection.Attribute(
+          'verification_workflow',
+          create=False,
+          update=False,
+      ),
       reflection.Attribute('archived', create=False, update=False),
       reflection.Attribute('folder', create=False, update=False),
       reflection.Attribute('object', create=False, update=False),
@@ -170,6 +154,7 @@ class Assessment(Assignable,
       'design',
       'operationally',
       'folder',
+      'verification_workflow',
   ]
 
   AUTO_REINDEX_RULES = [
@@ -215,66 +200,46 @@ class Assessment(Assignable,
       }
   }
 
-  @classmethod
-  def _populate_query(cls, query):
-    return query.options(
-        orm.Load(cls).undefer_group("Assessment_complete"),
-        orm.Load(cls).joinedload("audit").undefer_group("Audit_complete"),
-        orm.Load(cls).joinedload("audit").joinedload(
-            audit.Audit.issuetracker_issue
-        ),
-    )
+  ASSESSMENT_TYPE_OPTIONS = (
+      "Access Groups",
+      "Account Balances",
+      "Data Assets",
+      "Facilities",
+      "Key Reports",
+      "Markets",
+      "Org Groups",
+      "Processes",
+      "Product Groups",
+      "Products",
+      "Systems",
+      "Technology Environments",
+      "Vendors",
+      "Contracts",
+      "Controls",
+      "Objectives",
+      "Policies",
+      "Regulations",
+      "Requirements",
+      "Risks",
+      "Standards",
+      "Threats",
+  )
 
-  @classmethod
-  def eager_query(cls, **kwargs):
-    return cls._populate_query(super(Assessment, cls).eager_query(**kwargs))
-
-  @classmethod
-  def indexed_query(cls):
-    return super(Assessment, cls).indexed_query().options(
-        orm.Load(cls).load_only(
-            "id",
-            "design",
-            "operationally",
-            "audit_id",
-        ),
-        orm.Load(cls).joinedload(
-            "audit"
-        ).load_only(
-            "archived",
-            "folder"
-        ),
-    )
-
-  def log_json(self):
-    out_json = super(Assessment, self).log_json()
-    out_json["folder"] = self.folder
-    return out_json
-  ASSESSMENT_TYPE_OPTIONS = ("Access Groups",
-                             "Account Balances",
-                             "Data Assets",
-                             "Facilities",
-                             "Key Reports",
-                             "Markets",
-                             "Org Groups",
-                             "Processes",
-                             "Product Groups",
-                             "Products",
-                             "Systems",
-                             "Technology Environments",
-                             "Vendors",
-                             "Contracts",
-                             "Controls",
-                             "Objectives",
-                             "Policies",
-                             "Regulations",
-                             "Requirements",
-                             "Risks",
-                             "Standards",
-                             "Threats",
-                             )
   _aliases = {
       "owners": None,
+      "verification_workflow": {
+          "display_name": "Verification Workflow",
+          "description": (
+              "Allowed values are:\n"
+              "Standard flow\n"
+              "SOX 302 flow\n"
+              "Multi-level verification flow\n\n"
+              "Specify number of Verification Levels "
+              "for assessments with multi-level verification flow."
+          ),
+          "mandatory": False,
+          "view_only": True,
+      },
       "assessment_template": {
           "display_name": "Template",
           "ignore_on_update": True,
@@ -321,6 +286,41 @@ class Assessment(Assignable,
       },
   }
 
+  @classmethod
+  def _ignore_filter(cls, _):
+    return None
+
+  @classmethod
+  def _populate_query(cls, query):
+    return query.options(
+        orm.Load(cls).undefer_group("Assessment_complete"),
+        orm.Load(cls).joinedload("audit").undefer_group("Audit_complete"),
+        orm.Load(cls).joinedload("audit").joinedload(
+            audit.Audit.issuetracker_issue
+        ),
+    )
+
+  @classmethod
+  def eager_query(cls, **kwargs):
+    return cls._populate_query(super(Assessment, cls).eager_query(**kwargs))
+
+  @classmethod
+  def indexed_query(cls):
+    return super(Assessment, cls).indexed_query().options(
+        orm.Load(cls).load_only(
+            "id",
+            "design",
+            "operationally",
+            "audit_id",
+        ),
+        orm.Load(cls).joinedload(
+            "audit"
+        ).load_only(
+            "archived",
+            "folder"
+        ),
+    )
+
   @simple_property
   def archived(self):
     """Returns a boolean whether assessment is archived or not."""
@@ -330,8 +330,42 @@ class Assessment(Assignable,
   def folder(self):
     return self.audit.folder if self.audit else ""
 
-  def validate_conclusion(self, value):
-    return value if value in self.VALID_CONCLUSIONS else ""
+  @declared_attr
+  def object_level_definitions(cls):  # pylint: disable=no-self-argument
+    """Set up a backref so that we can create an object level custom
+       attribute definition without the need to do a flush to get the
+       assessment id.
+
+      This is used in the relate_ca method in hooks/assessment.py.
+    """
+    cad = custom_attribute_definition.CustomAttributeDefinition
+    current_type = cls.__name__
+
+    def join_expr():
+      return sa.and_(
+          orm.foreign(orm.remote(cad.definition_id)) == cls.id,
+          cad.definition_type == utils.underscore_from_camelcase(current_type),
+      )
+
+    # Since there is some kind of generic relationship on CAD side, correct
+    # join expression for backref should be provided. If default, every call of
+    # "{}_definition".format(definition_type) on CAD will produce a lot of
+    # unnecessary DB queries returning nothing.
+    def backref_join_expr():
+      return orm.remote(cls.id) == orm.foreign(cad.definition_id)
+
+    return db.relationship(
+        "CustomAttributeDefinition",
+        primaryjoin=join_expr,
+        backref=db.backref(
+            "{}_definition".format(
+                utils.underscore_from_camelcase(current_type)
+            ),
+            lazy="joined",
+            primaryjoin=backref_join_expr,
+        ),
+        cascade="all, delete-orphan",
+    )
 
   @validates("status")
   def validate_status(self, key, value):
@@ -352,13 +386,13 @@ class Assessment(Assignable,
   def validate_opperationally(self, key, value):
     """Validate assessment operationally by validating conclusion"""
     # pylint: disable=unused-argument
-    return self.validate_conclusion(value)
+    return value if value in self.VALID_CONCLUSIONS else ""
 
   @validates("design")
   def validate_design(self, key, value):
     """Validate assessment design by validating conclusion"""
     # pylint: disable=unused-argument
-    return self.validate_conclusion(value)
+    return value if value in self.VALID_CONCLUSIONS else ""
 
   @validates("assessment_type")
   def validate_assessment_type(self, key, value):
@@ -372,6 +406,8 @@ class Assessment(Assignable,
       )
     return value
 
-  @classmethod
-  def _ignore_filter(cls, _):
-    return None
+  def log_json(self):
+    out_json = super(Assessment, self).log_json()
+    out_json["folder"] = self.folder
+
+    return out_json

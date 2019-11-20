@@ -1,8 +1,8 @@
 # Copyright (C) 2019 Google Inc.
 # Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 
-
 """A module containing the implementation of the assessment template entity."""
+
 from collections import OrderedDict
 
 from sqlalchemy import orm
@@ -10,6 +10,7 @@ from sqlalchemy.orm import validates
 from werkzeug.exceptions import Forbidden
 
 from ggrc import db
+from ggrc import sox
 from ggrc.access_control.roleable import Roleable
 from ggrc import login
 from ggrc.builder import simple_property
@@ -48,19 +49,22 @@ def _hint_verifier_assignees(actual_people_label, control_people_label,
   return description
 
 
-class AssessmentTemplate(assessment.AuditRelationship,
-                         relationship.Relatable,
-                         mixins.Titled,
-                         mixins.CustomAttributable,
-                         Roleable,
-                         issue_tracker.IssueTrackedWithConfig,
-                         base.ContextRBAC,
-                         mixins.Slugged,
-                         mixins.Stateful,
-                         clonable.MultiClonable,
-                         with_sox_302.WithSOX302Flow,
-                         Indexed,
-                         db.Model):
+class AssessmentTemplate(
+    assessment.AuditRelationship,
+    relationship.Relatable,
+    mixins.Titled,
+    mixins.CustomAttributable,
+    Roleable,
+    issue_tracker.IssueTrackedWithConfig,
+    base.ContextRBAC,
+    mixins.Slugged,
+    mixins.Stateful,
+    clonable.MultiClonable,
+    with_sox_302.WithSOX302Flow,
+    Indexed,
+    db.Model,
+):
+
   """A class representing the assessment template entity.
 
   An Assessment Template is a template that allows users for easier creation of
@@ -90,6 +94,16 @@ class AssessmentTemplate(assessment.AuditRelationship,
 
   # parent audit
   audit_id = db.Column(db.Integer, db.ForeignKey('audits.id'), nullable=False)
+
+  verification_workflow = db.Column(
+      db.String,
+      nullable=False,
+      default=sox.VerificationWorkflow.STANDARD,
+  )
+
+  review_levels_count = db.Column(
+      db.Integer,
+  )
 
   # labels to show to the user in the UI for various default people values
   DEFAULT_PEOPLE_LABELS = OrderedDict([
@@ -155,6 +169,8 @@ class AssessmentTemplate(assessment.AuditRelationship,
       'procedure_description',
       'default_people',
       'audit',
+      'verification_workflow',
+      'review_levels_count',
       reflection.Attribute('issue_tracker', create=False, update=False),
       reflection.Attribute('archived', create=False, update=False),
       reflection.Attribute(
@@ -162,38 +178,54 @@ class AssessmentTemplate(assessment.AuditRelationship,
   )
 
   _fulltext_attrs = [
-      "archived"
+      "archived",
+      "verification_workflow",
   ]
 
   _custom_publish = {
       'audit': audit.build_audit_stub,
   }
-  DEFAULT_ASSESSMENT_TYPE_OPTIONS = ("Access Groups",
-                                     "Account Balances",
-                                     "Data Assets",
-                                     "Facilities",
-                                     "Key Reports",
-                                     "Markets",
-                                     "Org Groups",
-                                     "Processes",
-                                     "Product Groups",
-                                     "Products",
-                                     "Systems",
-                                     "Technology Environments",
-                                     "Vendors",
-                                     "Contracts",
-                                     "Controls",
-                                     "Objectives",
-                                     "Policies",
-                                     "Regulations",
-                                     "Requirements",
-                                     "Risks",
-                                     "Standards",
-                                     "Threats",
-                                     )
+
+  DEFAULT_ASSESSMENT_TYPE_OPTIONS = (
+      "Access Groups",
+      "Account Balances",
+      "Data Assets",
+      "Facilities",
+      "Key Reports",
+      "Markets",
+      "Org Groups",
+      "Processes",
+      "Product Groups",
+      "Products",
+      "Systems",
+      "Technology Environments",
+      "Vendors",
+      "Contracts",
+      "Controls",
+      "Objectives",
+      "Policies",
+      "Regulations",
+      "Requirements",
+      "Risks",
+      "Standards",
+      "Threats",
+  )
+
   TICKET_TRACKER_STATES = ("On", "Off")
 
   _aliases = {
+      "verification_workflow": {
+          "display_name": "Verification Workflow",
+          "description": (
+              "Allowed values are:\n"
+              "Standard flow\n"
+              "SOX 302 flow\n"
+              "Multi-level verification flow\n\n"
+              "Specify number of Verification Levels "
+              "for assessments with multi-level verification flow."
+          ),
+          "mandatory": False,
+      },
       "status": {
           "display_name": "State",
           "mandatory": False,
@@ -315,47 +347,6 @@ class AssessmentTemplate(assessment.AuditRelationship,
   def generate_slug_prefix(cls):
     return "TEMPLATE"
 
-  def _clone(self, target=None):
-    """Clone Assessment Template.
-
-    Args:
-      target: Destination Audit object.
-
-    Returns:
-      Instance of assessment template copy.
-    """
-    data = {
-        "title": self.title,
-        "audit": target,
-        "template_object_type": self.template_object_type,
-        "test_plan_procedure": self.test_plan_procedure,
-        "procedure_description": self.procedure_description,
-        "default_people": self.default_people,
-        "modified_by": login.get_current_user(),
-        "status": self.status,
-        "sox_302_enabled": self.sox_302_enabled,
-    }
-    assessment_template_copy = AssessmentTemplate(**data)
-    db.session.add(assessment_template_copy)
-    return assessment_template_copy
-
-  def clone(self, target):
-    """Clone Assessment Template and related custom attributes."""
-    assessment_template_copy = self._clone(target)
-    rel = relationship.Relationship(
-        source=target,
-        destination=assessment_template_copy
-    )
-    db.session.add(rel)
-    db.session.flush()
-
-    # pylint: disable=not-an-iterable
-    for cad in self.custom_attribute_definitions:
-      # pylint: disable=protected-access
-      cad._clone(assessment_template_copy)
-
-    return (assessment_template_copy, rel)
-
   @validates('default_people')
   def validate_default_people(self, key, value):
     """Check that default people lists are not empty.
@@ -389,6 +380,47 @@ class AssessmentTemplate(assessment.AuditRelationship,
     if hasattr(self, 'context') and hasattr(self.context, 'related_object'):
       return getattr(self.context.related_object, 'archived', False)
     return False
+
+  def _clone(self, target=None):
+    """Clone Assessment Template.
+
+    Args:
+      target: Destination Audit object.
+
+    Returns:
+      Instance of assessment template copy.
+    """
+    data = {
+        "title": self.title,
+        "audit": target,
+        "template_object_type": self.template_object_type,
+        "test_plan_procedure": self.test_plan_procedure,
+        "procedure_description": self.procedure_description,
+        "default_people": self.default_people,
+        "modified_by": login.get_current_user(),
+        "status": self.status,
+        "verification_workflow": self.verification_workflow,
+    }
+    assessment_template_copy = AssessmentTemplate(**data)
+    db.session.add(assessment_template_copy)
+    return assessment_template_copy
+
+  def clone(self, target):
+    """Clone Assessment Template and related custom attributes."""
+    assessment_template_copy = self._clone(target)
+    rel = relationship.Relationship(
+        source=target,
+        destination=assessment_template_copy
+    )
+    db.session.add(rel)
+    db.session.flush()
+
+    # pylint: disable=not-an-iterable
+    for cad in self.custom_attribute_definitions:
+      # pylint: disable=protected-access
+      cad._clone(assessment_template_copy)
+
+    return (assessment_template_copy, rel)
 
 
 def create_audit_relationship(audit_stub, obj):

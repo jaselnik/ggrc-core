@@ -9,6 +9,7 @@ import ddt
 from flask import g
 
 from ggrc import db
+from ggrc import sox
 from ggrc.models import all_models
 
 from integration.ggrc import TestCase
@@ -75,7 +76,9 @@ class TestWithCustomRestrictions(TestCase, WithQueryApi):
     """Test Assignee role restricted access to fields for Assessment
     with sox302"""
     with factories.single_commit():
-      assmnt = factories.AssessmentFactory(sox_302_enabled=True)
+      assmnt = factories.AssessmentFactory(
+          verification_workflow=sox.VerificationWorkflow.SOX302,
+      )
       person = self.generate_person()
       self.assign_person(assmnt, role_name, person.id)
     assmnt_id = assmnt.id
@@ -93,7 +96,10 @@ class TestWithCustomRestrictions(TestCase, WithQueryApi):
     audit = factories.AuditFactory()
     self.assign_person(audit, audit_role, user.id)
 
-    assessment = factories.AssessmentFactory(audit=audit, sox_302_enabled=True)
+    assessment = factories.AssessmentFactory(
+        audit=audit,
+        verification_workflow=sox.VerificationWorkflow.SOX302,
+    )
     self.assign_person(assessment, "Assignees", user.id)
     factories.RelationshipFactory(source=audit, destination=assessment)
 
@@ -113,7 +119,10 @@ class TestWithCustomRestrictions(TestCase, WithQueryApi):
     audit = factories.AuditFactory(program=program)
     factories.RelationshipFactory(source=audit, destination=program)
 
-    assessment = factories.AssessmentFactory(audit=audit, sox_302_enabled=True)
+    assessment = factories.AssessmentFactory(
+        audit=audit,
+        verification_workflow=sox.VerificationWorkflow.SOX302,
+    )
     self.assign_person(assessment, "Assignees", user.id)
     factories.RelationshipFactory(source=audit, destination=assessment)
 
@@ -146,11 +155,15 @@ class TestWithCustomRestrictions(TestCase, WithQueryApi):
   @ddt.unpack
   def test_get_302_sox_assmt(self, is_sox_restricted, ro_fields):
     """Test get sox302 assessment by api call returns proper values"""
+    verification_workflow = sox.VerificationWorkflow.SOX302 \
+        if is_sox_restricted else sox.VerificationWorkflow.STANDARD
+
     with factories.single_commit():
       user = self.generate_person()
       assessment = factories.AssessmentFactory(
-          sox_302_enabled=is_sox_restricted
+          verification_workflow=verification_workflow,
       )
+
     self.assign_person(assessment, "Assignees", user.id)
     assmnt_id = assessment.id
     self.set_current_person(user)
@@ -173,7 +186,9 @@ class TestWithCustomRestrictions(TestCase, WithQueryApi):
           restricted_model)(**factory_args)
       self.assign_person(restricted_obj, "Admin", user.id)
       obj_id, obj_type = restricted_obj.id, restricted_obj.type
-      assessment = factories.AssessmentFactory(sox_302_enabled=True)
+      assessment = factories.AssessmentFactory(
+          verification_workflow=sox.VerificationWorkflow.SOX302,
+      )
       self.assign_person(assessment, "Assignees", user.id)
     assessment_id = assessment.id
 
@@ -196,7 +211,7 @@ class TestWithCustomRestrictions(TestCase, WithQueryApi):
       audit = factories.AuditFactory()
       assessment = factories.AssessmentFactory(
           audit=audit,
-          sox_302_enabled=True
+          verification_workflow=sox.VerificationWorkflow.SOX302,
       )
       assmnt_id = assessment.id
       factories.RelationshipFactory(source=audit, destination=assessment)
@@ -222,7 +237,9 @@ class TestWithCustomRestrictions(TestCase, WithQueryApi):
     """Test posted issue not mapped automatically"""
     with factories.single_commit():
       user = self.generate_person()
-      assessment = factories.AssessmentFactory(sox_302_enabled=True)
+      assessment = factories.AssessmentFactory(
+          verification_workflow=sox.VerificationWorkflow.SOX302,
+      )
       self.assign_person(assessment, "Assignees", user.id)
     assessment_id = assessment.id
     self.set_current_person(user)
@@ -256,7 +273,9 @@ class TestWithCustomRestrictions(TestCase, WithQueryApi):
     """Test user sox302 permissions to update restricted Assessment"""
     with factories.single_commit():
       user = self.generate_person()
-      assessment = factories.AssessmentFactory(sox_302_enabled=True)
+      assessment = factories.AssessmentFactory(
+          verification_workflow=sox.VerificationWorkflow.SOX302,
+      )
       assmnt_id = assessment.id
       self.assign_person(assessment, "Assignees", user.id)
 
@@ -280,7 +299,9 @@ class TestWithCustomRestrictions(TestCase, WithQueryApi):
     }
     with factories.single_commit():
       user = self.generate_person()
-      assessment = factories.AssessmentFactory(sox_302_enabled=True)
+      assessment = factories.AssessmentFactory(
+          verification_workflow=sox.VerificationWorkflow.SOX302,
+      )
       person_id = user.id
       assmnt_slug = assessment.slug
       self.assign_person(assessment, "Assignees", person_id)
@@ -302,7 +323,9 @@ class TestWithCustomRestrictions(TestCase, WithQueryApi):
 
     with factories.single_commit():
       user = self.generate_person()
-      assessment = factories.AssessmentFactory(sox_302_enabled=True)
+      assessment = factories.AssessmentFactory(
+          verification_workflow=sox.VerificationWorkflow.SOX302,
+      )
       assmnt_slug = assessment.slug
       person_id = user.id
       self.assign_person(assessment, "Assignees", person_id)
@@ -334,7 +357,7 @@ class TestWithCustomRestrictions(TestCase, WithQueryApi):
       audit = factories.AuditFactory()
       assessment = factories.AssessmentFactory(
           audit=audit,
-          sox_302_enabled=True
+          verification_workflow=sox.VerificationWorkflow.SOX302,
       )
       user = self.generate_person()
       factories.RelationshipFactory(source=audit, destination=assessment)

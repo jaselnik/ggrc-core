@@ -111,7 +111,7 @@ _DEFAULT_COLUMN_HANDLERS_DICT = {
     "secondary_contact": handlers.UserColumnHandler,
     "send_by_default": boolean.CheckboxColumnHandler,
     "slug": handlers.ColumnHandler,
-    "sox_302_enabled": boolean.CheckboxColumnHandler,
+    "verification_workflow": handlers.TextColumnHandler,
     "start_date": handlers.DateColumnHandler,
     "status": handlers.StatusColumnHandler,
     "template_custom_attributes": template.TemplateCaColumnHandler,
