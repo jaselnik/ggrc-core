@@ -64,6 +64,18 @@
 
             <div class="row-fluid wrap-row">
               <div class="span4">
+                <h6>Code</h6>
+                <span>{{slug}}</span>
+              </div>
+
+              <div class="span4">
+                <h6>Assessment Workflow</h6>
+                <span>{{get_verification_flow_name instance}}</span>
+              </div>
+            </div>
+
+            <div class="row-fluid wrap-row">
+              <div class="span4">
                 <h6>Default Assignees</h6>
                 {{#if default_people.assignees}}
                   {{#isArray default_people.assignees}}
@@ -81,32 +93,25 @@
               </div>
 
               <div class="span4">
-                <h6>Default Verifiers</h6>
-                {{#if default_people.verifiers}}
-                  {{#isArray default_people.verifiers}}
-                    <ul class="person-info-list">
-                      {{#default_people.verifiers}}
-                        <li><person-data personId:from="{{.}}"></person-data></li>
-                      {{/default_people.verifiers}}
-                    </ul>
-                  {{else}}
-                    {{defaultVerifierLabel}}
-                  {{/isArray}}
+                {{#is_ML_verification_flow instance}}
+                  <h6>VERIFICATION LEVELS</h6>
+                  <span>{{review_levels_count}}</span>
                 {{else}}
-                  <span class="empty-message">None</span>
-                {{/if}}
-              </div>
-
-              <div class="span4">
-                <h6>Code</h6>
-                <span class="empty-message">{{slug}}</span>
-              </div>
-            </div>
-
-            <div class="row-fluid wrap-row">
-              <div class="span4">
-                <h6>Enable SOX 302 assessment workflow</h6>
-                <input type="checkbox" {{#if instance.sox_302_enabled}}checked{{/if}} disabled>
+                  <h6>Default Verifiers</h6>
+                  {{#if default_people.verifiers}}
+                    {{#isArray default_people.verifiers}}
+                      <ul class="person-info-list">
+                        {{#default_people.verifiers}}
+                          <li><person-data personId:from="{{.}}"></person-data></li>
+                        {{/default_people.verifiers}}
+                      </ul>
+                    {{else}}
+                      {{defaultVerifierLabel}}
+                    {{/isArray}}
+                  {{else}}
+                    <span class="empty-message">None</span>
+                  {{/if}}
+                {{/is_ML_verification_flow}}
               </div>
             </div>
 
