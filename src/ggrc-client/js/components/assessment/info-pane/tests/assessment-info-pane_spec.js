@@ -2062,6 +2062,7 @@ describe('assessment-info-pane component', () => {
         let event;
 
         beforeEach(function () {
+          spyOn(vm, 'getStateDisplayName');
           const eventName = '{viewModel.instance} modelAfterSave';
           event = Component.prototype.events[eventName].bind(fakeComponent);
         });
@@ -2128,6 +2129,7 @@ describe('assessment-info-pane component', () => {
         spyOn(vm, 'initGlobalAttributes');
         spyOn(vm, 'updateRelatedItems');
         spyOn(vm, 'loadFirstComments');
+        spyOn(vm, 'getStateDisplayName');
       });
 
       it('calls vm.initializeFormFields method', function () {

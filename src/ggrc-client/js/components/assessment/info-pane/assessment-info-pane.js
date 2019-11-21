@@ -79,6 +79,10 @@ import {notifier, notifierXHR} from '../../../plugins/utils/notifiers-utils';
 import Evidence from '../../../models/business-models/evidence';
 import * as businessModels from '../../../models/business-models';
 import {getAjaxErrorInfo} from '../../../plugins/utils/errors-utils';
+import {
+  isMultiLevelFlow,
+  getFirstUnreviewedLevel,
+} from '../../../plugins/utils/verification-flow-utils';
 
 const SEMI_RESTRICTED_STATUSES = ['Deprecated', 'Completed'];
 
@@ -274,6 +278,7 @@ export default canComponent.extend({
     commentsTotalCount: 0,
     commentsPerPage: 10,
     newCommentsCount: 0,
+    stateDisplayName: '',
     refreshCounts: function (types) {
       let pageInstance = getPageInstance();
       initCounts(
@@ -626,6 +631,26 @@ export default canComponent.extend({
     },
     setCurrentState(state) {
       this.attr('currentState', state);
+
+      const stateDisplayName = this.getStateDisplayName(
+        this.attr('instance'),
+        state
+      );
+      this.attr('stateDisplayName', stateDisplayName);
+    },
+    getStateDisplayName(instance, currentState) {
+      if (!isMultiLevelFlow(instance) || currentState !== 'In Review') {
+        return currentState;
+      }
+
+      const reviewLevelCount = instance.attr('review_levels_count');
+      const firstUnreviewedLevel = getFirstUnreviewedLevel(instance);
+      const levelNumber = firstUnreviewedLevel.level_number;
+
+      const stateDisplayName =
+        `${currentState} ${levelNumber} of ${reviewLevelCount}`;
+
+      return stateDisplayName;
     },
     onStateChange: function (event) {
       const isUndo = event.undo;

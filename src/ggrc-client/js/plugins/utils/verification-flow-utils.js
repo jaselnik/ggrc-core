@@ -3,6 +3,9 @@
  Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
  */
 
+import loSortBy from 'lodash/sortBy';
+import loHead from 'lodash/head';
+
 const VERIFICATION_FLOWS = {
   STANDARD: 'STANDARD',
   SOX_302: 'SOX302',
@@ -30,10 +33,20 @@ const getFlowDisplayName = (instance) => {
   return instance.attr('verification_workflow');
 };
 
+const getFirstUnreviewedLevel = (instance) => {
+  const unreviewedLevels = instance.attr('review_levels')
+    .filter((reviewLevel) => !reviewLevel.verified_by);
+  const sortedByLevelNumber = loSortBy(unreviewedLevels, 'level_number');
+  const firstUnreviewedLevel = loHead(sortedByLevelNumber);
+
+  return firstUnreviewedLevel;
+};
+
 export {
   isStandardFlow,
   isSox302Flow,
   isMultiLevelFlow,
   getAssessmentFlows,
   getFlowDisplayName,
+  getFirstUnreviewedLevel,
 };
