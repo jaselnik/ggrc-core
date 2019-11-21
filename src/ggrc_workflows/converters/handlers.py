@@ -8,7 +8,6 @@ from sqlalchemy import inspection
 
 from ggrc import db
 from ggrc.converters import errors
-from ggrc.converters.handlers import boolean
 from ggrc.converters.handlers import handlers
 from ggrc.models import all_models
 from ggrc_workflows import models as wf_models
@@ -193,19 +192,3 @@ class TaskDescriptionColumnHandler(handlers.TextColumnHandler):
       return self.row_converter.obj.description
     else:
       return ", ".join(self.row_converter.obj.response_options)
-
-
-COLUMN_HANDLERS = {
-    "default": {
-        "cycle": CycleColumnHandler,
-        "cycle_task_group": CycleTaskGroupColumnHandler,
-        "cycle_workflow": CycleWorkflowColumnHandler,
-        "unit": UnitColumnHandler,
-        "repeat_every": RepeatEveryColumnHandler,
-        "notify_on_change": boolean.CheckboxColumnHandler,
-        "task_description": TaskDescriptionColumnHandler,
-        "task_group": TaskGroupColumnHandler,
-        "task_type": TaskTypeColumnHandler,
-        "workflow": WorkflowColumnHandler,
-    },
-}

@@ -16,7 +16,7 @@ from ggrc.converters import import_helper
 from ggrc.converters import get_exportables
 from ggrc.converters import get_importables
 from ggrc.converters import GGRC_IMPORTABLE_ONLY
-from ggrc.converters.column_handlers import model_column_handlers
+from ggrc.converters.column_handlers import aggregate_column_handlers
 
 
 class TestSplitArry(unittest.TestCase):
@@ -168,26 +168,42 @@ class TestModelColumntHandler(unittest.TestCase):
 
     test_handler = collections.namedtuple("TestHandler", [])
     test_class = collections.namedtuple("TestClass", [])
-    test_custom_handler = collections.namedtuple("TestCustomHandler", [])
-    test_custom_class = collections.namedtuple("TestCustomClass", [])
 
     tested_handlers_dict = {
-        "default": {
-            "col_a": test_handler,
-            "col_b": test_handler,
-        },
-        test_custom_class.__name__: {
-            "col_a": test_custom_handler,
-        }
+        "col_a": test_handler,
+        "col_b": test_handler,
     }
 
-    with mock.patch("ggrc.converters.column_handlers.COLUMN_HANDLERS",
-                    tested_handlers_dict):
+    with mock.patch(
+        "ggrc.converters.column_handlers._DEFAULT_COLUMN_HANDLERS_DICT",
+        tested_handlers_dict
+    ):
       self.assertEqual({"col_a": test_handler, "col_b": test_handler},
-                       model_column_handlers(test_class))
+                       aggregate_column_handlers(test_class))
+
+  def test_get_custom(self):
+    """Test get custom model handler"""
+    test_handler = collections.namedtuple("TestHandler", [])
+    test_custom_handler = collections.namedtuple("TestCustomHandler", [])
+    test_custom_class = collections.namedtuple(
+        "TestCustomClass",
+        ["specific_column_handlers"]
+    )
+    test_custom_class.specific_column_handlers = mock.MagicMock(
+        return_value={"col_a": test_custom_handler}
+    )
+    tested_handlers_dict = {
+        "col_a": test_handler,
+        "col_b": test_handler,
+    }
+    with mock.patch(
+        "ggrc.converters.column_handlers._DEFAULT_COLUMN_HANDLERS_DICT",
+        tested_handlers_dict
+    ):
       self.assertEqual(
           {"col_a": test_custom_handler, "col_b": test_handler},
-          model_column_handlers(test_custom_class))
+          aggregate_column_handlers(test_custom_class)
+      )
 
 
 class TestImportablesExportables(unittest.TestCase):

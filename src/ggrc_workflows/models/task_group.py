@@ -78,6 +78,14 @@ class TaskGroup(roleable.Roleable,
       },
   }
 
+  @staticmethod
+  def specific_column_handlers():
+    """Column handlers for task group obj"""
+    from ggrc_workflows.converters import handlers
+    return {
+        "workflow": handlers.WorkflowColumnHandler,
+    }
+
   # This parameter is overridden by workflow backref, but is here to ensure
   # pylint does not complain
   _workflow = None

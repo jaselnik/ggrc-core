@@ -251,6 +251,16 @@ class CycleTaskGroupObjectTask(roleable.Roleable,
       "start_date": "Start Date",
   }
 
+  @staticmethod
+  def specific_column_handlers():
+    """Column handlers for CycleTaskGroupObjectTask obj"""
+    from ggrc_workflows.converters import handlers
+    return {
+        "cycle": handlers.CycleColumnHandler,
+        "cycle_task_group": handlers.CycleTaskGroupColumnHandler,
+        "task_type": handlers.TaskTypeColumnHandler,
+    }
+
   @builder.simple_property
   def cycle_task_group_title(self):
     """Property. Returns parent CycleTaskGroup title."""

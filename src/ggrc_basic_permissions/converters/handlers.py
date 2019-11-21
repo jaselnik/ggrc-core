@@ -72,10 +72,3 @@ class UserRoleColumnHandler(UserColumnHandler):
     )
     db.session.add(user_role)
     self.dry_run = True
-
-
-COLUMN_HANDLERS = {
-    "default": {
-        "user_role": UserRoleColumnHandler,
-    },
-}

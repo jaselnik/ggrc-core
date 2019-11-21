@@ -9,12 +9,12 @@ from sqlalchemy import orm
 import sqlalchemy as sa
 
 from ggrc import db
-from ggrc import sox
 from ggrc import utils
 from ggrc.builder import simple_property
 from ggrc.fulltext import mixin
 from ggrc.models.comment import Commentable
 from ggrc.models import audit
+from ggrc.models import assessment_template
 from ggrc.models import custom_attribute_definition
 from ggrc.models.mixins import with_last_comment
 from ggrc.models.mixins.audit_relationship import AuditRelationship
@@ -27,21 +27,20 @@ from ggrc.models.mixins import TestPlanned
 from ggrc.models.mixins import LastDeprecatedTimeboxed
 from ggrc.models.mixins import VerifiedDate
 from ggrc.models.mixins import reminderable
+from ggrc.models.mixins import rest_handable
 from ggrc.models.mixins import statusable
 from ggrc.models.mixins import labeled
 from ggrc.models.mixins import issue_tracker as issue_tracker_mixins
-from ggrc.models.mixins import with_sox_302
+from ggrc.models.mixins import with_custom_restrictions
 from ggrc.models.mixins.assignable import Assignable
 from ggrc.models.mixins.autostatuschangeable import AutoStatusChangeable
 from ggrc.models.mixins.with_action import WithAction
-from ggrc.models.mixins.with_custom_restrictions import WithCustomRestrictions
 from ggrc.models.mixins.with_evidence import WithEvidence
 from ggrc.models.mixins.with_similarity_score import WithSimilarityScore
 from ggrc.models.deferred import deferred
 from ggrc.models.object_person import Personable
 from ggrc.models import reflection
 from ggrc.models.relationship import Relatable
-from ggrc.fulltext.mixin import Indexed
 
 
 class Assessment(
@@ -67,9 +66,9 @@ class Assessment(
     issue_tracker_mixins.IssueTrackedWithUrl,
     base.ContextRBAC,
     BusinessObject,
-    with_sox_302.WithSOX302Flow,
-    WithCustomRestrictions,
-    Indexed,
+    with_custom_restrictions.WithCustomRestrictions,
+    rest_handable.WithPutBeforeCommitHandable,
+    mixin.Indexed,
     db.Model,
 ):
 
@@ -116,7 +115,7 @@ class Assessment(
   verification_workflow = db.Column(
       db.String,
       nullable=False,
-      default=sox.VerificationWorkflow.STANDARD,
+      default=assessment_template.VerificationWorkflow.STANDARD,
   )
 
   review_levels_count = db.Column(
@@ -200,30 +199,8 @@ class Assessment(
       }
   }
 
-  ASSESSMENT_TYPE_OPTIONS = (
-      "Access Groups",
-      "Account Balances",
-      "Data Assets",
-      "Facilities",
-      "Key Reports",
-      "Markets",
-      "Org Groups",
-      "Processes",
-      "Product Groups",
-      "Products",
-      "Systems",
-      "Technology Environments",
-      "Vendors",
-      "Contracts",
-      "Controls",
-      "Objectives",
-      "Policies",
-      "Regulations",
-      "Requirements",
-      "Risks",
-      "Standards",
-      "Threats",
-  )
+  ASSESSMENT_TYPE_OPTIONS = \
+      assessment_template.AssessmentTemplate.DEFAULT_ASSESSMENT_TYPE_OPTIONS
 
   _aliases = {
       "owners": None,
@@ -286,6 +263,12 @@ class Assessment(
       },
   }
 
+  @staticmethod
+  def specific_column_handlers():
+    """Column handlers for assessment obj"""
+    from ggrc.converters.handlers import handlers
+    return {"verification_workflow": handlers.TextColumnHandler}
+
   @classmethod
   def _ignore_filter(cls, _):
     return None
@@ -320,6 +303,74 @@ class Assessment(
             "folder"
         ),
     )
+
+  @simple_property
+  def sox_302_enabled(self):
+    """Flag defining if SOX 302 flow is activated for object."""
+    return self.verification_workflow == \
+        assessment_template.VerificationWorkflow.SOX302
+
+  def _has_negative_cavs(self):
+    """Check if current object has any CAVs with values marked as negative."""
+    from ggrc.models.custom_attribute_value \
+        import CustomAttributeValue as cav_model
+
+    # pylint: disable=not-an-iterable
+    local_cads = {
+        cad.id: cad for cad in self.local_custom_attribute_definitions
+    }
+
+    local_cavs = []
+    if local_cads:
+      local_cavs = cav_model.query.filter(
+          cav_model.custom_attribute_id.in_(local_cads.keys()),
+      ).all()
+
+    return any(
+        local_cads[cav.custom_attribute_id].is_value_negative(cav)
+        for cav in local_cavs
+    )
+
+  def exec_sox_302_status_flow(self, initial_state):
+    # type: (collections.namedtuple) -> None
+    """Execute SOX 302 status change flow.
+
+    Perform SOX 302 status change flow for object method is called on. Current
+    object should be instance of `statusable.Statusable` and should have flag
+    `sox_302_enabled` set to `True` in order for SOX 302 to be executed.
+
+    Args:
+      initial_state (collections.namedtuple): Initial state of the object.
+    """
+    follow_sox_302_flow = (
+        isinstance(self, statusable.Statusable) and
+        isinstance(self, CustomAttributable) and
+        self.sox_302_enabled
+    )
+
+    moved_in_review = (
+        initial_state.status != self.status and
+        self.status == statusable.Statusable.DONE_STATE
+    )
+
+    if (
+        follow_sox_302_flow and
+        moved_in_review and
+        not self._has_negative_cavs()
+    ):
+      self.status = statusable.Statusable.FINAL_STATE
+
+  def handle_put_before_commit(self, initial_state):
+    # type: (collections.namedtuple) -> None
+    """Handle `model_put_before_commit` signals.
+
+    This method is called after `model_put_before_commit` signal is being sent.
+    Triggers SOX 302 status change flow.
+
+    Args:
+      initial_state (collections.namedtuple): Initial state of the object.
+    """
+    self.exec_sox_302_status_flow(initial_state)
 
   @simple_property
   def archived(self):

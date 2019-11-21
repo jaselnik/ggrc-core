@@ -10,18 +10,16 @@ from sqlalchemy.orm import validates
 from werkzeug.exceptions import Forbidden
 
 from ggrc import db
-from ggrc import sox
-from ggrc.access_control.roleable import Roleable
 from ggrc import login
+from ggrc.access_control.roleable import Roleable
 from ggrc.builder import simple_property
-from ggrc.models import assessment
 from ggrc.models import audit
 from ggrc.models import mixins
 from ggrc.models import relationship
+from ggrc.models.mixins import audit_relationship
 from ggrc.models.mixins import base
 from ggrc.models.mixins import clonable
 from ggrc.models.mixins import issue_tracker
-from ggrc.models.mixins import with_sox_302
 from ggrc.models.exceptions import ValidationError
 from ggrc.models.reflection import AttributeInfo
 from ggrc.models import reflection
@@ -48,8 +46,15 @@ def _hint_verifier_assignees(actual_people_label, control_people_label,
   return description
 
 
+# pylint: disable=too-few-public-methods
+class VerificationWorkflow(object):
+  STANDARD = "STANDARD"
+  SOX302 = "SOX302"
+  MLV = "MLV"
+
+
 class AssessmentTemplate(
-    assessment.AuditRelationship,
+    audit_relationship.AuditRelationship,
     relationship.Relatable,
     mixins.Titled,
     mixins.CustomAttributable,
@@ -59,7 +64,6 @@ class AssessmentTemplate(
     mixins.Slugged,
     mixins.Stateful,
     clonable.MultiClonable,
-    with_sox_302.WithSOX302Flow,
     Indexed,
     db.Model,
 ):
@@ -97,7 +101,7 @@ class AssessmentTemplate(
   verification_workflow = db.Column(
       db.String,
       nullable=False,
-      default=sox.VerificationWorkflow.STANDARD,
+      default=VerificationWorkflow.STANDARD,
   )
 
   review_levels_count = db.Column(
@@ -309,6 +313,12 @@ class AssessmentTemplate(
       },
   }
 
+  @staticmethod
+  def specific_column_handlers():
+    """Column handlers for assessment template obj"""
+    from ggrc.converters.handlers import handlers
+    return {"verification_workflow": handlers.TextColumnHandler}
+
   @classmethod
   def eager_query(cls, **kwargs):
     query = super(AssessmentTemplate, cls).eager_query(**kwargs)
@@ -366,6 +376,11 @@ class AssessmentTemplate(
         )
 
     return value
+
+  @simple_property
+  def sox_302_enabled(self):
+    """Flag defining if SOX 302 flow is activated for object."""
+    return self.verification_workflow == VerificationWorkflow.SOX302
 
   @simple_property
   def archived(self):

@@ -27,8 +27,8 @@ class TestTotalReindex(TestCase):
   # 3 create new records
   INDEX_QUERY_LIMIT = {
       'AccountBalance': 8,
-      'Assessment': 10,
-      'AssessmentTemplate': 6,
+      'Assessment': 20,
+      'AssessmentTemplate': 16,
       'Audit': 7,
       'Comment': 4,
       'Contract': 10,
