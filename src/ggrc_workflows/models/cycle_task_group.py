@@ -79,6 +79,14 @@ class CycleTaskGroup(roleable.Roleable,
       },
   }
 
+  @staticmethod
+  def specific_column_handlers():
+    """Column handlers for cycle task group obj"""
+    from ggrc_workflows.converters import handlers
+    return {
+        "cycle": handlers.CycleColumnHandler,
+    }
+
   PROPERTY_TEMPLATE = u"group {}"
 
   _fulltext_attrs = [

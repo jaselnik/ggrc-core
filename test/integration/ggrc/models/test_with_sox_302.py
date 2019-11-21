@@ -9,10 +9,9 @@ import collections
 
 import ddt
 
-from ggrc import sox
 from ggrc.models import all_models
+from ggrc.models.assessment_template import VerificationWorkflow
 from ggrc.models.mixins import statusable
-from ggrc.models.mixins import with_sox_302
 from integration import ggrc as integration_tests_ggrc
 from integration.ggrc import api_helper
 from integration.ggrc import query_helper
@@ -59,7 +58,7 @@ class BaseTestWithSOX302(integration_tests_ggrc.TestCase):
     return obj_type.query.get(obj_id)
 
   @staticmethod
-  def _get_asmt_tmpl_lcas(assessment_template):
+  def _get_asmt_tmpl_lcas(asmt_template):
     # type: (model.AssessmentTemplate) -> List[model.CustomAttributeDefinition]
     """Return list of local CADs of AssessmentTemplate.
 
@@ -67,7 +66,7 @@ class BaseTestWithSOX302(integration_tests_ggrc.TestCase):
     given AssessmentTemplate.
 
     Args:
-      assessment_template (model.AssessmentTemplate): Assessment template whose
+      asmt_template (model.AssessmentTemplate): Assessment template whose
         local custom attributes should be queried from DB.
 
     Returns:
@@ -75,8 +74,8 @@ class BaseTestWithSOX302(integration_tests_ggrc.TestCase):
     """
     cad = all_models.CustomAttributeDefinition
     return cad.query.filter(
-        cad.definition_type == assessment_template._inflector.table_singular,
-        cad.definition_id == assessment_template.id,
+        cad.definition_type == asmt_template._inflector.table_singular,
+        cad.definition_id == asmt_template.id,
     ).all()
 
   def _assert_sox_302_enabled_flag(self, obj, expected_value):
@@ -93,7 +92,6 @@ class BaseTestWithSOX302(integration_tests_ggrc.TestCase):
       expected_value (bool): Expected value of `sox_302_enabled` flag on the
         given object.
     """
-    self.assertTrue(isinstance(obj, with_sox_302.WithSOX302Flow))
     self.assertIsNotNone(obj)
     self.assertEqual(
         obj.sox_302_enabled,
@@ -131,15 +129,15 @@ class TestImportWithSOX302(BaseTestWithSOX302):
 
   @ddt.data(
       {
-          "imported_value": sox.VerificationWorkflow.SOX302,
+          "imported_value": VerificationWorkflow.SOX302,
           "exp_value": True,
       },
       {
-          "imported_value": sox.VerificationWorkflow.STANDARD,
+          "imported_value": VerificationWorkflow.STANDARD,
           "exp_value": False,
       },
       {
-          "imported_value": sox.VerificationWorkflow.MLV,
+          "imported_value": VerificationWorkflow.MLV,
           "exp_value": False,
       },
   )
@@ -169,18 +167,18 @@ class TestImportWithSOX302(BaseTestWithSOX302):
 
   @ddt.data(
       {
-          "init_workflow": sox.VerificationWorkflow.STANDARD,
-          "imported_value": sox.VerificationWorkflow.SOX302,
+          "init_workflow": VerificationWorkflow.STANDARD,
+          "imported_value": VerificationWorkflow.SOX302,
           "exp_value": True,
       },
       {
-          "init_workflow": sox.VerificationWorkflow.MLV,
-          "imported_value": sox.VerificationWorkflow.SOX302,
+          "init_workflow": VerificationWorkflow.MLV,
+          "imported_value": VerificationWorkflow.SOX302,
           "exp_value": True,
       },
       {
-          "init_workflow": sox.VerificationWorkflow.STANDARD,
-          "imported_value": sox.VerificationWorkflow.MLV,
+          "init_workflow": VerificationWorkflow.STANDARD,
+          "imported_value": VerificationWorkflow.MLV,
           "exp_value": False,
       },
   )
@@ -207,23 +205,23 @@ class TestImportWithSOX302(BaseTestWithSOX302):
 
   @ddt.data(
       {
-          "asmt_workflow": sox.VerificationWorkflow.SOX302,
-          "tmpl_workflow": sox.VerificationWorkflow.SOX302,
+          "asmt_workflow": VerificationWorkflow.SOX302,
+          "tmpl_workflow": VerificationWorkflow.SOX302,
           "exp_value": True,
       },
       {
-          "asmt_workflow": sox.VerificationWorkflow.SOX302,
-          "tmpl_workflow": sox.VerificationWorkflow.STANDARD,
+          "asmt_workflow": VerificationWorkflow.SOX302,
+          "tmpl_workflow": VerificationWorkflow.STANDARD,
           "exp_value": True,
       },
       {
-          "asmt_workflow": sox.VerificationWorkflow.STANDARD,
-          "tmpl_workflow": sox.VerificationWorkflow.SOX302,
+          "asmt_workflow": VerificationWorkflow.STANDARD,
+          "tmpl_workflow": VerificationWorkflow.SOX302,
           "exp_value": False,
       },
       {
-          "asmt_workflow": sox.VerificationWorkflow.STANDARD,
-          "tmpl_workflow": sox.VerificationWorkflow.STANDARD,
+          "asmt_workflow": VerificationWorkflow.STANDARD,
+          "tmpl_workflow": VerificationWorkflow.STANDARD,
           "exp_value": False,
       },
   )
@@ -263,11 +261,11 @@ class TestImportWithSOX302(BaseTestWithSOX302):
 
   @ddt.data(
       {
-          "imported_value": sox.VerificationWorkflow.SOX302,
+          "imported_value": VerificationWorkflow.SOX302,
           "exp_value": False,
       },
       {
-          "imported_value": sox.VerificationWorkflow.STANDARD,
+          "imported_value": VerificationWorkflow.STANDARD,
           "exp_value": False,
       },
       {
@@ -307,27 +305,27 @@ class TestImportWithSOX302(BaseTestWithSOX302):
 
   @ddt.data(
       {
-          "init_value": sox.VerificationWorkflow.SOX302,
-          "imported_value": sox.VerificationWorkflow.STANDARD,
+          "init_value": VerificationWorkflow.SOX302,
+          "imported_value": VerificationWorkflow.STANDARD,
           "exp_value": True,
       },
       {
-          "init_value": sox.VerificationWorkflow.SOX302,
+          "init_value": VerificationWorkflow.SOX302,
           "imported_value": "",
           "exp_value": True,
       },
       {
-          "init_value": sox.VerificationWorkflow.STANDARD,
-          "imported_value": sox.VerificationWorkflow.SOX302,
+          "init_value": VerificationWorkflow.STANDARD,
+          "imported_value": VerificationWorkflow.SOX302,
           "exp_value": False,
       },
       {
-          "init_value": sox.VerificationWorkflow.SOX302,
+          "init_value": VerificationWorkflow.SOX302,
           "imported_value": "",
           "exp_value": True,
       },
       {
-          "init_value": sox.VerificationWorkflow.STANDARD,
+          "init_value": VerificationWorkflow.STANDARD,
           "imported_value": "",
           "exp_value": False,
       },
@@ -448,9 +446,9 @@ class TestExportWithSOX302(query_helper.WithQueryApi,
     )
 
   @ddt.data(
-      sox.VerificationWorkflow.SOX302,
-      sox.VerificationWorkflow.STANDARD,
-      sox.VerificationWorkflow.MLV,
+      VerificationWorkflow.SOX302,
+      VerificationWorkflow.STANDARD,
+      VerificationWorkflow.MLV,
   )
   def test_sox_302_tmpl_export(self, workflow):
     """Test `SOX 302 assessment workflow` is exported correctly for tmpl."""
@@ -474,9 +472,9 @@ class TestExportWithSOX302(query_helper.WithQueryApi,
     )
 
   @ddt.data(
-      sox.VerificationWorkflow.SOX302,
-      sox.VerificationWorkflow.STANDARD,
-      sox.VerificationWorkflow.MLV,
+      VerificationWorkflow.SOX302,
+      VerificationWorkflow.STANDARD,
+      VerificationWorkflow.MLV,
   )
   def test_sox_302_asmt_export(self, workflow):
     """Test `SOX 302 assessment workflow` is exported correctly for asmt."""
@@ -512,11 +510,11 @@ class TestApiWithSOX302(BaseTestWithSOX302):
 
   @ddt.data(
       {
-          "workflow": sox.VerificationWorkflow.SOX302,
+          "workflow": VerificationWorkflow.SOX302,
           "exp_value": True,
       },
       {
-          "workflow": sox.VerificationWorkflow.STANDARD,
+          "workflow": VerificationWorkflow.STANDARD,
           "exp_value": False,
       },
   )
@@ -549,23 +547,23 @@ class TestApiWithSOX302(BaseTestWithSOX302):
 
   @ddt.data(
       {
-          "init_workflow": sox.VerificationWorkflow.SOX302,
-          "sent_workflow": sox.VerificationWorkflow.SOX302,
+          "init_workflow": VerificationWorkflow.SOX302,
+          "sent_workflow": VerificationWorkflow.SOX302,
           "exp_value": True,
       },
       {
-          "init_workflow": sox.VerificationWorkflow.SOX302,
-          "sent_workflow": sox.VerificationWorkflow.STANDARD,
+          "init_workflow": VerificationWorkflow.SOX302,
+          "sent_workflow": VerificationWorkflow.STANDARD,
           "exp_value": False,
       },
       {
-          "init_workflow": sox.VerificationWorkflow.STANDARD,
-          "sent_workflow": sox.VerificationWorkflow.SOX302,
+          "init_workflow": VerificationWorkflow.STANDARD,
+          "sent_workflow": VerificationWorkflow.SOX302,
           "exp_value": True,
       },
       {
-          "init_workflow": sox.VerificationWorkflow.STANDARD,
-          "sent_workflow": sox.VerificationWorkflow.STANDARD,
+          "init_workflow": VerificationWorkflow.STANDARD,
+          "sent_workflow": VerificationWorkflow.STANDARD,
           "exp_value": False,
       },
   )
@@ -590,8 +588,8 @@ class TestApiWithSOX302(BaseTestWithSOX302):
     self._assert_sox_302_enabled_flag(tmpl, exp_value)
 
   @ddt.data(
-      {"orig_value": sox.VerificationWorkflow.SOX302, "exp_value": True},
-      {"orig_value": sox.VerificationWorkflow.STANDARD, "exp_value": False},
+      {"orig_value": VerificationWorkflow.SOX302, "exp_value": True},
+      {"orig_value": VerificationWorkflow.STANDARD, "exp_value": False},
   )
   @ddt.unpack
   def test_sox_302_tmpl_clone(self, orig_value, exp_value):
@@ -624,8 +622,8 @@ class TestApiWithSOX302(BaseTestWithSOX302):
     self._assert_sox_302_enabled_flag(tmpl_clone, exp_value)
 
   @ddt.data(
-      {"sent_value": sox.VerificationWorkflow.SOX302, "exp_value": False},
-      {"sent_value": sox.VerificationWorkflow.STANDARD, "exp_value": False},
+      {"sent_value": VerificationWorkflow.SOX302, "exp_value": False},
+      {"sent_value": VerificationWorkflow.STANDARD, "exp_value": False},
   )
   @ddt.unpack
   def test_sox_302_immut_asmt_create(self, sent_value, exp_value):
@@ -655,23 +653,23 @@ class TestApiWithSOX302(BaseTestWithSOX302):
 
   @ddt.data(
       {
-          "tmpl_value": sox.VerificationWorkflow.SOX302,
-          "sent_value": sox.VerificationWorkflow.SOX302,
+          "tmpl_value": VerificationWorkflow.SOX302,
+          "sent_value": VerificationWorkflow.SOX302,
           "exp_value": True,
       },
       {
-          "tmpl_value": sox.VerificationWorkflow.STANDARD,
-          "sent_value": sox.VerificationWorkflow.SOX302,
+          "tmpl_value": VerificationWorkflow.STANDARD,
+          "sent_value": VerificationWorkflow.SOX302,
           "exp_value": False,
       },
       {
-          "tmpl_value": sox.VerificationWorkflow.SOX302,
-          "sent_value": sox.VerificationWorkflow.STANDARD,
+          "tmpl_value": VerificationWorkflow.SOX302,
+          "sent_value": VerificationWorkflow.STANDARD,
           "exp_value": True,
       },
       {
-          "tmpl_value": sox.VerificationWorkflow.STANDARD,
-          "sent_value": sox.VerificationWorkflow.STANDARD,
+          "tmpl_value": VerificationWorkflow.STANDARD,
+          "sent_value": VerificationWorkflow.STANDARD,
           "exp_value": False,
       },
   )
@@ -711,21 +709,23 @@ class TestApiWithSOX302(BaseTestWithSOX302):
 
   @ddt.data(
       {
-          "init_value": sox.VerificationWorkflow.SOX302,
-          "sent_value": sox.VerificationWorkflow.SOX302, "exp_value": True},
-      {
-          "init_value": sox.VerificationWorkflow.SOX302,
-          "sent_value": sox.VerificationWorkflow.STANDARD,
+          "init_value": VerificationWorkflow.SOX302,
+          "sent_value": VerificationWorkflow.SOX302,
           "exp_value": True,
       },
       {
-          "init_value": sox.VerificationWorkflow.STANDARD,
-          "sent_value": sox.VerificationWorkflow.SOX302,
+          "init_value": VerificationWorkflow.SOX302,
+          "sent_value": VerificationWorkflow.STANDARD,
+          "exp_value": True,
+      },
+      {
+          "init_value": VerificationWorkflow.STANDARD,
+          "sent_value": VerificationWorkflow.SOX302,
           "exp_value": False,
       },
       {
-          "init_value": sox.VerificationWorkflow.STANDARD,
-          "sent_value": sox.VerificationWorkflow.STANDARD,
+          "init_value": VerificationWorkflow.STANDARD,
+          "sent_value": VerificationWorkflow.STANDARD,
           "exp_value": False,
       },
   )
@@ -786,8 +786,8 @@ class TestQueriesWithSOX302(query_helper.WithQueryApi,
     )
 
   @ddt.data(
-      sox.VerificationWorkflow.STANDARD,
-      sox.VerificationWorkflow.SOX302,
+      VerificationWorkflow.STANDARD,
+      VerificationWorkflow.SOX302,
   )
   def test_sox_302_enabled_filter_tmpl(self, filter_by_value):
     # pylint: disable=invalid-name
@@ -798,7 +798,7 @@ class TestQueriesWithSOX302(query_helper.WithQueryApi,
           verification_workflow=filter_by_value,
       )
       ggrc_factories.AssessmentTemplateFactory(
-          verification_workflow=sox.VerificationWorkflow.MLV,
+          verification_workflow=VerificationWorkflow.MLV,
       )
 
     searched_tmpl_id = tmpl.id
@@ -822,8 +822,8 @@ class TestQueriesWithSOX302(query_helper.WithQueryApi,
     )
 
   @ddt.data(
-      sox.VerificationWorkflow.STANDARD,
-      sox.VerificationWorkflow.SOX302,
+      VerificationWorkflow.STANDARD,
+      VerificationWorkflow.SOX302,
   )
   def test_sox_302_enabled_filter(self, filter_by_value):
     """Test asmt could be filtered by sox_302_enabled field."""
@@ -832,7 +832,7 @@ class TestQueriesWithSOX302(query_helper.WithQueryApi,
           verification_workflow=filter_by_value,
       )
       ggrc_factories.AssessmentFactory(
-          verification_workflow=sox.VerificationWorkflow.MLV,
+          verification_workflow=VerificationWorkflow.MLV,
       )
     searched_amst_id = asmt.id
 
@@ -980,7 +980,7 @@ class TestStatusFlowWithSOX302(BaseTestWithSOX302):
     with ggrc_factories.single_commit():
       asmt = ggrc_factories.AssessmentFactory(
           status=start_status,
-          verification_workflow=sox.VerificationWorkflow.SOX302,
+          verification_workflow=VerificationWorkflow.SOX302,
       )
       verifier = ggrc_factories.PersonFactory()
       asmt.add_person_with_role_name(verifier, "Verifiers")
@@ -1076,7 +1076,7 @@ class TestStatusFlowWithSOX302(BaseTestWithSOX302):
     with ggrc_factories.single_commit():
       asmt = ggrc_factories.AssessmentFactory(
           status=start_status,
-          verification_workflow=sox.VerificationWorkflow.SOX302,
+          verification_workflow=VerificationWorkflow.SOX302,
       )
       verifier = ggrc_factories.PersonFactory()
       asmt.add_person_with_role_name(verifier, "Verifiers")

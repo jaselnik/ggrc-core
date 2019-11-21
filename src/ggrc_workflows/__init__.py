@@ -27,7 +27,6 @@ from ggrc_workflows.models import relationship_helper
 from ggrc_workflows.models import WORKFLOW_OBJECT_TYPES
 from ggrc_workflows.notification import pusher
 from ggrc_workflows.converters import IMPORTABLE, EXPORTABLE
-from ggrc_workflows.converters.handlers import COLUMN_HANDLERS
 from ggrc_workflows.services.common import Signals
 from ggrc_basic_permissions.contributed_roles import RoleContributions
 
@@ -864,7 +863,6 @@ ROLE_CONTRIBUTIONS = WorkflowRoleContributions()
 contributed_notifications = notification.contributed_notifications
 contributed_importables = IMPORTABLE
 contributed_exportables = EXPORTABLE
-contributed_column_handlers = COLUMN_HANDLERS
 contributed_get_ids_related_to = relationship_helper.get_ids_related_to
 NIGHTLY_CRON_JOBS = [start_recurring_cycles]
 NOTIFICATION_LISTENERS = [notification.register_listeners]

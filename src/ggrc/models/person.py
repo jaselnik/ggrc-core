@@ -131,6 +131,14 @@ class Person(customattributable.CustomAttributable,
       },
   }
 
+  @staticmethod
+  def specific_column_handlers():
+    """Column handlers for person obj"""
+    from ggrc_basic_permissions.converters import handlers
+    return {
+        "user_role": handlers.UserRoleColumnHandler,
+    }
+
   @classmethod
   def _filter_by_user_role(cls, predicate):
     """Custom filter by user roles."""

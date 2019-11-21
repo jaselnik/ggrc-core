@@ -160,6 +160,16 @@ class TaskGroupTask(roleable.Roleable,
       },
   }
 
+  @staticmethod
+  def specific_column_handlers():
+    """Column handlers for task group task obj"""
+    from ggrc_workflows.converters import handlers
+    return {
+        "task_type": handlers.TaskTypeColumnHandler,
+        "task_group": handlers.TaskGroupColumnHandler,
+        "task_description": handlers.TaskDescriptionColumnHandler,
+    }
+
   @property
   def workflow(self):
     """Property which returns parent workflow object."""

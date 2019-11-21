@@ -120,6 +120,14 @@ class Cycle(roleable.Roleable,
       "secondary_contact": None,
   }
 
+  @staticmethod
+  def specific_column_handlers():
+    """Column handlers for cycle obj"""
+    from ggrc_workflows.converters import handlers
+    return {
+        "cycle_workflow": handlers.CycleWorkflowColumnHandler,
+    }
+
   PROPERTY_TEMPLATE = u"cycle {}"
 
   _fulltext_attrs = [

@@ -372,6 +372,17 @@ class Workflow(roleable.Roleable,
       "end_date": None,
   }
 
+  @staticmethod
+  def specific_column_handlers():
+    """Column handlers for workflow obj"""
+    from ggrc.converters.handlers import boolean
+    from ggrc_workflows.converters import handlers
+    return {
+        "unit": handlers.UnitColumnHandler,
+        "notify_on_change": boolean.CheckboxColumnHandler,
+        "repeat_every": handlers.RepeatEveryColumnHandler,
+    }
+
   def copy(self, _other=None, **kwargs):
     """Create a partial copy of the current workflow.
     """

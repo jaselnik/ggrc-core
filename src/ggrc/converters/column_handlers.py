@@ -6,22 +6,13 @@ This module provides all column handlers for objects in the ggrc module.
 
 If you want to add column handler you should decide is it handler default
 or custom for current model.
-If this handler is default than you will add it into _COLUMN_HANDLERS dict in
-subdict by key "DEFAULT_HANDLERS_KEY"
-If this handler is custom for current model you shuld add it in COLUMN_HANDLERS
-dict by key "Model.__name__"
+If this handler is default than you will add it into
+_DEFAULT_COLUMN_HANDLERS_DICT dict.
+If this handler is custom for current model you should place it in model
+class in _SPECIFIC_HANDLERS_ATTR method
 
-You may add column handlers in your extensions.
-To make this you should add "EXTENSION_HANDLERS_ATTR" in __init__.py in your
-extenstion.
-It should be callable or dict.
-If you want to add default handler you should add it in you
-extension_handlers_dict by key "DEFAULT_HANDLERS_KEY"
-If it is custom handler for current model, you should add it in
-your "EXTENSION_HANDLERS_ATTR" dict by key "Model.__name__"
-
-If you want to get hendler for your model
-call function model_column_handlers with you model class as argument.
+If you want to get handler for your model
+call function aggregate_column_handlers with you model class as argument.
 
 Example:
 
@@ -31,10 +22,8 @@ It returns all dict like:
         "column_2": HandlerClass2,
         ...
     }
-Thich contain handler for your Model.
+Which contain handler for your Model.
 """
-
-from copy import deepcopy
 
 from ggrc.converters.handlers import assessment_template
 from ggrc.converters.handlers import boolean
@@ -52,8 +41,6 @@ from ggrc.converters.handlers import issue_tracker
 from ggrc.converters.handlers.snapshot_instance_column_handler import (
     SnapshotInstanceColumnHandler
 )
-from ggrc.extensions import get_extension_modules
-
 
 _DEFAULT_COLUMN_HANDLERS_DICT = {
     "archived": boolean.CheckboxColumnHandler,
@@ -111,7 +98,6 @@ _DEFAULT_COLUMN_HANDLERS_DICT = {
     "secondary_contact": handlers.UserColumnHandler,
     "send_by_default": boolean.CheckboxColumnHandler,
     "slug": handlers.ColumnHandler,
-    "verification_workflow": handlers.TextColumnHandler,
     "start_date": handlers.DateColumnHandler,
     "status": handlers.StatusColumnHandler,
     "template_custom_attributes": template.TemplateCaColumnHandler,
@@ -163,38 +149,10 @@ _DEFAULT_COLUMN_HANDLERS_DICT = {
 }
 
 
-DEFAULT_HANDLERS_KEY = "default"
-EXTENSION_HANDLERS_ATTR = "contributed_column_handlers"
+_SPECIFIC_HANDLERS_ATTR = "specific_column_handlers"
 
 
-_COLUMN_HANDLERS = {
-    DEFAULT_HANDLERS_KEY: _DEFAULT_COLUMN_HANDLERS_DICT,
-}
-
-
-def get_extensions_column_handlers():
-  """Search through all enabled modules for their contributed column handlers.
-
-  Returns:
-    result_handlers (dict): dict of all extension handlers
-  """
-  result_handlers = deepcopy(_COLUMN_HANDLERS)
-  for extension_module in get_extension_modules():
-    extension_handlers = getattr(
-        extension_module, EXTENSION_HANDLERS_ATTR, None)
-    if callable(extension_handlers):
-      extension_handlers = extension_handlers()
-    if isinstance(extension_handlers, dict):
-      for key, value_dict in extension_handlers.iteritems():
-        result_handlers[key] = result_handlers.get(key, {})
-        result_handlers[key].update(value_dict)
-  return result_handlers
-
-
-COLUMN_HANDLERS = get_extensions_column_handlers()
-
-
-def model_column_handlers(cls):
+def aggregate_column_handlers(cls):
   """Generates handlers for model class
 
   Attributes:
@@ -205,6 +163,8 @@ def model_column_handlers(cls):
                               the keys are column names
                               the values are handler classes
   """
-  result_handlers = COLUMN_HANDLERS[DEFAULT_HANDLERS_KEY].copy()
-  result_handlers.update(COLUMN_HANDLERS.get(cls.__name__, {}))
+  result_handlers = _DEFAULT_COLUMN_HANDLERS_DICT.copy()
+  handlers = getattr(cls, _SPECIFIC_HANDLERS_ATTR, None)
+  if handlers:
+    result_handlers.update(handlers())
   return result_handlers

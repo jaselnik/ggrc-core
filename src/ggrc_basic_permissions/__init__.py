@@ -28,7 +28,6 @@ from ggrc.services import signals
 from ggrc.services.registry import service
 from ggrc.utils import benchmark, memcache
 from ggrc_basic_permissions.contributed_roles import BasicRoleDeclarations
-from ggrc_basic_permissions.converters.handlers import COLUMN_HANDLERS
 from ggrc_basic_permissions.models import Role
 from ggrc_basic_permissions.models import UserRole
 
@@ -600,10 +599,6 @@ def contributed_object_views():
   return [
       object_view(Role)
   ]
-
-
-def contributed_column_handlers():
-  return COLUMN_HANDLERS
 
 
 ROLE_DECLARATIONS = BasicRoleDeclarations()
