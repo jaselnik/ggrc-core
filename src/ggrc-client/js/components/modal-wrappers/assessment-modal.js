@@ -66,7 +66,7 @@ export default canComponent.extend({
           [templateStub],
           [
             'custom_attribute_definitions',
-            'sox_302_enabled',
+            'verification_workflow',
           ]
         );
 

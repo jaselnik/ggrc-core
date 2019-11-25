@@ -142,8 +142,8 @@ export default Cacheable.extend({
       attr_name: 'test_plan',
       order: 20,
     }, {
-      attr_title: 'SOX 302 assessment workflow',
-      attr_name: 'sox_302_enabled',
+      attr_title: 'Assessment Workflow',
+      attr_name: 'verification_workflow',
       order: 21,
     }],
     display_attr_names: ['title', 'status', 'label', 'Assignees', 'Verifiers',
