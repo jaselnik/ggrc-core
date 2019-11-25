@@ -120,29 +120,11 @@
       </div>
     </div>
 
-    {{#is_sox_302_verification_flow instance}}
-      <div class="row-fluid">
-        <div class="alert">
-          By checking this checkbox:
-          <p>
-            - Assignees will have read only permissions upon assessment completion.
-          </p>
-          <p>
-            - Verification step will be skipped if only positive answers are given for the assessment. Specify negative answers below.
-          </p>
-        </div>
-      </div>
-    {{/is_sox_302_verification_flow}}
-
     <div class="row-fluid">
       <div class="span4 bottom-spacing">
         {{#if isMultiLevelVerification}}
           <label>
             Verification levels
-            <i class="fa fa-question-circle"
-              rel="tooltip"
-              title="Assessment with multiple verification levels needs to be verified by each level sequentially in order to be completed">
-            </i>
           </label>
           <dropdown-component
             optionsList:from="verificationLevels"
@@ -166,6 +148,28 @@
         </div>
       {{/if}}
     </div>
+
+    {{#is_sox_302_verification_flow instance}}
+      <div class="row-fluid">
+        <div class="alert">
+          By choosing SOX 302 option:
+          <p>
+            - Assignees will have read only permissions upon assessment completion.
+          </p>
+          <p>
+            - Verification step will be skipped if only positive answers are given for the assessment. Specify negative answers below.
+          </p>
+        </div>
+      </div>
+    {{/is_sox_302_verification_flow}}
+
+    {{#if isMultiLevelVerification}}
+      <div class="row-fluid">
+        <div class="alert">
+          Assessment with multiple verification levels needs to be verified by each level sequentially in order to be completed.
+        </div>
+      </div>
+    {{/if}}
 
     <div class="row-fluid">
       {{^if new_object_form}}
