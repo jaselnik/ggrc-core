@@ -8,7 +8,7 @@
 import collections
 
 import ddt
-
+from ggrc import settings
 from ggrc.models import all_models
 from ggrc.models.assessment_template import VerificationWorkflow
 from ggrc.models.mixins import statusable
@@ -136,10 +136,6 @@ class TestImportWithSOX302(BaseTestWithSOX302):
           "imported_value": VerificationWorkflow.STANDARD,
           "exp_value": False,
       },
-      {
-          "imported_value": VerificationWorkflow.MLV,
-          "exp_value": False,
-      },
   )
   @ddt.unpack
   def test_sox_302_tmpl_create(self, imported_value, exp_value):
@@ -165,6 +161,31 @@ class TestImportWithSOX302(BaseTestWithSOX302):
         all_models.AssessmentTemplate, audit_id).one()
     self._assert_sox_302_enabled_flag(tmpl, exp_value)
 
+  def test_multi_verification_tmpl_create(self):
+    # pylint: disable=invalid-name
+    """Test SOX302 enabled=False when create MLV asmt tmpl via import."""
+    audit = ggrc_factories.AuditFactory()
+    audit_id = audit.id
+
+    asmt_tmpl_data = collections.OrderedDict([
+        ("object_type", "Assessment Template"),
+        ("Code*", ""),
+        ("Audit*", audit.slug),
+        ("Title", "AssessmentTemplate Title"),
+        ("Default Assessment Type*", "Control"),
+        ("Default Assignees*", "Auditors"),
+        ("Verification Workflow", VerificationWorkflow.MLV),
+        ("Verification Levels", settings.REVIEW_LEVELS_MIN_COUNT),
+    ])
+
+    self._login()
+    response = self.import_data(asmt_tmpl_data)
+
+    self._check_csv_response(response, {})
+    tmpl = self._get_query_by_audit_for(
+        all_models.AssessmentTemplate, audit_id).one()
+    self._assert_sox_302_enabled_flag(tmpl, False)
+
   @ddt.data(
       {
           "init_workflow": VerificationWorkflow.STANDARD,
@@ -175,11 +196,6 @@ class TestImportWithSOX302(BaseTestWithSOX302):
           "init_workflow": VerificationWorkflow.MLV,
           "imported_value": VerificationWorkflow.SOX302,
           "exp_value": True,
-      },
-      {
-          "init_workflow": VerificationWorkflow.STANDARD,
-          "imported_value": VerificationWorkflow.MLV,
-          "exp_value": False,
       },
   )
   @ddt.unpack
@@ -202,6 +218,30 @@ class TestImportWithSOX302(BaseTestWithSOX302):
     self._check_csv_response(response, {})
     tmpl = self._refresh_object(tmpl.__class__, tmpl_id)
     self._assert_sox_302_enabled_flag(tmpl, exp_value)
+
+  def test_multi_verification_tmpl_update(self):
+    # pylint: disable=invalid-name
+    """Test SOX302 enabled=False when update MLV asmt tmpl via import."""
+    init_workflow = VerificationWorkflow.STANDARD
+    imported_value = VerificationWorkflow.MLV
+    tmpl = ggrc_factories.AssessmentTemplateFactory(
+        verification_workflow=init_workflow,
+    )
+    tmpl_id = tmpl.id
+
+    asmt_tmpl_data = collections.OrderedDict([
+        ("object_type", "Assessment Template"),
+        ("Code*", tmpl.slug),
+        ("Verification Workflow", imported_value),
+        ("Verification Levels", settings.REVIEW_LEVELS_MIN_COUNT),
+    ])
+
+    self._login()
+    response = self.import_data(asmt_tmpl_data)
+
+    self._check_csv_response(response, {})
+    tmpl = self._refresh_object(tmpl.__class__, tmpl_id)
+    self._assert_sox_302_enabled_flag(tmpl, False)
 
   @ddt.data(
       {

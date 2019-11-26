@@ -224,6 +224,8 @@ class AttributeInfo(object):
       "issue_severity",
       "issue_title",
       "issue_type",
+      "verification_workflow",
+      "review_levels_count",
   )
 
   class Type(object):

@@ -293,7 +293,10 @@ class CsvStringBuilder(object):
   @staticmethod
   def _utf_8_encode_line(line):
     """Encode line to utf8."""
-    return [val.encode("utf-8") for val in line]
+    return [
+        str(val) if isinstance(val, int) else val.encode("utf-8")
+        for val in line
+    ]
 
   def append_line(self, line):
     """Append line to CSV buffer."""

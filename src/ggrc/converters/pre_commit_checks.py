@@ -167,6 +167,12 @@ def check_assessment_template(row_converter):
   default_empty_value = "--"
 
   default_people = {}
+  _errors, _warnings = row_converter.obj.get_import_errors()
+  for error in _errors:
+    row_converter.add_error(error)
+  for warning in _warnings:
+    row_converter.add_warning(warning)
+
   for key, value in key_map.iteritems():
     default_people[value] = getattr(row_converter.obj, key, "")
 
