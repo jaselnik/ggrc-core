@@ -114,7 +114,7 @@ class UpdateAttrHandler(object):
   """
   # some attr handlers don't use every argument from the common interface
   # pylint: disable=unused-argument
-  @classmethod
+  @classmethod  # noqa
   def do_update_attr(cls, obj, json_obj, attr):
     """Perform the update to ``obj`` required to make the attribute attr
     equivalent in ``obj`` and ``json_obj``.
@@ -151,6 +151,7 @@ class UpdateAttrHandler(object):
       attr_name = attr
       method = getattr(cls, class_attr.__class__.__name__)
       value = method(obj, json_obj, attr_name, class_attr)
+
     if (isinstance(value, (set, list)) and
         not update_raw and (
         not hasattr(class_attr, 'property') or not
@@ -160,11 +161,23 @@ class UpdateAttrHandler(object):
     )):
       cls._do_update_collection(obj, value, attr_name)
     else:
-      try:
-        setattr(obj, attr_name, value)
-      except AttributeError as error:
-        logger.error('Unable to set attribute %s: %s', attr_name, error)
-        raise
+      # Allow setting attributes with raw dicts using
+      # special setter method. Look for special method first,
+      # if not found fall back to using setattr.
+
+      raw_setter_name = "set_raw_" + attr_name
+
+      if hasattr(obj, raw_setter_name):
+        raw_setter = getattr(obj, raw_setter_name)
+
+        if callable(raw_setter):
+          raw_setter(value)
+      else:
+        try:
+          setattr(obj, attr_name, value)
+        except AttributeError as error:
+          logger.error('Unable to set attribute %s: %s', attr_name, error)
+          raise
 
   @classmethod
   def _do_update_collection(cls, obj, value, attr_name):

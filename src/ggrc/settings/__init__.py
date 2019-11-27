@@ -52,6 +52,9 @@ SERVER_SOFTWARE = os.environ.get('SERVER_SOFTWARE', '')
 # whether the code is running in production or in the local development server
 CLOUD_APPSERVER = SERVER_SOFTWARE.startswith('Google App Engine/')
 
+REVIEW_LEVELS_MIN_COUNT = int(os.environ.get("REVIEW_LEVELS_MAX_COUNT", "1"))
+REVIEW_LEVELS_MAX_COUNT = int(os.environ.get("REVIEW_LEVELS_MAX_COUNT", "10"))
+
 if len(SETTINGS_MODULE.strip()) == 0:
   raise RuntimeError("Specify your settings using the `GGRC_SETTINGS_MODULE` "
                      "environment variable")
@@ -69,7 +72,7 @@ for module_name in SETTINGS_MODULE.split(" "):
     import imp
     module_name_parts = module_name.split('.')
     base_package = module_name_parts[0]
-    file, pathname, description = imp.find_module(base_package)
+    _file, pathname, description = imp.find_module(base_package)
     fullpath = "{0}/{1}.py".format(
         pathname, os.path.join(*module_name_parts[1:]))
 

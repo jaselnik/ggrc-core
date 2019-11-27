@@ -43,7 +43,7 @@ SUPPORTED_OBJECT_TYPES = _get_supported_object_types()
 
 class SavedSearch(CreationTimeTracked, Dictable, Identifiable, db.Model):
   """
-    Represents table which stores queary API filters for
+    Represents table which stores query API filters for
     given user.
   """
 

@@ -10,7 +10,7 @@ from flask import g
 
 from ggrc import db
 from ggrc.models import all_models
-from ggrc.models import assessment_template
+from ggrc.models.assessment_template import VerificationWorkflow
 
 from integration.ggrc import TestCase
 from integration.ggrc_basic_permissions.models \
@@ -18,9 +18,6 @@ from integration.ggrc_basic_permissions.models \
 from integration.ggrc.api_helper import Api
 from integration.ggrc.models import factories
 from integration.ggrc.query_helper import WithQueryApi
-
-
-VerificationWorkflow = assessment_template.VerificationWorkflow
 
 
 # pylint: disable=invalid-name

@@ -120,13 +120,6 @@ def set_assessment_type(assessment, template):
     assessment.assessment_type = template.template_object_type
 
 
-def set_sox_302_enabled(assessment, template):
-   # type: (models.Assessment, models.AssessmentTemplate) -> None
-  """Set sox_302_enabled flag from template."""
-  if template:
-    assessment.verification_workflow = template.verification_workflow
-
-
 # pylint: disable=too-many-arguments
 def _handle_assessment(assessment,  # type: models.Assessment
                        audit,  # type: models.Audit
@@ -141,7 +134,10 @@ def _handle_assessment(assessment,  # type: models.Assessment
   assessment.map_to(audit)
 
   if tmpl is not None:
-    set_sox_302_enabled(assessment, tmpl)
+    assessment.verification_workflow = tmpl.verification_workflow
+    assessment.review_levels_count = tmpl.review_levels_count
+    assessment.create_review_levels()
+
     _mark_cads_to_batch_insert(
         ca_definitions=tmpl.custom_attribute_definitions,
         attributable=assessment,

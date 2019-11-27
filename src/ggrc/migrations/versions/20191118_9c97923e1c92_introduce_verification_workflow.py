@@ -1,5 +1,6 @@
 # Copyright (C) 2019 Google Inc.
 # Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+# pylint: disable=invalid-name
 
 """
 Replace sox_302_enabled with verification_workflow
@@ -8,13 +9,8 @@ in assessments and assessment_templates tables.
 Create Date: 2019-11-18 12:17:54.598449
 """
 
-# disable Invalid constant name pylint warning for mandatory Alembic variables.
-# pylint: disable=invalid-name
-
 from alembic import op
 
-
-# revision identifiers, used by Alembic.
 revision = '9c97923e1c92'
 down_revision = '007ee00ff963'
 

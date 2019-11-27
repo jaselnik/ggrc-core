@@ -9,8 +9,12 @@ from sqlalchemy import orm
 from sqlalchemy.orm import validates
 from werkzeug.exceptions import Forbidden
 
-from ggrc import db
-from ggrc import login
+from ggrc import (
+    db,
+    login,
+    settings,
+)
+
 from ggrc.access_control.roleable import Roleable
 from ggrc.builder import simple_property
 from ggrc.models import audit
@@ -30,28 +34,17 @@ from ggrc.rbac.permissions import permissions_for
 from ggrc.integrations import constants
 
 
-def _hint_verifier_assignees(actual_people_label, control_people_label,
-                             risk_people_label):
-  """Returns description default verifiers/assignees fields"""
-
-  description = "Allowed values are:\n" \
-                "For all Assessment Types except of Control and Risk:" \
-                "\n{}\nuser@example.com\n" \
-                "For Assessment type of Control:\n{}\n" \
-                "user@example.com\n" \
-                "For Assessment type of Risk:\n{}\n" \
-                "user@example.com".format(
-                    "\n".join(actual_people_label.values()),
-                    "\n".join(control_people_label.values()),
-                    "\n".join(risk_people_label.values()))
-  return description
-
-
 # pylint: disable=too-few-public-methods
 class VerificationWorkflow(object):
+  """
+    Container with available verification_workflow
+    column values.
+  """
   STANDARD = "STANDARD"
   SOX302 = "SOX302"
   MLV = "MLV"
+
+  ALL = (STANDARD, SOX302, MLV)
 
 
 class AssessmentTemplate(
@@ -184,6 +177,7 @@ class AssessmentTemplate(
   _fulltext_attrs = [
       "archived",
       "verification_workflow",
+      "review_levels_count",
   ]
 
   _custom_publish = {
@@ -216,10 +210,22 @@ class AssessmentTemplate(
   )
 
   TICKET_TRACKER_STATES = ("On", "Off")
+  _HINT_VERIFIERS_ASSIGNEES = "Allowed values are:\n" \
+      "For all Assessment Types except of Control and Risk:" \
+      "\n{}\nuser@example.com\n" \
+      "For Assessment type of Control:\n{}\n" \
+      "user@example.com\n" \
+      "For Assessment type of Risk:\n{}\n" \
+      "user@example.com".format(
+          "\n".join(_DEFAULT_PEOPLE_LABELS_ACTUAL.values()),
+          "\n".join(_DEFAULT_PEOPLE_LABELS_CONTROL.values()),
+          "\n".join(_DEFAULT_PEOPLE_LABELS_RISK.values()),
+      )
 
   _aliases = {
       "verification_workflow": {
           "display_name": "Verification Workflow",
+          "mandatory": False,
           "description": (
               "Allowed values are:\n"
               "Standard flow\n"
@@ -228,7 +234,6 @@ class AssessmentTemplate(
               "Specify number of Verification Levels "
               "for assessments with multi-level verification flow."
           ),
-          "mandatory": False,
       },
       "status": {
           "display_name": "State",
@@ -239,26 +244,18 @@ class AssessmentTemplate(
       "default_assignees": {
           "display_name": "Default Assignees",
           "mandatory": True,
-          "filter_by": "_nop_filter",
-          "description": _hint_verifier_assignees(
-              _DEFAULT_PEOPLE_LABELS_ACTUAL,
-              _DEFAULT_PEOPLE_LABELS_CONTROL,
-              _DEFAULT_PEOPLE_LABELS_RISK,
-          )
+          "filter_by": None,
+          "description": _HINT_VERIFIERS_ASSIGNEES,
       },
       "default_verifier": {
           "display_name": "Default Verifiers",
           "mandatory": False,
-          "filter_by": "_nop_filter",
-          "description": _hint_verifier_assignees(
-              _DEFAULT_PEOPLE_LABELS_ACTUAL,
-              _DEFAULT_PEOPLE_LABELS_CONTROL,
-              _DEFAULT_PEOPLE_LABELS_RISK,
-          )
+          "filter_by": None,
+          "description": _HINT_VERIFIERS_ASSIGNEES,
       },
       "procedure_description": {
           "display_name": "Default Assessment Procedure",
-          "filter_by": "_nop_filter",
+          "filter_by": None,
       },
       "test_plan_procedure": {
           "display_name": "Use Control Assessment Procedure",
@@ -268,7 +265,8 @@ class AssessmentTemplate(
           "display_name": "Default Assessment Type",
           "mandatory": True,
           "description": "Allowed values are:\n{}".format(
-              '\n'.join(DEFAULT_ASSESSMENT_TYPE_OPTIONS)),
+              '\n'.join(DEFAULT_ASSESSMENT_TYPE_OPTIONS),
+          ),
       },
       "archived": {
           "display_name": "Archived",
@@ -291,7 +289,7 @@ class AssessmentTemplate(
       "template_custom_attributes": {
           "display_name": "Custom Attributes",
           "type": AttributeInfo.Type.SPECIAL_MAPPING,
-          "filter_by": "_nop_filter",
+          "filter_by": None,
           "description": (
               "List of custom attributes for the assessment template\n"
               "One attribute per line. fields are separated by commas ','\n\n"
@@ -343,18 +341,8 @@ class AssessmentTemplate(
         orm.Load(cls).joinedload("audit").undefer_group("Audit_complete")
     )
 
-  @classmethod
-  def _nop_filter(cls, _):
-    """No operation filter.
-
-    This is used for objects for which we can not implement a normal sql query
-    filter. Example is default_verifier field that is a json string in the db
-    and we can not create direct queries on json fields.
-    """
-    return None
-
-  @classmethod
-  def generate_slug_prefix(cls):
+  @staticmethod
+  def generate_slug_prefix():
     return "TEMPLATE"
 
   @validates('default_people')
@@ -383,6 +371,43 @@ class AssessmentTemplate(
         )
 
     return value
+
+  @orm.validates("verification_workflow")
+  # pylint: disable=unused-argument,no-self-use
+  def validate_verification_workflow(self, attr_name, attr_value):
+    """
+      Check that verification_level is set to a valid
+      verification flow string value.
+    """
+    if attr_value not in VerificationWorkflow.ALL:
+      raise ValueError(
+          "Verification workflow should be one of {}, {}, {}.".format(
+              *VerificationWorkflow.ALL
+          ),
+      )
+
+    return attr_value
+
+  @orm.validates("review_levels_count")
+  # pylint: disable=unused-argument
+  def validate_review_levels_count(self, attr_name, attr_value):
+    """
+      Check that review_levels_count lies in a range with
+      boundaries specified in application settings.
+    """
+    if attr_value not in range(
+        settings.REVIEW_LEVELS_MIN_COUNT,
+        settings.REVIEW_LEVELS_MAX_COUNT + 1,
+    ) and self.verification_workflow == VerificationWorkflow.MLV:
+      raise ValueError(
+          "Number of review levels should be in range [{}, {}]"
+          " if multiple review levels are enabled.".format(
+              settings.REVIEW_LEVELS_MIN_COUNT,
+              settings.REVIEW_LEVELS_MAX_COUNT + 1,
+          ),
+      )
+
+    return attr_value
 
   @simple_property
   def sox_302_enabled(self):
