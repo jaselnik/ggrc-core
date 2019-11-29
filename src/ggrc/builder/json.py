@@ -227,11 +227,17 @@ class UpdateAttrHandler(object):
   @classmethod
   def default_column_handler(cls, obj, json_obj, attr_name, class_attr):
     """Translate the JSON value for a simple value column"""
+
+    # If column attribute has default value specified and the value for that
+    # column is not in json_obj use column default value instead of
+    # setting column attribute to None. Only fixed for str and int default
+    # values for simplicity and to avoid regressions.
+
     column_default_value = None
 
     if (
         class_attr.default is not None and
-        not callable(class_attr.default.arg)
+        type(class_attr.default.arg) in (str, int)
     ):
       column_default_value = class_attr.default.arg
 

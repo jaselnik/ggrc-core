@@ -9,6 +9,7 @@ from appengine import base
 
 from ggrc import db
 from ggrc.models import all_models
+from ggrc.models.assessment_template import VerificationWorkflow
 from integration.ggrc import TestCase
 from integration.ggrc.access_control import acl_helper
 from integration.ggrc.api_helper import Api
@@ -330,6 +331,7 @@ class TestPermissionsOnAssessmentTemplate(TestCase):
             "verifiers": "Admin",
         },
         "context": {"id": audit.context.id},
+        "verification_workflow": VerificationWorkflow.STANDARD,
     }
 
   def setUp(self):
