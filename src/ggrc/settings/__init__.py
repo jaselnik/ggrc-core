@@ -52,7 +52,7 @@ SERVER_SOFTWARE = os.environ.get('SERVER_SOFTWARE', '')
 # whether the code is running in production or in the local development server
 CLOUD_APPSERVER = SERVER_SOFTWARE.startswith('Google App Engine/')
 
-REVIEW_LEVELS_MIN_COUNT = int(os.environ.get("REVIEW_LEVELS_MAX_COUNT", "1"))
+REVIEW_LEVELS_MIN_COUNT = int(os.environ.get("REVIEW_LEVELS_MAX_COUNT", "2"))
 REVIEW_LEVELS_MAX_COUNT = int(os.environ.get("REVIEW_LEVELS_MAX_COUNT", "10"))
 
 if len(SETTINGS_MODULE.strip()) == 0:

@@ -345,6 +345,22 @@ class AssessmentTemplate(
   def generate_slug_prefix():
     return "TEMPLATE"
 
+  @staticmethod
+  def set_verification_workflow(assessment, template):
+    """
+      Populate assessment verification workflow and related fields from
+      related assessment template.
+
+      Args:
+        assessment - Assessment model object.
+        template - AssessmentTemplate model object.
+    """
+
+    if template:
+      assessment.verification_workflow = template.verification_workflow
+      assessment.review_levels_count = template.review_levels_count
+      assessment.create_review_levels()
+
   @validates('default_people')
   def validate_default_people(self, key, value):
     """Check that default people lists are not empty.
@@ -403,7 +419,7 @@ class AssessmentTemplate(
           "Number of review levels should be in range [{}, {}]"
           " if multiple review levels are enabled.".format(
               settings.REVIEW_LEVELS_MIN_COUNT,
-              settings.REVIEW_LEVELS_MAX_COUNT + 1,
+              settings.REVIEW_LEVELS_MAX_COUNT,
           ),
       )
 

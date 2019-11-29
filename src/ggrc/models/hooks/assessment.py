@@ -134,9 +134,10 @@ def _handle_assessment(assessment,  # type: models.Assessment
   assessment.map_to(audit)
 
   if tmpl is not None:
-    assessment.verification_workflow = tmpl.verification_workflow
-    assessment.review_levels_count = tmpl.review_levels_count
-    assessment.create_review_levels()
+    all_models.AssessmentTemplate.set_verification_workflow(
+        assessment,
+        tmpl,
+    )
 
     _mark_cads_to_batch_insert(
         ca_definitions=tmpl.custom_attribute_definitions,

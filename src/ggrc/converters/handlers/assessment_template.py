@@ -7,6 +7,7 @@ from ggrc import db
 from ggrc.converters.handlers import handlers
 from ggrc.converters import errors
 from ggrc.models.hooks import assessment as asmt_hooks
+from ggrc.models import assessment_template
 
 
 class AssessmentTemplateColumnHandler(handlers.MappingColumnHandler):
@@ -26,7 +27,7 @@ class AssessmentTemplateColumnHandler(handlers.MappingColumnHandler):
     self.value = self.parse_item()
     if not self.dry_run and self.row_converter.is_new:
       self.create_custom_attributes()
-      self.set_sox_302_enabled_flag()
+      self._set_verification_workflow()
 
   def insert_object(self):
     pass
@@ -43,11 +44,15 @@ class AssessmentTemplateColumnHandler(handlers.MappingColumnHandler):
         self.row_converter.block_converter._ca_definitions_cache[key] = cad
     db.session.flush(created_cads)
 
-  def set_sox_302_enabled_flag(self):
+  def _set_verification_workflow(self):
     """Set `sox_302_enabled` flag for newly created Assessment instance."""
     if not self.value:
       return
-    asmt_hooks.set_sox_302_enabled(self.row_converter.obj, self.value[0])
+
+    assessment_template.AssessmentTemplate.set_verification_workflow(
+        self.row_converter.obj,
+        self.value[0],
+    )
 
   def get_value(self):
     return ""

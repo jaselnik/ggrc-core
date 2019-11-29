@@ -227,7 +227,15 @@ class UpdateAttrHandler(object):
   @classmethod
   def default_column_handler(cls, obj, json_obj, attr_name, class_attr):
     """Translate the JSON value for a simple value column"""
-    return json_obj.get(attr_name)
+    column_default_value = None
+
+    if (
+        class_attr.default is not None and
+        not callable(class_attr.default.arg)
+    ):
+      column_default_value = class_attr.default.arg
+
+    return json_obj.get(attr_name, column_default_value)
 
   @classmethod
   def DateTime(cls, obj, json_obj, attr_name, class_attr):
@@ -830,7 +838,6 @@ class Builder(AttributeInfo):
     state represented by the JSON dictionary ``json_obj``.
     """
     attrs = set(self._create_attrs)
-
     is_external = is_external_app_user()
 
     if isinstance(obj, Synchronizable):

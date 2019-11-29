@@ -116,6 +116,44 @@ class TestAssessmentTemplateCreation(ggrc.TestCase):
         workflow,
     )
 
+  def test_successful_creation_default(self):
+    """
+      Test that assessment template is properly created even though
+      neither review_levels_count nor verification_workflow are
+      provided in POST data.
+    """
+
+    audit = ggrc.models.factories.AuditFactory()
+
+    response = self.api.post(
+        all_models.AssessmentTemplate,
+        {
+            "assessment_template": {
+                "audit": {"id": audit.id},
+                "context": {"id": audit.context.id},
+                "default_people": {
+                    "assignees": "Admin",
+                    "verifiers": "Admin",
+                },
+                "title": "AssessmentTemplate Title",
+            },
+        },
+    )
+
+    self.assert201(response)
+
+    created_template_dict = json.loads(response.data)["assessment_template"]
+
+    self.assertEqual(
+        created_template_dict["review_levels_count"],
+        None,
+    )
+
+    self.assertEqual(
+        created_template_dict["verification_workflow"],
+        VerificationWorkflow.STANDARD,
+    )
+
   @ddt.data(
       {
           "workflow": VerificationWorkflow.MLV,
@@ -154,7 +192,7 @@ class TestAssessmentTemplateCreation(ggrc.TestCase):
     self.assert400(response)
     self.assertEqual(
         json.loads(response.data),
-        "Number of review levels should be in range [1, 11] if multiple"
+        "Number of review levels should be in range [2, 10] if multiple"
         " review levels are enabled.",
     )
 

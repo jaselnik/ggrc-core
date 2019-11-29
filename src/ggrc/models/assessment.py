@@ -243,6 +243,16 @@ class Assessment(
           "mandatory": False,
           "view_only": True,
       },
+      "review_levels_count": {
+          "display_name": "Verification Levels",
+          "description": (
+              "Number of verification levels needed for assessment."
+              "\nApplied only to assessments with"
+              " multi-level verification flow."
+              "\nAllowed values: from 2 to 10."
+          ),
+          "mandatory": False,
+      },
       "assessment_template": {
           "display_name": "Template",
           "ignore_on_update": True,
@@ -312,6 +322,7 @@ class Assessment(
         orm.Load(cls).joinedload("audit").joinedload(
             audit.Audit.issuetracker_issue,
         ),
+        orm.Load(cls).joinedload("review_levels"),
     )
 
   @classmethod
