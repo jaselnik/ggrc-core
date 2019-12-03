@@ -802,7 +802,7 @@ class TestWorkflowsApiPost(TestCase):
         "workflow": {
             "task_group_title": "Task Group 1",
             "is_verification_needed": False,
-            "title": "",
+            "title": "test_title",
             "clone": workflow_id,
             "context": None,
             "clone_people": False,

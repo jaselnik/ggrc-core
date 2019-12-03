@@ -73,7 +73,7 @@ class WorkflowRBACFactory(base.BaseRBACFactory):
     return self.api.post(all_models.Workflow, {
         "workflow": {
             # workaround - title is required for validation
-            "title": "",
+            "title": "test title",
             "clone": self.workflow_id,
             "clone_objects": True,
             "clone_people": True,

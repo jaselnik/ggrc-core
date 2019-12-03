@@ -55,17 +55,6 @@ class TestDataHandler(TestCase):
     self.assertEqual(task_dict["related_objects"][0],
                      u"Contract1 [removed from task]")
 
-    # Test if we handle the title of the object being empty
-    contract = factories.ContractFactory(title=u"")
-    cycle_task = wf_factories.CycleTaskGroupObjectTaskFactory(title=u"task1")
-    factories.RelationshipFactory(
-        source=contract,
-        destination=cycle_task
-    )
-
-    task_dict = get_cycle_task_dict(cycle_task)
-    self.assertEqual(task_dict["related_objects"][0], (u"",))
-
   @ddt.data(True, False)
   def test_related_object_name(self, with_related):
     """Test checks related object name"""

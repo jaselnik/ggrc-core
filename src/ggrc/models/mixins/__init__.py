@@ -54,14 +54,12 @@ class Titled(object):
 
   @validates('title')
   def validate_title(self, key, value):
-    """Validates and cleans Title that has leading/trailing spaces"""
+    """Validates and cleans Title that has leading/trailing spaces,
+    ensure that value is not None and not empty string
+    """
     # pylint: disable=unused-argument,no-self-use
 
-    # ensure that value is not None (value was not specified or set to null)
-    # treat empty string or string with spaces as valid - it looks like
-    # such case is valid - some tests check such cases, so empty title might
-    # be valid in production
-    if value is None:
+    if value is None or not value.strip():
       raise ValueError("'title' must be specified")
 
     return re.sub(r"\s+", " ", value).strip()

@@ -67,7 +67,7 @@ class AuditRBACFactory(base.BaseRBACFactory):
         "audit": {
             "program": {"id": self.program_id, "type": "Program"},
             # workaround - title is required for validation
-            "title": "",
+            "title": "test title",
             "context": None,
             "operation": "clone",
             "cloneOptions": {

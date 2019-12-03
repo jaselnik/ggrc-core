@@ -140,7 +140,7 @@ class TaskGroupRBACFactory(base.BaseRBACFactory):
     return self.api.post(all_models.TaskGroup, {
         "task_group": {
             # workaround - title is required for validation
-            "title": "",
+            "title": "test title",
             "clone": self.task_group_id,
             "clone_objects": True,
             "clone_people": True,
