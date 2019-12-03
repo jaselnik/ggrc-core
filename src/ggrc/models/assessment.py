@@ -231,7 +231,7 @@ class Assessment(
   _aliases = {
       "owners": None,
       "verification_workflow": {
-          "display_name": "Verification Workflow",
+          "display_name": "Assessment Workflow",
           "description": (
               "Allowed values are:\n"
               "Standard flow\n"

@@ -216,7 +216,7 @@ class TestAssessmentTemplatesImport(TestCase):
 
 @ddt.ddt
 class TestMultiVerificationWorkflow(TestCase):
-  """Test Assessment Template Multi Verification Workflow"""
+  """Test Assessment Template Multi Assessment Workflow"""
 
   def setUp(self):
     """Set up for Assessment Template test cases."""
@@ -234,7 +234,7 @@ class TestMultiVerificationWorkflow(TestCase):
             ("Default Assignees*", "Auditors"),
             ("Default Assessment Type", "Control"),
             ("Title", "Template 1"),
-            ("Verification Workflow", VerificationWorkflow.MLV),
+            ("Assessment Workflow", VerificationWorkflow.MLV),
             ("Verification Levels", 2),
         ])
     ]
@@ -253,7 +253,7 @@ class TestMultiVerificationWorkflow(TestCase):
             ("Default Assignees*", "Auditors"),
             ("Default Assessment Type", "Control"),
             ("Title", "Template 1"),
-            ("Verification Workflow", VerificationWorkflow.MLV),
+            ("Assessment Workflow", VerificationWorkflow.MLV),
             ("Verification Levels", ""),
         ])
     ]
@@ -287,7 +287,7 @@ class TestMultiVerificationWorkflow(TestCase):
             ("Default Assignees*", "Auditors"),
             ("Default Assessment Type", "Control"),
             ("Title", "Template 1"),
-            ("Verification Workflow", workflow_type),
+            ("Assessment Workflow", workflow_type),
             ("Verification Levels", "ABC"),
         ])
     ]
@@ -321,7 +321,7 @@ class TestMultiVerificationWorkflow(TestCase):
             ("Default Assignees*", "Auditors"),
             ("Default Assessment Type", "Control"),
             ("Title", "Template 1"),
-            ("Verification Workflow", VerificationWorkflow.MLV),
+            ("Assessment Workflow", VerificationWorkflow.MLV),
             ("Verification Levels", levels_value),
         ])
     ]
@@ -344,7 +344,7 @@ class TestMultiVerificationWorkflow(TestCase):
     self._check_csv_response(response, expected_messages)
 
   def test_empty_workflow_type(self):
-    """Test empty Verification Workflow value"""
+    """Test empty Assessment Workflow value"""
     audit = factories.AuditFactory()
     assessment_data_template = [
         collections.OrderedDict([
@@ -354,7 +354,7 @@ class TestMultiVerificationWorkflow(TestCase):
             ("Default Assignees*", "Auditors"),
             ("Default Assessment Type", "Control"),
             ("Title", "Template 1"),
-            ("Verification Workflow", ""),
+            ("Assessment Workflow", ""),
             ("Verification Levels", "2"),
         ])
     ]
@@ -368,7 +368,7 @@ class TestMultiVerificationWorkflow(TestCase):
             "row_warnings": {
                 errors.MISSING_VERIFICATION_WORKFLOW_VALUE.format(
                     line=3,
-                    column_name="Verification Workflow"
+                    column_name="Assessment Workflow"
                 )
             },
             "row_errors": {
@@ -391,7 +391,7 @@ class TestMultiVerificationWorkflow(TestCase):
             ("Default Assignees*", "Auditors"),
             ("Default Assessment Type", "Control"),
             ("Title", "Template 1"),
-            ("Verification Workflow", ""),
+            ("Assessment Workflow", ""),
             ("Verification Levels", ""),
         ])
     ]
@@ -405,7 +405,7 @@ class TestMultiVerificationWorkflow(TestCase):
             "row_warnings": {
                 errors.MISSING_VERIFICATION_WORKFLOW_VALUE.format(
                     line=3,
-                    column_name="Verification Workflow"
+                    column_name="Assessment Workflow"
                 )
             },
         }
@@ -413,7 +413,7 @@ class TestMultiVerificationWorkflow(TestCase):
     self._check_csv_response(response, expected_messages)
 
   def test_wrong_workflow_type(self):
-    """Test wrong Verification Workflow value"""
+    """Test wrong Assessment Workflow value"""
     audit = factories.AuditFactory()
     assessment_data_template = [
         collections.OrderedDict([
@@ -423,7 +423,7 @@ class TestMultiVerificationWorkflow(TestCase):
             ("Default Assignees*", "Auditors"),
             ("Default Assessment Type", "Control"),
             ("Title", "Template 1"),
-            ("Verification Workflow", "Wrong Flow"),
+            ("Assessment Workflow", "Wrong Flow"),
             ("Verification Levels", "2"),
         ])
     ]
@@ -438,7 +438,7 @@ class TestMultiVerificationWorkflow(TestCase):
             "row_errors": {
                 errors.WRONG_VALUE_ERROR.format(
                     line=3,
-                    column_name="Verification Workflow"
+                    column_name="Assessment Workflow"
                 )
             },
         }
@@ -457,7 +457,7 @@ class TestMultiVerificationWorkflow(TestCase):
             ("Default Assignees*", "Auditors"),
             ("Default Assessment Type", "Control"),
             ("Title", "Template 1"),
-            ("Verification Workflow", workflow_type),
+            ("Assessment Workflow", workflow_type),
             ("Verification Levels", "2"),
         ])
     ]
@@ -490,7 +490,7 @@ class TestMultiVerificationWorkflow(TestCase):
             ("Default Verifiers", "user@example.com"),
             ("Default Assessment Type", "Control"),
             ("Title", "Template 1"),
-            ("Verification Workflow", VerificationWorkflow.MLV),
+            ("Assessment Workflow", VerificationWorkflow.MLV),
             ("Verification Levels", "2"),
         ])
     ]

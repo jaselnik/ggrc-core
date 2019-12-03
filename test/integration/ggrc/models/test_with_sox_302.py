@@ -150,7 +150,7 @@ class TestImportWithSOX302(BaseTestWithSOX302):
         ("Title", "AssessmentTemplate Title"),
         ("Default Assessment Type*", "Control"),
         ("Default Assignees*", "Auditors"),
-        ("Verification Workflow", imported_value),
+        ("Assessment Workflow", imported_value),
     ])
 
     self._login()
@@ -174,7 +174,7 @@ class TestImportWithSOX302(BaseTestWithSOX302):
         ("Title", "AssessmentTemplate Title"),
         ("Default Assessment Type*", "Control"),
         ("Default Assignees*", "Auditors"),
-        ("Verification Workflow", VerificationWorkflow.MLV),
+        ("Assessment Workflow", VerificationWorkflow.MLV),
         ("Verification Levels", settings.REVIEW_LEVELS_MIN_COUNT),
     ])
 
@@ -209,7 +209,7 @@ class TestImportWithSOX302(BaseTestWithSOX302):
     asmt_tmpl_data = collections.OrderedDict([
         ("object_type", "Assessment Template"),
         ("Code*", tmpl.slug),
-        ("Verification Workflow", imported_value),
+        ("Assessment Workflow", imported_value),
     ])
 
     self._login()
@@ -232,7 +232,7 @@ class TestImportWithSOX302(BaseTestWithSOX302):
     asmt_tmpl_data = collections.OrderedDict([
         ("object_type", "Assessment Template"),
         ("Code*", tmpl.slug),
-        ("Verification Workflow", imported_value),
+        ("Assessment Workflow", imported_value),
         ("Verification Levels", settings.REVIEW_LEVELS_MIN_COUNT),
     ])
 
@@ -333,7 +333,7 @@ class TestImportWithSOX302(BaseTestWithSOX302):
         ("Title", "Assessment Title"),
         ("Assignees", "user@example.com"),
         ("Creators", "user@example.com"),
-        ("Verification Workflow", imported_value),
+        ("Assessment Workflow", imported_value),
     ])
 
     self._login()
@@ -388,7 +388,7 @@ class TestImportWithSOX302(BaseTestWithSOX302):
     asmt_data = collections.OrderedDict([
         ("object_type", "Assessment"),
         ("Code*", asmt.slug),
-        ("Verification Workflow", imported_value),
+        ("Assessment Workflow", imported_value),
     ])
 
     self._login()
@@ -481,7 +481,7 @@ class TestExportWithSOX302(query_helper.WithQueryApi,
     self.assertEqual(1, len(exported_data[obj_name]))
     exported_obj_data = exported_data[obj_name][0]
     self.assertEqual(
-        exported_obj_data["Verification Workflow"],
+        exported_obj_data["Assessment Workflow"],
         expected_value,
     )
 
@@ -795,12 +795,14 @@ class TestApiWithSOX302(BaseTestWithSOX302):
 
 
 @ddt.ddt
-class TestQueriesWithSOX302(query_helper.WithQueryApi,
-                            BaseTestWithSOX302):
-  """Test query API filtering for `WithSOX302Flow` objects."""
+class TestQueriesAssessmentWorkflow(
+    query_helper.WithQueryApi,
+    BaseTestWithSOX302
+):
+  """Test query API filtering by Assessment Workflow."""
 
   def setUp(self):
-    super(TestQueriesWithSOX302, self).setUp()
+    super(TestQueriesAssessmentWorkflow, self).setUp()
     self.api = api_helper.Api()
 
   def _assert_right_obj_found(self, query_result, expected_obj_type,
@@ -826,19 +828,31 @@ class TestQueriesWithSOX302(query_helper.WithQueryApi,
     )
 
   @ddt.data(
-      VerificationWorkflow.STANDARD,
-      VerificationWorkflow.SOX302,
+      (
+          VerificationWorkflow.STANDARD,
+          VerificationWorkflow.SOX302
+      ),
+      (
+          VerificationWorkflow.SOX302,
+          VerificationWorkflow.STANDARD
+      ),
+      (
+          VerificationWorkflow.MLV,
+          VerificationWorkflow.STANDARD
+      ),
   )
-  def test_sox_302_enabled_filter_tmpl(self, filter_by_value):
-    # pylint: disable=invalid-name
-    """Test tmpl could be filtered by sox_302_enabled field."""
+  @ddt.unpack
+  def test_assessment_workflow_filter(
+      self, first_obj_value, second_obj_value
+  ):
+    """Test filter {0} by Assessment Workflow field with value {1}."""
 
     with ggrc_factories.single_commit():
       tmpl = ggrc_factories.AssessmentTemplateFactory(
-          verification_workflow=filter_by_value,
+          verification_workflow=first_obj_value
       )
       ggrc_factories.AssessmentTemplateFactory(
-          verification_workflow=VerificationWorkflow.MLV,
+          verification_workflow=second_obj_value
       )
 
     searched_tmpl_id = tmpl.id
@@ -846,7 +860,7 @@ class TestQueriesWithSOX302(query_helper.WithQueryApi,
     query_request_data = [
         self._make_query_dict(
             "AssessmentTemplate",
-            expression=["Verification Workflow", "=", filter_by_value],
+            expression=["Assessment Workflow", "=", first_obj_value],
         ),
     ]
 
@@ -861,37 +875,33 @@ class TestQueriesWithSOX302(query_helper.WithQueryApi,
         searched_tmpl_id,
     )
 
-  @ddt.data(
-      VerificationWorkflow.STANDARD,
-      VerificationWorkflow.SOX302,
-  )
-  def test_sox_302_enabled_filter(self, filter_by_value):
-    """Test asmt could be filtered by sox_302_enabled field."""
+  def test_review_levels_filter(self):
+    """Test tmpl could be filtered by review_levels_count field."""
     with ggrc_factories.single_commit():
-      asmt = ggrc_factories.AssessmentFactory(
-          verification_workflow=filter_by_value,
-      )
-      ggrc_factories.AssessmentFactory(
-          verification_workflow=VerificationWorkflow.MLV,
-      )
-    searched_amst_id = asmt.id
+      for _level in [None, 2, 6]:
+        ggrc_factories.AssessmentTemplateFactory(
+            verification_workflow=VerificationWorkflow.MLV,
+            review_levels_count=_level,
+        )
 
     query_request_data = [
         self._make_query_dict(
-            "Assessment",
-            expression=["Verification Workflow", "=", filter_by_value],
+            "AssessmentTemplate",
+            expression=["Verification Levels", "=", 2],
         ),
     ]
 
-    response = self.api.send_request(
-        self.api.client.post, data=query_request_data, api_link="/query"
+    resp = self.api.send_request(
+        self.api.client.post,
+        data=query_request_data,
+        api_link="/query",
     )
 
-    self.assert200(response)
-    self._assert_right_obj_found(
-        response.json,
-        "Assessment",
-        searched_amst_id,
+    self.assert200(resp)
+    self.assertEqual(resp.json[0]["AssessmentTemplate"]["count"], 1)
+    self.assertEqual(
+        resp.json[0]["AssessmentTemplate"]["values"][0]['review_levels_count'],
+        2,
     )
 
 
