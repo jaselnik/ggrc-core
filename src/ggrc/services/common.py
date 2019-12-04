@@ -1341,7 +1341,10 @@ class Resource(ModelView):
           ))
           db.session.rollback()
         except Exception as error:
-          res.append((getattr(error, "code", 500), error.message))
+          res.append((
+              getattr(error, "code", 500),
+              "{}: {}".format(type(error), error.message)
+          ))
           logger.warning("Collection POST commit failed", exc_info=True)
           db.session.rollback()
         if hasattr(flask.g, "referenced_objects"):
