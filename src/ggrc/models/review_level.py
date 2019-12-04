@@ -9,6 +9,8 @@
   "Multiple Levels Of Verification".
 """
 
+from sqlalchemy.ext.hybrid import hybrid_property
+
 from ggrc import db
 from ggrc.models import (
     mixins,
@@ -68,6 +70,11 @@ class ReviewLevel(
 
   _api_attrs = reflection.ApiAttributes(
       reflection.Attribute(
+          "users",
+          update=False,
+          create=False,
+      ),
+      reflection.Attribute(
           "level_number",
           update=False,
           create=False,
@@ -78,6 +85,16 @@ class ReviewLevel(
           create=False,
       ),
   )
+
+  @hybrid_property
+  def users(self):
+    """
+      Alias for verification_levels InstrumentedAttribute.
+
+      Used by ggrc.builder.json for serializing and
+      updating assessment objects.
+    """
+    return self.verifiers
 
   def update_from_dict(self, review_level_dict):
     """

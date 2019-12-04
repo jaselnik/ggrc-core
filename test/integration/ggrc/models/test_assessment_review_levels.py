@@ -433,7 +433,7 @@ class TestAssessmentUpdate(ggrc.TestCase):
         email="reviewer1@example.com",
     )
 
-    self.api.put(assessment, {
+    response = self.api.put(assessment, {
         "review_levels": [{
             "id": review_level_id,
             "users": [{
@@ -446,7 +446,10 @@ class TestAssessmentUpdate(ggrc.TestCase):
 
     _review_level = review_level.ReviewLevel.query.get(review_level_id)
 
-    self.assertEqual(len(_review_level.verifiers), 2)
+    self.assertEqual(
+        len(_review_level.verifiers),
+        2,
+    )
 
     self.assertEqual(
         _review_level.verifiers[0].email,
@@ -456,6 +459,13 @@ class TestAssessmentUpdate(ggrc.TestCase):
     self.assertEqual(
         _review_level.verifiers[1].email,
         "reviewer1@example.com",
+    )
+
+    assessment_dict = json.loads(response.data)["assessment"]
+
+    self.assertEqual(
+        len(assessment_dict["review_levels"][review_level_idx]["users"]),
+        2,
     )
 
   @ddt.data(0, 1)
@@ -469,7 +479,7 @@ class TestAssessmentUpdate(ggrc.TestCase):
 
     review_level_id = assessment.review_levels[review_level_idx].id
 
-    self.api.put(assessment, {
+    response = self.api.put(assessment, {
         "review_levels": [{
             "id": review_level_id,
             "users": [],
@@ -478,4 +488,14 @@ class TestAssessmentUpdate(ggrc.TestCase):
 
     _review_level = review_level.ReviewLevel.query.get(review_level_id)
 
-    self.assertEqual(len(_review_level.verifiers), 0)
+    self.assertEqual(
+        len(_review_level.verifiers),
+        0,
+    )
+
+    assessment_dict = json.loads(response.data)["assessment"]
+
+    self.assertEqual(
+        len(assessment_dict["review_levels"][review_level_idx]["users"]),
+        0,
+    )
