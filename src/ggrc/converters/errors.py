@@ -90,11 +90,28 @@ WRONG_ASSESSMENT_TICKET_STATUS = (u"Line {line}: You are not allowed to "
                                   u"Please use a manual linking option "
                                   u"instead.")
 
+WRONG_VERIFICATION_LEVEL_VALUE = (u"Line {line}: Field 'Verification Levels' "
+                                  u"is not specified. The line will be "
+                                  u"ignored.")
+
+UNSUPPORTED_VERIFICATION_LEVELS = (u"Line {line}: Field 'Verification Levels' "
+                                   u"cannot be applied for Standard or SOX 302"
+                                   u" assessments. The value will be ignored.")
+
 MISSING_VALUE_WARNING = (u"Line {line}: Field '{column_name}' is required. "
                          u"The default value '{default_value}' will be used.")
 
 MISSING_VALUE_ERROR = (u"Line {line}: Field '{column_name}' is required. The "
                        u"line will be ignored.")
+
+MISSING_VERIFICATION_WORKFLOW_VALUE = (u"Line {line}: '{column_name}' value "
+                                       u"is not specified. Standard flow will "
+                                       u"be applied for the assessment.")
+
+UNSUPPORTED_DEFAULT_VERIFIERS = (u"Line {line}: Default Verifiers can not be "
+                                 u"specified for assessments with multi-level "
+                                 u"verification flow. Default Verifiers value "
+                                 u"will be skipped.")
 
 PERMISSION_ERROR = (u"Line {line}: You don't have permission to update/delete"
                     u" this record.")

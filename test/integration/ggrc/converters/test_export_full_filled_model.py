@@ -7,10 +7,14 @@ from StringIO import StringIO
 
 import ddt
 
-from ggrc import converters
-from ggrc import db
+from ggrc import (
+    db,
+    settings,
+    converters,
+)
 from ggrc.converters import import_helper
 from ggrc.models import all_models
+from ggrc.models import assessment_template
 from integration.ggrc import TestCase, api_helper
 from integration.ggrc.models import factories
 
@@ -385,11 +389,6 @@ class TestFullFilledModelExport(TestCase):
           True
       ),
       'slug': lambda **kwargs: set_attribute(kwargs['obj'], 'slug', 'slug'),
-      'sox_302_enabled': lambda **kwargs: set_attribute(
-          kwargs['obj'],
-          'sox_302_enabled',
-          True
-      ),
       'start_date': lambda **kwargs: set_attribute(
           kwargs['obj'],
           'start_date',
@@ -475,6 +474,16 @@ class TestFullFilledModelExport(TestCase):
           kwargs['obj'],
           'workflow',
           'workflow'
+      ),
+      'review_levels_count': lambda **kwargs: set_attribute(
+          kwargs['obj'],
+          'review_levels_count',
+          settings.REVIEW_LEVELS_MIN_COUNT
+      ),
+      'verification_workflow': lambda **kwargs: set_attribute(
+          kwargs['obj'],
+          'verification_workflow',
+          assessment_template.VerificationWorkflow.MLV
       ),
   }
 

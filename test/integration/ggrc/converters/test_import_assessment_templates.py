@@ -6,8 +6,10 @@
 """Test Assessment Template import."""
 
 import collections
+import ddt
 
 from ggrc import models
+from ggrc.models.assessment_template import VerificationWorkflow
 from ggrc.converters import errors
 from ggrc.utils import errors as common_errors
 from integration.ggrc import TestCase
@@ -205,6 +207,303 @@ class TestAssessmentTemplatesImport(TestCase):
                     message=common_errors.DUPLICATE_CUSTOM_ROLE.format(
                         role_name=acr_name
                     ),
+                )
+            },
+        }
+    }
+    self._check_csv_response(response, expected_messages)
+
+
+@ddt.ddt
+class TestMultiVerificationWorkflow(TestCase):
+  """Test Assessment Template Multi Verification Workflow"""
+
+  def setUp(self):
+    """Set up for Assessment Template test cases."""
+    super(TestMultiVerificationWorkflow, self).setUp()
+    self.client.get("/login")
+
+  def test_simple_import(self):
+    """Test proper multi verification workflow values"""
+    audit = factories.AuditFactory()
+    assessment_data_template = [
+        collections.OrderedDict([
+            ("object_type", "Assessment Template"),
+            ("Code*", ""),
+            ("Audit*", audit.slug),
+            ("Default Assignees*", "Auditors"),
+            ("Default Assessment Type", "Control"),
+            ("Title", "Template 1"),
+            ("Verification Workflow", VerificationWorkflow.MLV),
+            ("Verification Levels", 2),
+        ])
+    ]
+    response = self.import_data(*assessment_data_template)
+
+    self._check_csv_response(response, {})
+
+  def test_empty_review_levels(self):
+    """Test empty review levels field"""
+    audit = factories.AuditFactory()
+    assessment_data_template = [
+        collections.OrderedDict([
+            ("object_type", "Assessment Template"),
+            ("Code*", ""),
+            ("Audit*", audit.slug),
+            ("Default Assignees*", "Auditors"),
+            ("Default Assessment Type", "Control"),
+            ("Title", "Template 1"),
+            ("Verification Workflow", VerificationWorkflow.MLV),
+            ("Verification Levels", ""),
+        ])
+    ]
+    response = self.import_data(*assessment_data_template)
+
+    expected_messages = {
+        "Assessment Template": {
+            "rows": 1,
+            "updated": 0,
+            "created": 0,
+            "row_warnings": set(),
+            "row_errors": {
+                errors.WRONG_VERIFICATION_LEVEL_VALUE.format(
+                    line=3,
+                    column_name="Verification Levels"
+                )
+            },
+        }
+    }
+    self._check_csv_response(response, expected_messages)
+
+  @ddt.data(*VerificationWorkflow.ALL)
+  def test_nonint_review_levels(self, workflow_type):
+    """Test review levels contains non supported symbols"""
+    audit = factories.AuditFactory()
+    assessment_data_template = [
+        collections.OrderedDict([
+            ("object_type", "Assessment Template"),
+            ("Code*", ""),
+            ("Audit*", audit.slug),
+            ("Default Assignees*", "Auditors"),
+            ("Default Assessment Type", "Control"),
+            ("Title", "Template 1"),
+            ("Verification Workflow", workflow_type),
+            ("Verification Levels", "ABC"),
+        ])
+    ]
+    response = self.import_data(*assessment_data_template)
+
+    expected_messages = {
+        "Assessment Template": {
+            "rows": 1,
+            "updated": 0,
+            "created": 0,
+            "row_warnings": set(),
+            "row_errors": {
+                errors.WRONG_VALUE_ERROR.format(
+                    line=3,
+                    column_name="Verification Levels"
+                )
+            },
+        }
+    }
+    self._check_csv_response(response, expected_messages)
+
+  @ddt.data("0", "200")
+  def test_wrong_review_levels(self, levels_value):
+    """Test review levels contains wrong values"""
+    audit = factories.AuditFactory()
+    assessment_data_template = [
+        collections.OrderedDict([
+            ("object_type", "Assessment Template"),
+            ("Code*", ""),
+            ("Audit*", audit.slug),
+            ("Default Assignees*", "Auditors"),
+            ("Default Assessment Type", "Control"),
+            ("Title", "Template 1"),
+            ("Verification Workflow", VerificationWorkflow.MLV),
+            ("Verification Levels", levels_value),
+        ])
+    ]
+    response = self.import_data(*assessment_data_template)
+
+    expected_messages = {
+        "Assessment Template": {
+            "rows": 1,
+            "updated": 0,
+            "created": 0,
+            "row_warnings": set(),
+            "row_errors": {
+                errors.WRONG_VERIFICATION_LEVEL_VALUE.format(
+                    line=3,
+                    column_name="Verification Levels"
+                )
+            },
+        }
+    }
+    self._check_csv_response(response, expected_messages)
+
+  def test_empty_workflow_type(self):
+    """Test empty Verification Workflow value"""
+    audit = factories.AuditFactory()
+    assessment_data_template = [
+        collections.OrderedDict([
+            ("object_type", "Assessment Template"),
+            ("Code*", ""),
+            ("Audit*", audit.slug),
+            ("Default Assignees*", "Auditors"),
+            ("Default Assessment Type", "Control"),
+            ("Title", "Template 1"),
+            ("Verification Workflow", ""),
+            ("Verification Levels", "2"),
+        ])
+    ]
+    response = self.import_data(*assessment_data_template)
+
+    expected_messages = {
+        "Assessment Template": {
+            "rows": 1,
+            "updated": 0,
+            "created": 0,
+            "row_warnings": {
+                errors.MISSING_VERIFICATION_WORKFLOW_VALUE.format(
+                    line=3,
+                    column_name="Verification Workflow"
+                )
+            },
+            "row_errors": {
+                errors.UNSUPPORTED_VERIFICATION_LEVELS.format(
+                    line=3,
+                )
+            },
+        }
+    }
+    self._check_csv_response(response, expected_messages)
+
+  def test_empty_workflow_fields(self):
+    """Test empty multi verification workflow values"""
+    audit = factories.AuditFactory()
+    assessment_data_template = [
+        collections.OrderedDict([
+            ("object_type", "Assessment Template"),
+            ("Code*", ""),
+            ("Audit*", audit.slug),
+            ("Default Assignees*", "Auditors"),
+            ("Default Assessment Type", "Control"),
+            ("Title", "Template 1"),
+            ("Verification Workflow", ""),
+            ("Verification Levels", ""),
+        ])
+    ]
+    response = self.import_data(*assessment_data_template)
+
+    expected_messages = {
+        "Assessment Template": {
+            "rows": 1,
+            "updated": 0,
+            "created": 1,
+            "row_warnings": {
+                errors.MISSING_VERIFICATION_WORKFLOW_VALUE.format(
+                    line=3,
+                    column_name="Verification Workflow"
+                )
+            },
+        }
+    }
+    self._check_csv_response(response, expected_messages)
+
+  def test_wrong_workflow_type(self):
+    """Test wrong Verification Workflow value"""
+    audit = factories.AuditFactory()
+    assessment_data_template = [
+        collections.OrderedDict([
+            ("object_type", "Assessment Template"),
+            ("Code*", ""),
+            ("Audit*", audit.slug),
+            ("Default Assignees*", "Auditors"),
+            ("Default Assessment Type", "Control"),
+            ("Title", "Template 1"),
+            ("Verification Workflow", "Wrong Flow"),
+            ("Verification Levels", "2"),
+        ])
+    ]
+    response = self.import_data(*assessment_data_template)
+
+    expected_messages = {
+        "Assessment Template": {
+            "rows": 1,
+            "updated": 0,
+            "created": 0,
+            "row_warnings": set(),
+            "row_errors": {
+                errors.WRONG_VALUE_ERROR.format(
+                    line=3,
+                    column_name="Verification Workflow"
+                )
+            },
+        }
+    }
+    self._check_csv_response(response, expected_messages)
+
+  @ddt.data(VerificationWorkflow.STANDARD, VerificationWorkflow.SOX302)
+  def test_ignored_review_levels(self, workflow_type):
+    """Test ignore Verification Levels with {0} workflow type"""
+    audit = factories.AuditFactory()
+    assessment_data_template = [
+        collections.OrderedDict([
+            ("object_type", "Assessment Template"),
+            ("Code*", ""),
+            ("Audit*", audit.slug),
+            ("Default Assignees*", "Auditors"),
+            ("Default Assessment Type", "Control"),
+            ("Title", "Template 1"),
+            ("Verification Workflow", workflow_type),
+            ("Verification Levels", "2"),
+        ])
+    ]
+    response = self.import_data(*assessment_data_template)
+
+    expected_messages = {
+        "Assessment Template": {
+            "rows": 1,
+            "updated": 0,
+            "created": 0,
+            "row_warnings": set(),
+            "row_errors": {
+                errors.UNSUPPORTED_VERIFICATION_LEVELS.format(
+                    line=3,
+                )
+            },
+        }
+    }
+    self._check_csv_response(response, expected_messages)
+
+  def test_specified_default_verifier(self):
+    """Test default verifier specified with multi verification workflow"""
+    audit = factories.AuditFactory()
+    assessment_data_template = [
+        collections.OrderedDict([
+            ("object_type", "Assessment Template"),
+            ("Code*", ""),
+            ("Audit*", audit.slug),
+            ("Default Assignees*", "Auditors"),
+            ("Default Verifiers", "user@example.com"),
+            ("Default Assessment Type", "Control"),
+            ("Title", "Template 1"),
+            ("Verification Workflow", VerificationWorkflow.MLV),
+            ("Verification Levels", "2"),
+        ])
+    ]
+    response = self.import_data(*assessment_data_template)
+
+    expected_messages = {
+        "Assessment Template": {
+            "rows": 1,
+            "updated": 0,
+            "created": 1,
+            "row_warnings": {
+                errors.UNSUPPORTED_DEFAULT_VERIFIERS.format(
+                    line=3,
                 )
             },
         }

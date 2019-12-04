@@ -235,6 +235,15 @@ class AssessmentTemplate(
               "for assessments with multi-level verification flow."
           ),
       },
+      "review_levels_count": {
+          "display_name": "Verification Levels",
+          "description": (
+              "Number of verification levels needed for assessment.\n"
+              "Applied only to assessments with multi-level \n"
+              "verification flow.\nAllowed values: from 2 to 10."
+          ),
+          "mandatory": False,
+      },
       "status": {
           "display_name": "State",
           "mandatory": False,
@@ -321,8 +330,11 @@ class AssessmentTemplate(
   @staticmethod
   def specific_column_handlers():
     """Column handlers for assessment template obj"""
-    from ggrc.converters.handlers import handlers
-    return {"verification_workflow": handlers.TextColumnHandler}
+    from ggrc.converters.handlers import assessment_template as handlers
+    return {
+        "verification_workflow": handlers.VerificationWorkflowHandler,
+        "review_levels_count": handlers.VerificationLevelsHandler,
+    }
 
   @classmethod
   def eager_query(cls, **kwargs):
@@ -404,26 +416,37 @@ class AssessmentTemplate(
 
     return attr_value
 
-  @orm.validates("review_levels_count")
-  # pylint: disable=unused-argument
-  def validate_review_levels_count(self, attr_name, attr_value):
+  def get_import_errors(self):
+    # pylint: disable=attribute-defined-outside-init
     """
-      Check that review_levels_count lies in a range with
-      boundaries specified in application settings.
-    """
-    if attr_value not in range(
-        settings.REVIEW_LEVELS_MIN_COUNT,
-        settings.REVIEW_LEVELS_MAX_COUNT + 1,
-    ) and self.verification_workflow == VerificationWorkflow.MLV:
-      raise ValueError(
-          "Number of review levels should be in range [{}, {}]"
-          " if multiple review levels are enabled.".format(
-              settings.REVIEW_LEVELS_MIN_COUNT,
-              settings.REVIEW_LEVELS_MAX_COUNT,
-          ),
-      )
+      Check assessment template verification_workflow, review_levels_count
+      and default_verifier correct values
 
-    return attr_value
+      Returns:
+        import_errors: List error templates
+        import_warnings: List warning templates
+    """
+    from ggrc.converters import errors
+
+    _errors = []
+    _warnings = []
+    if self.verification_workflow == VerificationWorkflow.MLV:
+      if getattr(self, "default_verifier", None):
+        _warnings.append(errors.UNSUPPORTED_DEFAULT_VERIFIERS)
+        self.default_verifier = ""
+      if self.has_valid_review_levels_count:
+        _errors.append(errors.WRONG_VERIFICATION_LEVEL_VALUE)
+    elif self.review_levels_count:
+      _errors.append(errors.UNSUPPORTED_VERIFICATION_LEVELS)
+    return _errors, _warnings
+
+  @property
+  def has_valid_review_levels_count(self):
+    """Check review_levels_count was set to proper value"""
+    return self.review_levels_count not in range(
+        settings.REVIEW_LEVELS_MIN_COUNT,
+        settings.REVIEW_LEVELS_MAX_COUNT + 1
+    ) and self.verification_workflow == VerificationWorkflow.MLV
 
   @simple_property
   def sox_302_enabled(self):
@@ -499,5 +522,13 @@ def handle_assessment_template(sender, obj=None, src=None, service=None):
 
   If "audit" is set on POST, create relationship with Assessment template.
   """
+  if obj.has_valid_review_levels_count:
+    raise ValueError(
+        "Number of review levels should be in range [{}, {}]"
+        " if multiple review levels are enabled.".format(
+            settings.REVIEW_LEVELS_MIN_COUNT,
+            settings.REVIEW_LEVELS_MAX_COUNT,
+        ),
+    )
   if "audit" in src:
     create_audit_relationship(src["audit"], obj)

@@ -441,6 +441,7 @@ class TestGetObjectColumnDefinitions(TestCase):
         "Issue Type",
         "Ticket Tracker Integration",
         "Verification Workflow",
+        "Verification Levels",
     }
     expected_fields = {
         "mandatory": {
@@ -507,6 +508,7 @@ class TestGetObjectColumnDefinitions(TestCase):
         "Ticket Title",
         "Ticket Tracker Integration",
         "Verification Workflow",
+        "Verification Levels",
     }
     expected_fields = {
         "mandatory": {

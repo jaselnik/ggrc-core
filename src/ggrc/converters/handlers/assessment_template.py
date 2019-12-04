@@ -56,3 +56,34 @@ class AssessmentTemplateColumnHandler(handlers.MappingColumnHandler):
 
   def get_value(self):
     return ""
+
+
+class VerificationWorkflowHandler(handlers.TextColumnHandler):
+  """Special handler for assessment template verification_workflow column"""
+  DEFAULT_VALUE = assessment_template.VerificationWorkflow.STANDARD
+
+  def parse_item(self):
+    """Parse object item for assessment templates."""
+    value = self.raw_value or ""
+    value = self.clean_whitespaces(value)
+    if not value:
+      self.add_warning(
+          errors.MISSING_VERIFICATION_WORKFLOW_VALUE,
+          column_name=self.display_name
+      )
+      return self.DEFAULT_VALUE
+    if value not in assessment_template.VerificationWorkflow.ALL:
+      self.add_error(errors.WRONG_VALUE_ERROR, column_name=self.display_name)
+    return value
+
+
+class VerificationLevelsHandler(handlers.ColumnHandler):
+  """Special handler for assessment template review_levels_count column"""
+  def parse_item(self):
+    """Parse object item for assessment templates."""
+    value = self.raw_value or ""
+    if value.isdigit():
+      return int(value)
+    if value:
+      self.add_error(errors.WRONG_VALUE_ERROR, column_name=self.display_name)
+    return None
