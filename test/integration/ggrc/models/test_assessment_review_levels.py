@@ -3,11 +3,9 @@
 # pylint: disable=missing-docstring, invalid-name
 
 import json
-from datetime import datetime
 
 import ddt
 
-from ggrc import login
 from ggrc.models import all_models, review_level
 from ggrc.models.assessment_template import VerificationWorkflow
 
@@ -15,16 +13,44 @@ from integration import ggrc
 from integration.ggrc.models import factories
 
 
-# pylint: disable=protected-access
-def generate_mlv_assessment(test_case, workflow, levels_count):
+def generate_mlv_assessment(
+    test_case,
+    workflow,
+    levels_count,
+    with_verifiers=False,
+):
   with factories.single_commit():
     audit = factories.AuditFactory()
     control = factories.ControlFactory()
+
+    # pylint: disable=protected-access
     snapshot = test_case._create_snapshots(audit, [control])[0]
+
     template = factories.AssessmentTemplateFactory(
         verification_workflow=workflow,
         review_levels_count=levels_count,
     )
+
+    review_levels = []
+
+    if with_verifiers:
+      for i in range(levels_count):
+        person0 = factories.PersonFactory(
+            email="reviewer_{}_0@example.com".format(i),
+        )
+        person1 = factories.PersonFactory(
+            email="reviewer_{}_1@example.com".format(i),
+        )
+
+        review_level_dict = {
+            "users": [{
+                "id": person0.id,
+            }, {
+                "id": person1.id,
+            }]
+        }
+
+        review_levels.append(review_level_dict)
 
   response = test_case.api.post(all_models.Assessment, {
       "assessment": {
@@ -46,7 +72,7 @@ def generate_mlv_assessment(test_case, workflow, levels_count):
               "id": template.id,
               "type": "AssessmentTemplate",
           },
-          "review_levels": [],
+          "review_levels": review_levels,
       }
   })
 
@@ -271,6 +297,7 @@ class TestAssessmentGeneration(ggrc.TestCase):
       )
 
 
+@ddt.ddt
 class TestAssessmentUpdate(ggrc.TestCase):
 
   def setUp(self):
@@ -303,30 +330,152 @@ class TestAssessmentUpdate(ggrc.TestCase):
         4,
     )
 
-  def test_review_level_fields_update(self):
+  @ddt.data(
+      review_level.ReviewLevel.Status.IN_REVIEW,
+      review_level.ReviewLevel.Status.REVIEWED,
+  )
+  def test_review_level_bad_status(self, status):
+    """
+      Test that setting status of assessment review level
+      to 'In Review' fails due to missing verifiers.
+    """
     assessment = generate_mlv_assessment(self, VerificationWorkflow.MLV, 1)
 
     review_level_id = assessment.review_levels[0].id
-    current_user_id = login.get_current_user_id()
-    completed_at = datetime.now()
 
-    self.api.put(assessment, {
+    response = self.api.put(assessment, {
         "review_levels": [{
             "id": review_level_id,
-            "status": "In Review",
-            "person_id": current_user_id,
-            "completed_at": completed_at,
+            "status": status,
         }],
     })
+
+    self.assert400(response)
+    self.assertEqual(
+        json.loads(response.data)["message"],
+        "Can't change review_level with id = {} from '{}' "
+        "due to missing verifiers.".format(
+            review_level_id,
+            review_level.ReviewLevel.Status.NOT_STARTED,
+        )
+    )
 
     _review_level = review_level.ReviewLevel.query.get(review_level_id)
 
     self.assertEqual(
         _review_level.status,
-        "In Review",
+        review_level.ReviewLevel.Status.NOT_STARTED,
+    )
+
+    self.assertIsNone(
+        _review_level.verified_by,
+    )
+
+  @ddt.data(
+      review_level.ReviewLevel.Status.IN_REVIEW,
+      review_level.ReviewLevel.Status.REVIEWED,
+  )
+  def test_review_level_status_properly_set(self, status):
+    """
+      It should be allowed to change status for review
+      level if it's the only one and verifiers are
+      present.
+    """
+
+    assessment = generate_mlv_assessment(
+        self,
+        VerificationWorkflow.MLV,
+        1,
+        with_verifiers=True,
+    )
+
+    review_level_id = assessment.review_levels[0].id
+
+    response = self.api.put(assessment, {
+        "review_levels": [{
+            "id": review_level_id,
+            "status": status,
+        }],
+    })
+
+    self.assert200(response)
+
+    _review_level = review_level.ReviewLevel.query.get(review_level_id)
+
+    self.assertEqual(
+        _review_level.status,
+        status,
     )
 
     self.assertEqual(
-        _review_level.verified_by,
-        current_user_id,
+        _review_level.level_number,
+        1,
     )
+
+    self.assertIsNone(
+        _review_level.verified_by,
+    )
+
+  @ddt.data(0, 1)
+  def test_adding_people_to_existing_review_levels(self, review_level_idx):
+    assessment = generate_mlv_assessment(
+        self,
+        VerificationWorkflow.MLV,
+        2,
+    )
+
+    review_level_id = assessment.review_levels[review_level_idx].id
+
+    person0 = factories.PersonFactory(
+        email="reviewer0@example.com",
+    )
+    person1 = factories.PersonFactory(
+        email="reviewer1@example.com",
+    )
+
+    self.api.put(assessment, {
+        "review_levels": [{
+            "id": review_level_id,
+            "users": [{
+                "id": person0.id,
+            }, {
+                "id": person1.id,
+            }]
+        }],
+    })
+
+    _review_level = review_level.ReviewLevel.query.get(review_level_id)
+
+    self.assertEqual(len(_review_level.verifiers), 2)
+
+    self.assertEqual(
+        _review_level.verifiers[0].email,
+        "reviewer0@example.com",
+    )
+
+    self.assertEqual(
+        _review_level.verifiers[1].email,
+        "reviewer1@example.com",
+    )
+
+  @ddt.data(0, 1)
+  def test_removing_people_from_review_levels(self, review_level_idx):
+    assessment = generate_mlv_assessment(
+        self,
+        VerificationWorkflow.MLV,
+        2,
+        with_verifiers=True,
+    )
+
+    review_level_id = assessment.review_levels[review_level_idx].id
+
+    self.api.put(assessment, {
+        "review_levels": [{
+            "id": review_level_id,
+            "users": [],
+        }],
+    })
+
+    _review_level = review_level.ReviewLevel.query.get(review_level_id)
+
+    self.assertEqual(len(_review_level.verifiers), 0)

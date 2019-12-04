@@ -114,7 +114,7 @@ class UpdateAttrHandler(object):
   """
   # some attr handlers don't use every argument from the common interface
   # pylint: disable=unused-argument
-  @classmethod  # noqa
+  @classmethod
   def do_update_attr(cls, obj, json_obj, attr):
     """Perform the update to ``obj`` required to make the attribute attr
     equivalent in ``obj`` and ``json_obj``.
@@ -161,23 +161,11 @@ class UpdateAttrHandler(object):
     )):
       cls._do_update_collection(obj, value, attr_name)
     else:
-      # Allow setting attributes with raw dicts using
-      # special setter method. Look for special method first,
-      # if not found fall back to using setattr.
-
-      raw_setter_name = "set_raw_" + attr_name
-
-      if hasattr(obj, raw_setter_name):
-        raw_setter = getattr(obj, raw_setter_name)
-
-        if callable(raw_setter):
-          raw_setter(value)
-      else:
-        try:
-          setattr(obj, attr_name, value)
-        except AttributeError as error:
-          logger.error('Unable to set attribute %s: %s', attr_name, error)
-          raise
+      try:
+        setattr(obj, attr_name, value)
+      except AttributeError as error:
+        logger.error('Unable to set attribute %s: %s', attr_name, error)
+        raise
 
   @classmethod
   def _do_update_collection(cls, obj, value, attr_name):
@@ -230,14 +218,17 @@ class UpdateAttrHandler(object):
 
     # If column attribute has default value specified and the value for that
     # column is not in json_obj use column default value instead of
-    # setting column attribute to None. Only fixed for str and int default
-    # values for simplicity and to avoid regressions.
+    # setting column attribute to None. Only fixed for str, bool and int
+    # default values for simplicity and to avoid regressions. Only
+    # applied to objects that has been created in current session
+    # (i.e. objects that do 'INSERT' in db).
 
     column_default_value = None
 
     if (
         class_attr.default is not None and
-        type(class_attr.default.arg) in (str, int)
+        type(class_attr.default.arg) in (str, int, bool) and
+        obj in db.session.new
     ):
       column_default_value = class_attr.default.arg
 

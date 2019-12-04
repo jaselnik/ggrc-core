@@ -136,7 +136,7 @@ class Assessment(
       db.Integer,
   )
 
-  review_levels = db.relationship("ReviewLevel")
+  verification_levels = db.relationship("ReviewLevel", backref="assessment")
 
   object = {}  # we add this for the sake of client side error checking
 
@@ -305,10 +305,47 @@ class Assessment(
     from ggrc.converters.handlers import handlers
     return {"verification_workflow": handlers.TextColumnHandler}
 
-  # pylint: disable=no-self-use
-  def set_raw_review_levels(self, review_level_dicts):
-    for review_level_dict in review_level_dicts or []:
-      review_level.ReviewLevel.find_and_update(review_level_dict)
+  @ext.hybrid.hybrid_property
+  def review_levels(self):
+    """
+      Alias for verification_levels InstrumentedAttribute.
+
+      Used by ggrc.builder.json for serializing and
+      updating assessment objects.
+    """
+    return self.verification_levels
+
+  @review_levels.setter
+  def review_levels(self, review_level_dicts):
+    """
+      Method is used for creation of review levels for POSTed
+      assessment or for modification of existing ones for
+      assessments being PUT.
+
+      Args:
+        review_level_dicts - list of dictionaries to be used
+        for review levels update or for setting people
+        for newly created review levels (while assessment
+        generation).
+    """
+
+    if self.review_levels:
+      for review_level_dict in review_level_dicts or []:
+        review_level.ReviewLevel.find_and_update(review_level_dict)
+    else:
+      for level_number, review_level_dict in enumerate(
+          review_level_dicts or [],
+          1,
+      ):
+        _review_level = review_level.ReviewLevel(
+            assessment=self,
+            level_number=level_number,
+        )
+
+        db.session.add(_review_level)
+        db.session.flush()
+
+        _review_level.update_verifiers(review_level_dict["users"])
 
   @classmethod
   def _ignore_filter(cls, _):
