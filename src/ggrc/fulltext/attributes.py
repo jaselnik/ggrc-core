@@ -37,9 +37,10 @@ class FullTextAttr(object):
   SUB_KEY_TMPL = "{id_val}-{sub}"
 
   def __init__(self, alias, prop_getter, subproperties=None,
-               with_template=True):
+               with_template=True, getter_kwargs=None):
     self.alias = alias
     self.prop_getter = prop_getter
+    self.getter_kwargs = getter_kwargs or {}
     self.subproperties = subproperties or [EMPTY_SUBPROPERTY_KEY]
     self.with_template = with_template
     self.is_sortable = EMPTY_SUBPROPERTY_KEY not in self.subproperties
@@ -57,7 +58,7 @@ class FullTextAttr(object):
   def get_value_for(self, instance):
     """Get value from the given instance using 'prop_getter' rule"""
     if callable(self.prop_getter):
-      return self.prop_getter(instance)
+      return self.prop_getter(instance, **self.getter_kwargs)
     return getattr(instance, self.prop_getter)
 
   def get_property_for(self, instance):

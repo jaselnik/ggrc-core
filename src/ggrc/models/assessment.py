@@ -8,9 +8,13 @@ from sqlalchemy import ext, orm, and_
 from ggrc import (
     db,
     utils,
+    settings
 )
 from ggrc.builder import simple_property
-from ggrc.fulltext import mixin
+from ggrc.fulltext import (
+    attributes,
+    mixin,
+)
 
 from ggrc.models import (
     audit,
@@ -49,6 +53,43 @@ from ggrc.models.mixins.with_action import WithAction
 from ggrc.models.mixins.with_evidence import WithEvidence
 from ggrc.models.mixins.with_similarity_score import WithSimilarityScore
 from ggrc.integrations import constants
+
+
+def _get_fulltext_attrs():
+  """Get fulltext attr for assessment object"""
+  attrs = [
+      'archived',
+      'design',
+      'operationally',
+      'folder',
+      'verification_workflow',
+      'review_levels_count',
+  ]
+  for i in range(1, settings.REVIEW_LEVELS_MAX_COUNT + 1):
+    attrs.append(
+        attributes.FullTextAttr(
+            review_level.ReviewLevel.attr_key.format(i),
+            lambda asmt: asmt._get_review_level(level_number=i)
+        )
+    )
+  return attrs
+
+
+def _gen_dynamic_aliases():
+  new_aliases = {}
+  for i in range(1, settings.REVIEW_LEVELS_MAX_COUNT + 1):
+    new_aliases[review_level.ReviewLevel.attr_key.format(i)] = {
+        "display_name": "VERIFIERS LEVEL {}".format(i),
+        "description": (
+            "List of people with 'Verifiers level {}' role\n"
+            "To add multiple verifiers to the level, separate "
+            "them with a new line".format(i)
+        ),
+    }
+    new_aliases[review_level.ReviewLevel.state_key.format(i)] = {
+        "display_name": "Review level {} state".format(i),
+    }
+  return new_aliases
 
 
 class Assessment(
@@ -174,14 +215,7 @@ class Assessment(
   _include_links = ["review_levels"]
   _update_raw = ["review_levels"]
 
-  _fulltext_attrs = [
-      'archived',
-      'design',
-      'operationally',
-      'folder',
-      'verification_workflow',
-      'review_levels_count'
-  ]
+  _fulltext_attrs = _get_fulltext_attrs()
 
   AUTO_REINDEX_RULES = [
       mixin.ReindexRule("Audit", lambda x: x.assessments, ["archived"]),
@@ -289,6 +323,7 @@ class Assessment(
               "\nAllowed values: from 2 to 10."
           ),
           "mandatory": False,
+          "view_only": True,
       },
       "assessment_template": {
           "display_name": "Template",
@@ -342,11 +377,29 @@ class Assessment(
       },
   }
 
+  _aliases.update(_gen_dynamic_aliases())
+
+  def _get_review_level(self, level_number=None):
+    return review_level.ReviewLevel.query.filter_by(
+        assessment_id=self.id,
+        level_number=level_number,
+    ).users_emails
+
   @staticmethod
   def specific_column_handlers():
     """Column handlers for assessment obj"""
-    from ggrc.converters.handlers import handlers
-    return {"verification_workflow": handlers.TextColumnHandler}
+    from ggrc.converters.handlers import (
+        assessment_template as handlers,
+        review_level as level_handlers,
+    )
+    _handlers = {
+        "verification_workflow": handlers.VerificationWorkflowHandler,
+        "review_levels_count": handlers.VerificationLevelsHandler,
+    }
+    for i in range(1, settings.REVIEW_LEVELS_MAX_COUNT + 1):
+      _handlers[review_level.ReviewLevel.attr_key.format(i)] = \
+          level_handlers.ReviewLevelColumnHandler
+    return _handlers
 
   @ext.hybrid.hybrid_property
   def review_levels(self):

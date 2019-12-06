@@ -904,6 +904,26 @@ class TestQueriesAssessmentWorkflow(
         2,
     )
 
+  def test_filter_by_review_level_verifier(self):
+    with ggrc_factories.single_commit():
+      asmt = ggrc_factories.AssessmentFactory(
+          verification_workflow=VerificationWorkflow.MLV,
+          review
+      )
+
+    query_request_data = [
+      self._make_query_dict(
+          "Assessment",
+          expression=["Verifiers level 1", "=", "2"],
+      ),
+    ]
+
+    response = self.api.send_request(
+      self.api.client.post, data=query_request_data, api_link="/query"
+    )
+
+    self.assert200(response)
+
 
 @ddt.ddt
 class TestStatusFlowWithSOX302(BaseTestWithSOX302):

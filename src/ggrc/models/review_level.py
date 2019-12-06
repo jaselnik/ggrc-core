@@ -68,6 +68,9 @@ class ReviewLevel(
 
   verifiers = db.relationship("Person", secondary=review_levels_people)
 
+  attr_key = "review_level_{}"
+  state_key = "review_level_state_{}"
+
   _api_attrs = reflection.ApiAttributes(
       reflection.Attribute(
           "users",
@@ -95,6 +98,10 @@ class ReviewLevel(
       updating assessment objects.
     """
     return self.verifiers
+
+  @property
+  def users_emails(self):
+    return sorted([user.email for user in self.users])
 
   def update_from_dict(self, review_level_dict):
     """
