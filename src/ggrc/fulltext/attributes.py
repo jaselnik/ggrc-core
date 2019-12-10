@@ -228,6 +228,32 @@ class CustomRoleAttr(FullTextAttr):
     return results
 
 
+class ReviewLevelVerifiersAttr(FullTextAttr):
+  """Custom full text index attribute class for review levels verifiers"""
+
+  def get_property_for(self, instance):
+    """Returns index properties of all verifiers for a obj review level"""
+    review_level = self.get_value_for(instance)
+    if review_level is None:
+      return {}
+    results = defaultdict(dict)
+    role_name = review_level.attr_key.format(review_level.level_number)
+    for user in review_level.users:
+      user_id = user.id
+      results[role_name]["{}-email".format(user_id)] = user.email
+      results[role_name]["{}-name".format(user_id)] = user.name
+    return results
+
+
+class ReviewLevelStatusAttr(FullTextAttr):
+  """Custom full text index attribute class for review levels status"""
+
+  def get_value_for(self, instance):
+    """Get status value from the review level obj"""
+    review_level = super(ReviewLevelStatusAttr, self).get_value_for(instance)
+    return review_level.status if review_level else None
+
+
 class MultipleSubpropertyFullTextAttr(FullTextAttr):
   """Custom full text index attribute class for multiple return values
 

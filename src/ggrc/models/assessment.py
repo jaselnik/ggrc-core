@@ -55,6 +55,10 @@ from ggrc.models.mixins.with_similarity_score import WithSimilarityScore
 from ggrc.integrations import constants
 
 
+def _get_review_level(asmt, **kwargs):
+  return asmt._get_review_level(**kwargs)
+
+
 def _get_fulltext_attrs():
   """Get fulltext attr for assessment object"""
   attrs = [
@@ -67,19 +71,109 @@ def _get_fulltext_attrs():
   ]
   for i in range(1, settings.REVIEW_LEVELS_MAX_COUNT + 1):
     attrs.append(
-        attributes.FullTextAttr(
+        attributes.ReviewLevelVerifiersAttr(
             review_level.ReviewLevel.attr_key.format(i),
-            lambda asmt: asmt._get_review_level(level_number=i)
+            _get_review_level,
+            getter_kwargs={'level_number': i}
+        )
+    )
+    attrs.append(
+        attributes.ReviewLevelStatusAttr(
+            review_level.ReviewLevel.state_key.format(i),
+            _get_review_level,
+            getter_kwargs={'level_number': i}
         )
     )
   return attrs
 
 
-def _gen_dynamic_aliases():
-  new_aliases = {}
+def _gen_dynamic_aliases(
+    ASSESSMENT_TYPE_OPTIONS,
+    VALID_CONCLUSIONS,
+    VALID_STATES,
+):
+  """Get all aliases for asmt object"""
+
+  new_aliases = {
+      "owners": None,
+      "verification_workflow": {
+          "display_name": "Assessment Workflow",
+          "description": (
+              "Allowed values are:\n"
+              "Standard flow\n"
+              "SOX 302 flow\n"
+              "Multi-level verification flow\n\n"
+              "Specify number of Verification Levels "
+              "for assessments with multi-level verification flow."
+          ),
+          "mandatory": False,
+          "view_only": True,
+      },
+      "review_levels_count": {
+          "display_name": "Verification Levels",
+          "description": (
+              "Number of verification levels needed for assessment."
+              "\nApplied only to assessments with"
+              " multi-level verification flow."
+              "\nAllowed values: from 2 to 10."
+          ),
+          "mandatory": False,
+          "view_only": True,
+      },
+      "assessment_template": {
+          "display_name": "Template",
+          "ignore_on_update": True,
+          "filter_by": "_ignore_filter",
+          "type": reflection.AttributeInfo.Type.MAPPING,
+      },
+      "assessment_type": {
+          "display_name": "Assessment Type",
+          "mandatory": False,
+          "description": "Allowed values are:\n{}".format(
+              '\n'.join(ASSESSMENT_TYPE_OPTIONS)),
+      },
+      "design": {
+          "display_name": "Conclusion: Design",
+          "description": "Allowed values are:\n{}".format(
+              '\n'.join(VALID_CONCLUSIONS)),
+      },
+      "operationally": {
+          "display_name": "Conclusion: Operation",
+          "description": "Allowed values are:\n{}".format(
+              '\n'.join(VALID_CONCLUSIONS)),
+      },
+      "archived": {
+          "display_name": "Archived",
+          "mandatory": False,
+          "ignore_on_update": True,
+          "view_only": True,
+          "description": "Allowed values are:\nyes\nno"
+      },
+      "test_plan": "Assessment Procedure",
+      # Currently we decided to have 'Due Date' alias for start_date,
+      # but it can be changed in future
+      "start_date": "Due Date",
+      "status": {
+          "display_name": "State",
+          "mandatory": False,
+          "description": "Allowed values are:\n{}".format('\n'.join(
+              VALID_STATES))
+      },
+      "issue_tracker": {
+          "display_name": "Ticket Tracker",
+          "mandatory": False,
+          "view_only": True
+      },
+      "issue_priority": {
+          "display_name": "Priority",
+          "mandatory": False,
+          "description": "Allowed values are:\n{}".format(
+              '\n'.join(constants.AVAILABLE_PRIORITIES))
+      },
+  }
   for i in range(1, settings.REVIEW_LEVELS_MAX_COUNT + 1):
     new_aliases[review_level.ReviewLevel.attr_key.format(i)] = {
-        "display_name": "VERIFIERS LEVEL {}".format(i),
+        "display_name": "Verifiers level {}".format(i),
         "description": (
             "List of people with 'Verifiers level {}' role\n"
             "To add multiple verifiers to the level, separate "
@@ -260,130 +354,23 @@ class Assessment(
       }
   }
 
-  @classmethod
-  def _populate_query(cls, query):
-    return query.options(
-        orm.Load(cls).undefer_group("Assessment_complete"),
-        orm.Load(cls).joinedload("audit").undefer_group("Audit_complete"),
-        orm.Load(cls).joinedload("audit").joinedload(
-            audit.Audit.issuetracker_issue
-        )
-    )
-
-  @classmethod
-  def eager_query(cls, **kwargs):
-    return cls._populate_query(super(Assessment, cls).eager_query(**kwargs))
-
-  @classmethod
-  def indexed_query(cls):
-    return super(Assessment, cls).indexed_query().options(
-        orm.Load(cls).load_only(
-            "id",
-            "design",
-            "operationally",
-            "audit_id",
-        ),
-        orm.Load(cls).joinedload(
-            "audit"
-        ).load_only(
-            "archived",
-            "folder"
-        ),
-    )
-
-  def log_json(self):
-    out_json = super(Assessment, self).log_json()
-    out_json["folder"] = self.folder
-    return out_json
-
   ASSESSMENT_TYPE_OPTIONS = \
       assessment_template.AssessmentTemplate.DEFAULT_ASSESSMENT_TYPE_OPTIONS
 
-  _aliases = {
-      "owners": None,
-      "verification_workflow": {
-          "display_name": "Assessment Workflow",
-          "description": (
-              "Allowed values are:\n"
-              "Standard flow\n"
-              "SOX 302 flow\n"
-              "Multi-level verification flow\n\n"
-              "Specify number of Verification Levels "
-              "for assessments with multi-level verification flow."
-          ),
-          "mandatory": False,
-          "view_only": True,
-      },
-      "review_levels_count": {
-          "display_name": "Verification Levels",
-          "description": (
-              "Number of verification levels needed for assessment."
-              "\nApplied only to assessments with"
-              " multi-level verification flow."
-              "\nAllowed values: from 2 to 10."
-          ),
-          "mandatory": False,
-          "view_only": True,
-      },
-      "assessment_template": {
-          "display_name": "Template",
-          "ignore_on_update": True,
-          "filter_by": "_ignore_filter",
-          "type": reflection.AttributeInfo.Type.MAPPING,
-      },
-      "assessment_type": {
-          "display_name": "Assessment Type",
-          "mandatory": False,
-          "description": "Allowed values are:\n{}".format(
-              '\n'.join(ASSESSMENT_TYPE_OPTIONS)),
-      },
-      "design": {
-          "display_name": "Conclusion: Design",
-          "description": "Allowed values are:\n{}".format(
-              '\n'.join(VALID_CONCLUSIONS)),
-      },
-      "operationally": {
-          "display_name": "Conclusion: Operation",
-          "description": "Allowed values are:\n{}".format(
-              '\n'.join(VALID_CONCLUSIONS)),
-      },
-      "archived": {
-          "display_name": "Archived",
-          "mandatory": False,
-          "ignore_on_update": True,
-          "view_only": True,
-          "description": "Allowed values are:\nyes\nno"
-      },
-      "test_plan": "Assessment Procedure",
-      # Currently we decided to have 'Due Date' alias for start_date,
-      # but it can be changed in future
-      "start_date": "Due Date",
-      "status": {
-          "display_name": "State",
-          "mandatory": False,
-          "description": "Allowed values are:\n{}".format('\n'.join(
-              VALID_STATES))
-      },
-      "issue_tracker": {
-          "display_name": "Ticket Tracker",
-          "mandatory": False,
-          "view_only": True
-      },
-      "issue_priority": {
-          "display_name": "Priority",
-          "mandatory": False,
-          "description": "Allowed values are:\n{}".format(
-              '\n'.join(constants.AVAILABLE_PRIORITIES))
-      },
-  }
-
-  _aliases.update(_gen_dynamic_aliases())
+  _aliases = _gen_dynamic_aliases(
+      ASSESSMENT_TYPE_OPTIONS=ASSESSMENT_TYPE_OPTIONS,
+      VALID_CONCLUSIONS=VALID_CONCLUSIONS,
+      VALID_STATES=VALID_STATES,
+  )
 
   def _get_review_level(self, level_number=None):
-    return review_level.ReviewLevel.query.filter_by(
-        assessment_id=self.id,
-        level_number=level_number,
-    ).users_emails
+    if self.verification_workflow == \
+       assessment_template.VerificationWorkflow.MLV:
+      return review_level.ReviewLevel.query.filter_by(
+          assessment_id=self.id,
+          level_number=level_number,
+      ).first()
+    return None
 
   @staticmethod
   def specific_column_handlers():

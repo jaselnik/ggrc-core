@@ -10,6 +10,8 @@ from ggrc.models import all_models, review_level
 from ggrc.models.assessment_template import VerificationWorkflow
 
 from integration import ggrc
+from integration.ggrc import query_helper
+from integration.ggrc import api_helper
 from integration.ggrc.models import factories
 
 
@@ -18,6 +20,8 @@ def generate_mlv_assessment(
     workflow,
     levels_count,
     with_verifiers=False,
+    email_pattern="reviewer_{}_{}@example.com",
+    name_pattern="Test Reviewer {}_{}",
 ):
   with factories.single_commit():
     audit = factories.AuditFactory()
@@ -36,10 +40,12 @@ def generate_mlv_assessment(
     if with_verifiers:
       for i in range(levels_count):
         person0 = factories.PersonFactory(
-            email="reviewer_{}_0@example.com".format(i),
+            email=email_pattern.format(i, 0),
+            name=name_pattern.format(i, 0)
         )
         person1 = factories.PersonFactory(
-            email="reviewer_{}_1@example.com".format(i),
+            email=email_pattern.format(i, 1),
+            name=name_pattern.format(i, 1)
         )
 
         review_level_dict = {
@@ -499,3 +505,87 @@ class TestAssessmentUpdate(ggrc.TestCase):
         len(assessment_dict["review_levels"][review_level_idx]["users"]),
         0,
     )
+
+
+@ddt.ddt
+class TestQueriesAssessment(query_helper.WithQueryApi, ggrc.TestCase):
+  """Test query Assessment by review levels"""
+
+  def setUp(self):
+    super(TestQueriesAssessment, self).setUp()
+    self.client.get("/login")
+    self.api = api_helper.Api()
+    self.assessment1 = generate_mlv_assessment(
+        self,
+        VerificationWorkflow.MLV,
+        10,
+        True
+    )
+    self.assessment2 = generate_mlv_assessment(
+        self,
+        VerificationWorkflow.MLV,
+        8,
+        True,
+        email_pattern="person_{}_{}@example.com",
+        name_pattern="User {}_{}",
+    )
+    # reindex objects can be replaced because of reindexing
+    # while the commit instances
+    self.client.post("/admin/reindex")
+
+  @ddt.data(
+      ("Verifiers level 1", "reviewer_0_0@example.com"),
+      ("Verifiers level 1", "Test Reviewer 0_0"),
+      ("Verifiers level 10", "reviewer_9_1@example.com"),
+      ("Verifiers level 10", "Test Reviewer 9_1"),
+  )
+  @ddt.unpack
+  def test_filter_by_review_level_verifier(self, property_name, filter_value):
+    """Test search asmt by verifier equals {}"""
+    query_request_data = [
+        self._make_query_dict(
+            "Assessment",
+            expression=[property_name, "=", filter_value],
+        ),
+    ]
+
+    resp = self.api.send_request(
+        self.api.client.post, data=query_request_data, api_link="/query"
+    )
+
+    self.assert200(resp)
+    self.assertEqual(resp.json[0]["Assessment"]["count"], 1)
+    self.assertEqual(
+        len(resp.json[0]["Assessment"]["values"][0]['review_levels']),
+        10,
+    )
+
+  @ddt.data(
+      (review_level.ReviewLevel.Status.NOT_STARTED, 2),
+      (review_level.ReviewLevel.Status.IN_REVIEW, 0),
+      (review_level.ReviewLevel.Status.REVIEWED, 0),
+  )
+  @ddt.unpack
+  def test_simple_search_by_review_level_status(
+      self,
+      filter_value,
+      expected_count
+  ):
+    """Test query asmt with {} state"""
+    query_request_data = [
+        self._make_query_dict(
+            "Assessment",
+            expression=[
+                "Review level 1 state",
+                "=",
+                filter_value
+            ],
+        ),
+    ]
+
+    resp = self.api.send_request(
+        self.api.client.post, data=query_request_data, api_link="/query"
+    )
+
+    self.assert200(resp)
+    self.assertEqual(resp.json[0]["Assessment"]["count"], expected_count)
