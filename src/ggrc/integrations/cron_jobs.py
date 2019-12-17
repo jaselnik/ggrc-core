@@ -9,4 +9,5 @@ from ggrc.integrations import synchronization_jobs
 HOURLY_CRON_JOBS = [
     synchronization_jobs.sync_assessment_attributes,
     synchronization_jobs.sync_issue_attributes,
+    synchronization_jobs.sync_people,
 ]
