@@ -297,20 +297,14 @@ function getUnmappingUrl(instance, destinationModel) {
  * @return {String} Url to create new object
  */
 function getCreateObjectUrl(model) {
-  let options;
-
   const isScope = scopingObjects.includes(model.model_singular);
-  if (isScope) {
-    options = {
-      path: 'scope',
-      params: `create=${model.root_object}`,
-    };
-  } else {
-    options = {
-      path: model.table_plural,
-      params: 'action=create',
-    };
-  }
+  const path = isScope ? 'scope' : model.table_plural;
+  const objectBeingCreated = model.root_object;
+
+  const options = {
+    path,
+    params: `create=${objectBeingCreated}`,
+  };
 
   return getUrl(options);
 }
