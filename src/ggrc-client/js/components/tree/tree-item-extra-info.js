@@ -9,13 +9,16 @@ import canDefineMap from 'can-define/map/map';
 import canComponent from 'can-component';
 import '../object-tasks/object-tasks';
 import '../mapped-counter/mapped-counter';
-import Directive from '../../models/business-models/directive';
 import Requirement from '../../models/business-models/requirement';
+import {externalDirectiveObjects} from '../../plugins/models-types-collections';
 import CycleTaskGroupObjectTask from '../../models/business-models/cycle-task-group-object-task';
 import CycleTaskGroup from '../../models/business-models/cycle-task-group';
 import Cycle from '../../models/business-models/cycle';
 import {formatDate} from '../../plugins/utils/date-utils';
 import template from './templates/tree-item-extra-info.stache';
+
+const TYPES_TO_SHOW_REQUIREMENT = ['Contract', 'Policy',
+  ...externalDirectiveObjects];
 
 const ViewModel = canDefineMap.extend({
   triggered: {
@@ -53,14 +56,14 @@ const ViewModel = canDefineMap.extend({
   isActive: {
     get() {
       return this.drawStatuses
-        || this.isDirective
+        || this.isShowRequirement
         || this.isCycleTasks
         || this.isRequirement;
     },
   },
-  isDirective: {
+  isShowRequirement: {
     get() {
-      return this.instance instanceof Directive;
+      return TYPES_TO_SHOW_REQUIREMENT.includes(this.instance.type);
     },
   },
   isRequirement: {

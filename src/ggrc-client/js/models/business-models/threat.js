@@ -8,8 +8,9 @@ import UniqueTitle from '../mixins/unique-title';
 import CaUpdate from '../mixins/ca-update';
 import AccessControlList from '../mixins/access-control-list';
 import BaseNotifications from '../mixins/notifications/base-notifications';
-import Stub from '../stub';
 import Reviewable from '../mixins/reviewable';
+import ChangeableExternally from '../mixins/changeable-externally';
+import Stub from '../stub';
 
 export default Cacheable.extend({
   root_object: 'threat',
@@ -26,6 +27,7 @@ export default Cacheable.extend({
     AccessControlList,
     BaseNotifications,
     Reviewable,
+    ChangeableExternally,
   ],
   is_custom_attributable: true,
   isRoleable: true,

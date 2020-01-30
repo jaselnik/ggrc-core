@@ -8,9 +8,10 @@ import UniqueTitle from '../mixins/unique-title';
 import CaUpdate from '../mixins/ca-update';
 import AccessControlList from '../mixins/access-control-list';
 import BaseNotifications from '../mixins/notifications/base-notifications';
-import Stub from '../stub';
 import Relationship from '../service-models/relationship';
 import Reviewable from '../mixins/reviewable';
+import ChangeableExternally from '../mixins/changeable-externally';
+import Stub from '../stub';
 
 export default Cacheable.extend({
   root_object: 'requirement',
@@ -36,6 +37,7 @@ export default Cacheable.extend({
     AccessControlList,
     BaseNotifications,
     Reviewable,
+    ChangeableExternally,
   ],
   attributes: {
     context: Stub,

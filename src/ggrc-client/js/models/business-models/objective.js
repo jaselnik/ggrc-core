@@ -9,8 +9,9 @@ import CaUpdate from '../mixins/ca-update';
 import AccessControlList from '../mixins/access-control-list';
 import BaseNotifications from '../mixins/notifications/base-notifications';
 import RelatedAssessmentsLoader from '../mixins/related-assessments-loader';
-import Stub from '../stub';
 import Reviewable from '../mixins/reviewable';
+import ChangeableExternally from '../mixins/changeable-externally';
+import Stub from '../stub';
 
 export default Cacheable.extend({
   root_object: 'objective',
@@ -30,6 +31,7 @@ export default Cacheable.extend({
     BaseNotifications,
     RelatedAssessmentsLoader,
     Reviewable,
+    ChangeableExternally,
   ],
   is_custom_attributable: true,
   isRoleable: true,
