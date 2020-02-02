@@ -37,6 +37,7 @@ from ggrc.models.directive import Directive
 from ggrc.models.directive import Policy
 from ggrc.models.directive import Regulation
 from ggrc.models.directive import Standard
+from ggrc.models.external_directive import ExternalDirective
 from ggrc.models.document import Document
 from ggrc.models.event import Event
 from ggrc.models.evidence import Evidence
@@ -121,6 +122,7 @@ all_models = [  # pylint: disable=invalid-name
     Evidence,
     ExternalComment,
     ExternalMapping,
+    ExternalDirective,
     Facility,
     ImportExport,
     Issue,
