@@ -12,7 +12,7 @@ import CycleTaskGroupObjectTask from '../../../models/business-models/cycle-task
 import * as businessModels from '../../../models/business-models';
 import TreeViewConfig from '../../../apps/base-widgets';
 
-describe('tree-item-extra-info component', function () {
+describe('tree-item-extra-info component', () => {
   let viewModel;
   let activeModel = [
     'Regulation',
@@ -22,21 +22,22 @@ describe('tree-item-extra-info component', function () {
     'Requirement',
   ];
 
-  beforeEach(function () {
+  beforeEach(() => {
     viewModel = getComponentVM(Component);
   });
 
-  describe('is active if', function () {
-    it('workflow_state is defined', function () {
+  describe('is active if', () => {
+    it('workflow_state is defined', () => {
       viewModel.instance = new canMap({workflow_state: 'far'});
       expect(viewModel.isActive).toBeTruthy();
     });
 
-    activeModel.forEach(function (model) {
-      it('instance is ' + model, function () {
-        viewModel.instance = makeFakeInstance(
-          {model: businessModels[model]}
-        )();
+    activeModel.forEach((model) => {
+      it('instance is ' + model, () => {
+        viewModel.instance = makeFakeInstance({
+          model: businessModels[model],
+          instanceProps: {type: model},
+        })();
         expect(viewModel.isActive).toBeTruthy();
       });
     });
