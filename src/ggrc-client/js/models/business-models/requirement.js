@@ -5,6 +5,7 @@
 
 import Cacheable from '../cacheable';
 import ChangeableExternally from '../mixins/changeable-externally';
+import Proposable from '../mixins/proposable';
 
 export default Cacheable.extend({
   root_object: 'requirement',
@@ -23,6 +24,7 @@ export default Cacheable.extend({
   isRoleable: true,
   mixins: [
     ChangeableExternally,
+    Proposable,
   ],
   tree_view_options: {
     attr_list: Cacheable.attr_list.concat([

@@ -6,6 +6,7 @@
 import Cacheable from '../cacheable';
 import RelatedAssessmentsLoader from '../mixins/related-assessments-loader';
 import ChangeableExternally from '../mixins/changeable-externally';
+import Proposable from '../mixins/proposable';
 
 export default Cacheable.extend({
   root_object: 'objective',
@@ -18,6 +19,7 @@ export default Cacheable.extend({
   mixins: [
     RelatedAssessmentsLoader,
     ChangeableExternally,
+    Proposable,
   ],
   is_custom_attributable: true,
   isRoleable: true,

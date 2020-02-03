@@ -5,6 +5,7 @@
 
 import Cacheable from '../cacheable';
 import ChangeableExternally from '../mixins/changeable-externally';
+import Proposable from '../mixins/proposable';
 
 export default Cacheable.extend({
   root_object: 'policy',
@@ -22,6 +23,7 @@ export default Cacheable.extend({
   isRoleable: true,
   mixins: [
     ChangeableExternally,
+    Proposable,
   ],
   sub_tree_view_options: {
     default_filter: ['DataAsset'],

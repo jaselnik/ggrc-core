@@ -5,6 +5,7 @@
 
 import Cacheable from '../cacheable';
 import ChangeableExternally from '../mixins/changeable-externally';
+import Proposable from '../mixins/proposable';
 
 export default Cacheable.extend({
   root_object: 'contract',
@@ -20,6 +21,7 @@ export default Cacheable.extend({
   findOne: 'GET /api/contracts/{id}',
   mixins: [
     ChangeableExternally,
+    Proposable,
   ],
   is_custom_attributable: true,
   isRoleable: true,
