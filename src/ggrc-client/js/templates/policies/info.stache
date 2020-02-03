@@ -145,6 +145,11 @@
           >
             <revision-log instance:from="instance" options:from="tabOptions" />
           </tab-panel>
+          <tab-link
+            instance:from="instance"
+            panels:bind="panels"
+            titleText:from="'Change Proposals'"
+            linkType:from="'proposals'" />
         {{/if}}
       </tab-container>
     </div><!-- tier-content end -->
