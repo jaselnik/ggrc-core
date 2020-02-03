@@ -30,43 +30,45 @@ export default Cacheable.extend({
   },
   statuses: ['Draft', 'Deprecated', 'Active'],
   tree_view_options: {
-    attr_list: Cacheable.attr_list.concat([
-      {
-        attr_title: 'State',
-        attr_name: 'status',
-        order: 40,
-      }, {
-        attr_title: 'Review State',
-        attr_name: 'review_status',
-        order: 80,
-      }, {
-        attr_title: 'Effective Date',
-        attr_name: 'start_date',
-        order: 85,
-      }, {
-        attr_title: 'Kind/Type',
-        attr_name: 'kind',
-        order: 86,
-      }, {
-        attr_title: 'Reference URL',
-        attr_name: 'reference_url',
-        order: 90,
-      }, {
-        attr_title: 'Description',
-        attr_name: 'description',
-        order: 95,
-      }, {
-        attr_title: 'Notes',
-        attr_name: 'notes',
-        order: 100,
-      }, {
-        attr_title: 'Assessment Procedure',
-        attr_name: 'test_plan',
-        order: 105,
-      }, {
-        attr_title: 'Last Deprecated Date',
-        attr_name: 'end_date',
-        order: 110,
-      }]),
+    attr_list: Cacheable.attr_list.concat([{
+      attr_title: 'State',
+      attr_name: 'status',
+      order: 40,
+    }, {
+      attr_title: 'Review State',
+      attr_name: 'review_status',
+      order: 80,
+    }, {
+      attr_title: 'Effective Date',
+      attr_name: 'start_date',
+      order: 85,
+    }, {
+      attr_title: 'Kind/Type',
+      attr_name: 'kind',
+      order: 86,
+    }, {
+      attr_title: 'Reference URL',
+      attr_name: 'reference_url',
+      order: 90,
+    }, {
+      attr_title: 'Description',
+      attr_name: 'description',
+      order: 95,
+    }, {
+      attr_title: 'Notes',
+      attr_name: 'notes',
+      order: 100,
+    }, {
+      attr_title: 'Assessment Procedure',
+      attr_name: 'test_plan',
+      order: 105,
+    }, {
+      attr_title: 'Last Deprecated Date',
+      attr_name: 'end_date',
+      order: 110,
+    }, {
+      attr_title: 'Created By',
+      attr_name: 'created_by',
+    }]),
   },
 }, {});
