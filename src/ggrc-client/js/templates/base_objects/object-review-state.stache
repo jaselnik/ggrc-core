@@ -1,0 +1,21 @@
+{{!
+    Copyright (C) 2020 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+{{#if instance.snapshot}}
+  {{#if instance.review_status}}
+    <div class="object-review">
+      <div class="object-review__header">
+        <div class="object-review__header-title">
+          Object Review
+        </div>
+        <div class="object-review__header-status">
+          <div class="state-value state-{{lowercase instance.review_status}}">
+            {{instance.review_status}}
+          </div>
+        </div>
+      </div>
+    </div>
+  {{/if}}
+{{/if}}

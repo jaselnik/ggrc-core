@@ -11,7 +11,7 @@
         <tab-panel panels:bind="panels" titleText:from="'Attributes'">
           <div class="info-pane__body">
             <div class="info-pane__main-content {{^if isSnapshot}}info-pane__main-content-with-sidebar{{/if}}">
-              {{> base_objects/object-review.stache}}
+              {{> base_objects/object-review-state.stache}}
 
               <div class="row-fluid wrap-row">
                 <div class="span12">

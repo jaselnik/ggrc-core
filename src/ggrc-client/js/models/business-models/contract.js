@@ -35,10 +35,6 @@ export default Cacheable.extend({
       attr_name: 'status',
       order: 40,
     }, {
-      attr_title: 'Review State',
-      attr_name: 'review_status',
-      order: 80,
-    }, {
       attr_title: 'Effective Date',
       attr_name: 'start_date',
       order: 85,
