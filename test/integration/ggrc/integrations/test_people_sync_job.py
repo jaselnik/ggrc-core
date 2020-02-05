@@ -6,10 +6,13 @@
 import mock
 
 from ggrc import settings
-from ggrc.integrations.synchronization_jobs import sync_people
+from ggrc.models import all_models
+from ggrc.integrations import synchronization_jobs
 
 from integration import ggrc
 from integration.ggrc.models import factories
+from integration.ggrc_basic_permissions.models \
+    import factories as rbac_factories
 
 
 @mock.patch.object(settings, "AUTHORIZED_DOMAIN", "example.com")
@@ -19,17 +22,22 @@ class TestPeopleSyncJob(ggrc.TestCase):
   def setUp(self):
     super(TestPeopleSyncJob, self).setUp()
     with factories.single_commit():
-      self.person1 = factories.PersonFactory(
+      role = all_models.Role.query.filter(
+          all_models.Role.name == "Administrator"
+      ).one()
+      self.admin1 = factories.PersonFactory(
           email="test@example.com",
           name="Test Test",
       )
-      self.person2 = factories.PersonFactory(
+      rbac_factories.UserRoleFactory(role=role, person=self.admin1)
+      self.admin2 = factories.PersonFactory(
           email="test2@example.com",
           name="Some Some",
       )
-      self.person3 = factories.PersonFactory(
+      rbac_factories.UserRoleFactory(role=role, person=self.admin2)
+      self.unauthorized_person = factories.PersonFactory(
           email="test@test.com",
-          name="Test Test",
+          name="Unauthorized Person",
       )
 
   def test_updated_one_person(self):
@@ -38,15 +46,16 @@ class TestPeopleSyncJob(ggrc.TestCase):
         "ggrc.integrations.client.PersonClient.search_persons",
         return_value=[
             {
-                "username": "test",
+                "username": self.admin1.user_name,
                 "firstName": "NewName",
                 "lastName": "NewLastName",
+                "isActive": True,
             },
         ],
     ):
-      sync_people()
-      person1 = self.refresh_object(self.person1)
-      self.assertEqual(person1.name, "NewName NewLastName")
+      synchronization_jobs.sync_people()
+      admin1 = self.refresh_object(self.admin1)
+      self.assertEqual(admin1.name, "NewName NewLastName")
 
   def test_updated_many_people(self):
     """Test updated list of people"""
@@ -54,37 +63,125 @@ class TestPeopleSyncJob(ggrc.TestCase):
         "ggrc.integrations.client.PersonClient.search_persons",
         return_value=[
             {
-                "username": "test",
+                "username": self.admin1.user_name,
                 "firstName": "NewName",
                 "lastName": "NewLastName",
+                "isActive": True,
             },
             {
-                "username": "test2",
+                "username": self.admin2.user_name,
                 "firstName": "SomeName",
                 "lastName": "SomeLastName",
+                "isActive": True,
             }
         ],
     ):
-      sync_people()
-      person1 = self.refresh_object(self.person1)
-      person2 = self.refresh_object(self.person2)
-      self.assertEqual(person1.name, "NewName NewLastName")
-      self.assertEqual(person2.name, "SomeName SomeLastName")
+      synchronization_jobs.sync_people()
+      admin1 = self.refresh_object(self.admin1)
+      admin2 = self.refresh_object(self.admin2)
+      self.assertEqual(admin1.name, "NewName NewLastName")
+      self.assertEqual(admin2.name, "SomeName SomeLastName")
 
-  def test_sync_people_same_username(self):
+  # pylint: disable=invalid-name
+  def test_no_sync_unauthorized_domain(self):
     """Test people with unauthorized domain not updated"""
     with mock.patch(
         "ggrc.integrations.client.PersonClient.search_persons",
         return_value=[
             {
-                "username": "test",
+                "username": self.unauthorized_person.user_name,
                 "firstName": "NewName",
                 "lastName": "NewLastName",
+                "isActive": True,
             },
         ],
     ):
-      sync_people()
-      person1 = self.refresh_object(self.person1)
-      person3 = self.refresh_object(self.person3)
-      self.assertEqual(person1.name, "NewName NewLastName")
-      self.assertEqual(person3.name, "Test Test")
+      synchronization_jobs.sync_people()
+      unauthorized_person = self.refresh_object(self.unauthorized_person)
+      self.assertEqual(unauthorized_person.name, "Unauthorized Person")
+
+  def test_no_role_one_person(self):
+    """Test person set to no role when isActive = false"""
+    with mock.patch(
+        "ggrc.integrations.client.PersonClient.search_persons",
+        return_value=[
+            {
+                "username": self.admin1.user_name,
+                "firstName": "Test",
+                "lastName": "Test",
+                "isActive": False,
+            },
+        ],
+    ):
+      synchronization_jobs.sync_people()
+      admin1 = self.refresh_object(self.admin1)
+      self.assertEqual(admin1.user_roles, [])
+
+  def test_no_role_many_person(self):
+    """Test many people set to no role when isActive = false"""
+    with mock.patch(
+        "ggrc.integrations.client.PersonClient.search_persons",
+        return_value=[
+            {
+                "username": self.admin1.user_name,
+                "firstName": "Test",
+                "lastName": "Test",
+                "isActive": False,
+            },
+            {
+                "username": self.admin2.user_name,
+                "firstName": "Some",
+                "lastName": "Some",
+                "isActive": False,
+            }
+        ],
+    ):
+      synchronization_jobs.sync_people()
+      admin1 = self.refresh_object(self.admin1)
+      admin2 = self.refresh_object(self.admin2)
+      self.assertEqual(admin1.user_roles, [])
+      self.assertEqual(admin2.user_roles, [])
+
+  def test_one_no_role_one_update(self):
+    """Test one person updated name, one set no role when isActive = false"""
+    with mock.patch(
+        "ggrc.integrations.client.PersonClient.search_persons",
+        return_value=[
+            {
+                "username": self.admin1.user_name,
+                "firstName": "Test",
+                "lastName": "Test",
+                "isActive": False,
+            },
+            {
+                "username": self.admin2.user_name,
+                "firstName": "SomeName",
+                "lastName": "SomeLastName",
+                "isActive": True,
+            }
+        ],
+    ):
+      synchronization_jobs.sync_people()
+      admin1 = self.refresh_object(self.admin1)
+      admin2 = self.refresh_object(self.admin2)
+      self.assertEqual(admin1.user_roles, [])
+      self.assertNotEqual(admin2.user_roles, [])
+      self.assertEqual(admin2.name, "SomeName SomeLastName")
+
+  def test_one_no_role_no_update(self):
+    """Test person set to no role when isActive = false and no name updates"""
+    with mock.patch(
+        "ggrc.integrations.client.PersonClient.search_persons",
+        return_value=[
+            {
+                "username": self.admin1.user_name,
+                "firstName": "NewName",
+                "lastName": "NewLastName",
+                "isActive": False,
+            },
+        ],
+    ):
+      synchronization_jobs.sync_people()
+      admin1 = self.refresh_object(self.admin1)
+      self.assertEqual(admin1.user_roles, [])
+      self.assertEqual(admin1.name, "Test Test")
