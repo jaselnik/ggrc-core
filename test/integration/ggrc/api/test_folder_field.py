@@ -25,7 +25,6 @@ class TestFolderField(TestCase):
       factories.ContractFactory,
       factories.ControlFactory,
       factories.DataAssetFactory,
-      factories.DirectiveFactory,
       factories.FacilityFactory,
       factories.IssueFactory,
       factories.KeyReportFactory,

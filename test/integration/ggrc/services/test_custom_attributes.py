@@ -125,7 +125,10 @@ class TestGlobalCustomAttributes(RegulationTestCase):
                      "new value")
 
   @ddt.data(
-      ("control", "Control title")
+      ("control", "Control title"),
+      ("risk", "Risk title"),
+      ("Standard", "Standard title"),
+      ("Regulation", "Regulation title"),
   )
   @ddt.unpack
   def test_create_from_ggrc(self, definition_type, title):
