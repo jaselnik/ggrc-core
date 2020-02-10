@@ -80,7 +80,7 @@ class TestExternalPermissions(TestCase):
 
   @ddt.data(*MODELS)
   def test_post_modifier(self, model):
-    """Test modifier of models when working as external user."""
+    """Test modifier of {0.__name__} when working as external user."""
     model_plural = model._inflector.table_plural
     model_singular = model._inflector.table_singular
 
@@ -92,6 +92,7 @@ class TestExternalPermissions(TestCase):
     if issubclass(model, synchronizable.Synchronizable):
       model_data["external_id"] = factories.SynchronizableExternalId.next()
       model_data["external_slug"] = factories.random_str()
+      model_data["created_by_id"] = model_data["external_id"]
 
     if model_plural == "risks":
       model_data["risk_type"] = "some text"
@@ -105,6 +106,10 @@ class TestExternalPermissions(TestCase):
 
     if model_plural == "issues":
       model_data["due_date"] = "10/10/2019"
+
+    if model_plural in ("regulations", "standards"):
+      model_data["kind"] = model.__name__
+      model_data["id"] = 1
 
     response = self._post(
         "api/{}".format(model_plural),
@@ -186,7 +191,11 @@ class TestExternalPermissions(TestCase):
         data=json.dumps({
             "regulation": {
                 "title": "some market",
-                "context": 0
+                "context": 0,
+                "kind": "Regulation",
+                "id": 1,
+                "external_id": 1,
+                "external_slug": "test123",
             }
         }),
         headers=self.headers)
@@ -247,7 +256,11 @@ class TestExternalAppRequest(TestCase):
         data=json.dumps({
             "regulation": {
                 "title": "some market",
-                "context": 0
+                "context": 0,
+                "kind": "Regulation",
+                "id": 1,
+                "external_id": 1,
+                "external_slug": "test123",
             }
         }),
         headers=self.headers)

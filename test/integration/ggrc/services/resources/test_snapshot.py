@@ -71,6 +71,7 @@ class TestSnapshotResourceDelete(services.TestCase):
 
     # Check related_objects endpoint
     related_objects = self._get_related_objects(snapshot_c_id)
+    print related_objects
     self.assertEqual(len(related_objects), 3)
     self.assertEqual(len(related_objects["Assessment"]), 1)
     self.assertEqual(len(related_objects["Audit"]), 1)

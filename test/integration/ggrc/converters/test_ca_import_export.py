@@ -10,8 +10,7 @@ from flask.json import dumps
 from integration.ggrc import TestCase
 from integration.ggrc.generator import ObjectGenerator
 from ggrc import db
-from ggrc.models import Standard
-from ggrc.models import Regulation
+from ggrc.models import Issue
 from ggrc.converters import errors
 
 
@@ -50,35 +49,35 @@ class TestCustomAttributeImportExport(TestCase):
     that are used in test cases defined in this class
     """
     gen = cls.generator.generate_custom_attribute
-    gen("regulation", attribute_type="Text", title="ca_text")
-    gen("regulation", attribute_type="Text", title="man_ca_text",
+    gen("issue", attribute_type="Text", title="ca_text")
+    gen("issue", attribute_type="Text", title="man_ca_text",
         mandatory=True)
-    gen("regulation", attribute_type="Rich Text", title="ca_rich_text")
-    gen("regulation", attribute_type="Rich Text", title="man_ca_rich_text",
+    gen("issue", attribute_type="Rich Text", title="ca_rich_text")
+    gen("issue", attribute_type="Rich Text", title="man_ca_rich_text",
         mandatory=True)
-    gen("regulation", attribute_type="Date", title="ca_date")
-    gen("regulation", attribute_type="Date", title="man_ca_date",
+    gen("issue", attribute_type="Date", title="ca_date")
+    gen("issue", attribute_type="Date", title="man_ca_date",
         mandatory=True, helptext="Birthday")
-    gen("regulation", attribute_type="Checkbox", title="ca_checkbox")
-    gen("regulation", attribute_type="Checkbox", title="man_ca_checkbox",
+    gen("issue", attribute_type="Checkbox", title="ca_checkbox")
+    gen("issue", attribute_type="Checkbox", title="man_ca_checkbox",
         mandatory=True)
-    gen("regulation", attribute_type="Multiselect", title="ca_multiselect",
+    gen("issue", attribute_type="Multiselect", title="ca_multiselect",
         multi_choice_options="one,two,three,four,five")
-    gen("regulation", attribute_type="Multiselect", title="man_ca_multiselect",
+    gen("issue", attribute_type="Multiselect", title="man_ca_multiselect",
         multi_choice_options="one,two,three,four,five", mandatory=True)
-    gen("regulation", attribute_type="Dropdown", title="ca_dropdown",
+    gen("issue", attribute_type="Dropdown", title="ca_dropdown",
         options="one,two,three,four,five", helptext="Your favorite number.")
-    gen("regulation", attribute_type="Dropdown", title="man_ca_dropdown",
+    gen("issue", attribute_type="Dropdown", title="man_ca_dropdown",
         options="one,two,three,four,five", mandatory=True)
 
-    gen("standard", attribute_type="Text",
+    gen("issue", attribute_type="Text",
         title="standard_ca_text", mandatory=True)
 
   @ddt.data(
       ("Text", "Optional text", "Mandatory text", {}),
       ("Text", "", "Mandatory text", {}),
       ("Text", "Optional text", "", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -87,7 +86,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Text", "", "", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -99,7 +98,7 @@ class TestCustomAttributeImportExport(TestCase):
        "Mandatory <br> rich <br> text", {}),
       ("Rich Text", "", "Mandatory <br> rich <br> text", {}),
       ("Rich Text", "Optional <br> rich <br> text", "", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -108,7 +107,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Rich Text", "", "", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -121,7 +120,7 @@ class TestCustomAttributeImportExport(TestCase):
       ("Date", "5/7/2015", "", {}),
       ("Date", "", "", {}),
       ("Date", "5/7/2015", "hello world", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -135,7 +134,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Date", "hello world", "9/15/2015", {
-          "Regulation": {
+          "Issue": {
               "row_warnings": {
                   errors.WRONG_VALUE.format(
                       line=3,
@@ -146,7 +145,7 @@ class TestCustomAttributeImportExport(TestCase):
       ("Checkbox", "no", "yes", {}),
       ("Checkbox", "", "yes", {}),
       ("Checkbox", "no", "", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -160,7 +159,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Checkbox", "", "", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -174,7 +173,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Checkbox", "hello", "yes", {
-          "Regulation": {
+          "Issue": {
               "row_warnings": {
                   errors.WRONG_VALUE.format(
                       line=3,
@@ -183,7 +182,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Checkbox", "", "hello", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -199,7 +198,7 @@ class TestCustomAttributeImportExport(TestCase):
       ("Dropdown", "one", "two", {}),
       ("Dropdown", "", "two", {}),
       ("Dropdown", "one", "", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -208,7 +207,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Dropdown", "", "", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -217,7 +216,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Dropdown", "six", "two", {
-          "Regulation": {
+          "Issue": {
               "row_warnings": {
                   errors.WRONG_VALUE.format(
                       line=3,
@@ -226,7 +225,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Dropdown", "one", "six", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -242,7 +241,7 @@ class TestCustomAttributeImportExport(TestCase):
       ("Multiselect", "one,three", "two,four,five", {}),
       ("Multiselect", "", "two,four,five", {}),
       ("Multiselect", "one,three", "", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -251,7 +250,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Multiselect", "", "", {
-          "Regulation": {
+          "Issue": {
               "row_errors": {
                   errors.MISSING_VALUE_ERROR.format(
                       line=3,
@@ -260,7 +259,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Multiselect", "one,six", "", {
-          "Regulation": {
+          "Issue": {
               "row_warnings": {
                   errors.WRONG_VALUE.format(
                       line=3,
@@ -274,7 +273,7 @@ class TestCustomAttributeImportExport(TestCase):
           }
       }),
       ("Multiselect", "one,three", "two,four,six", {
-          "Regulation": {
+          "Issue": {
               "row_warnings": {
                   errors.WRONG_VALUE.format(
                       line=3,
@@ -284,40 +283,41 @@ class TestCustomAttributeImportExport(TestCase):
       }),
   )
   @ddt.unpack
-  def test_regulation_ca_import(self, ca_type, ca_value,
-                                man_ca_value, expected_response):
-    """Test import of regulation with all custom attributes.
-
+  def test_issue_ca_import(self, ca_type, ca_value,
+                           man_ca_value, expected_response):
+    """Test import of Issue with all custom attributes.
     This tests covers all possible custom attributes with mandatory flag turned
     off and on, and checks for all warnings that should be present.
     """
 
-    regulation_data = collections.OrderedDict([
-        ("object_type", "Regulation"),
+    issue_data = collections.OrderedDict([
+        ("object_type", "Issue"),
         ("Code*", ""),
         ("Admin", "user@example.com"),
+        ("due date", "5/7/2015"),
+
     ])
 
     ca_attr = 'ca_' + ca_type.replace(' ', '_').lower()
     man_ca_attr = 'man_' + ca_attr
 
-    regulation_data[ca_attr] = ca_value
-    regulation_data[man_ca_attr] = man_ca_value
-    regulation_data["Title"] = "Regulation Title - {}: {},{}".format(
+    issue_data[ca_attr] = ca_value
+    issue_data[man_ca_attr] = man_ca_value
+    issue_data["Title"] = "Issue Title - {}: {},{}".format(
         ca_type,
         ca_value,
         man_ca_value)
 
-    response = self.import_data(regulation_data)
+    response = self.import_data(issue_data)
     self._check_csv_response(response, expected_response)
 
-    row_errors = expected_response["Regulation"]["row_errors"]
-    row_warnings = expected_response["Regulation"]["row_warnings"]
+    row_errors = expected_response["Issue"]["row_errors"]
+    row_warnings = expected_response["Issue"]["row_warnings"]
     if not (row_errors or row_warnings):
-      regulation_data["Admin"] = "unknown@example.com"
-      regulation_data["Title"] = regulation_data["Title"] + '_new'
-      response = self.import_data(regulation_data)
-      expected_response["Regulation"]["row_warnings"] = {
+      issue_data["Admin"] = "unknown@example.com"
+      issue_data["Title"] = issue_data["Title"] + '_new'
+      response = self.import_data(issue_data)
+      expected_response["Issue"]["row_warnings"] = {
           errors.OWNER_MISSING.format(
               line=3,
               column_name="Admin"),
@@ -328,17 +328,20 @@ class TestCustomAttributeImportExport(TestCase):
       self._check_csv_response(response, expected_response)
 
   # pylint: disable=invalid-name
-  def test_regulation_ca_import_update(self):
-    """Test updating of regulation with all custom attributes.
+  def test_issue_ca_import_update(self):
+    """Test updating of Issue with all custom attributes.
 
     This tests covers updates for all possible custom attributes
     """
     # TODO: check response data explicitly
 
-    regulation_data = collections.OrderedDict([
-        ("object_type", "Regulation"),
+    db.session.query(Issue).delete()
+    db.session.commit()
+
+    issue_data = collections.OrderedDict([
+        ("object_type", "Issue"),
         ("Code*", ""),
-        ("Title", "Regulation title"),
+        ("Title", "Issue title"),
         ("Admin", "user@example.com"),
         ("ca_text", "normal text"),
         ("man_ca_text", "mandatory text"),
@@ -346,6 +349,7 @@ class TestCustomAttributeImportExport(TestCase):
         ("man_ca_rich_text", "mandatory <br> rich <br> text"),
         ("ca_date", "5/7/2015"),
         ("man_ca_date", "9/15/2015"),
+        ("due date", "5/7/2015"),
         ("ca_checkbox", "no"),
         ("man_ca_checkbox", "yes"),
         ("ca_multiselect", "one,two"),
@@ -354,15 +358,14 @@ class TestCustomAttributeImportExport(TestCase):
         ("man_ca_dropdown", "five"),
     ])
 
-    self.import_data(regulation_data)
+    self.import_data(issue_data)
 
-    regulation = Regulation.query.filter(
-        Regulation.title == "Regulation title").first()
-    regulation_slug = regulation.slug
+    issue = Issue.query.filter(
+        Issue.title == "Issue title").first()
 
-    regulation_data = collections.OrderedDict([
-        ("object_type", "Regulation"),
-        ("Code*", regulation_slug),
+    issue_data = collections.OrderedDict([
+        ("object_type", "Issue"),
+        ("Code*", issue.slug),
         ("ca_text", "edited normal text"),
         ("man_ca_text", "edited mandatory text"),
         ("ca_rich_text", "normal <br> edited rich <br> text"),
@@ -370,6 +373,7 @@ class TestCustomAttributeImportExport(TestCase):
         ("ca_date", "9/14/2017"),
         ("man_ca_date", "1/17/2018"),
         ("ca_checkbox", "yes"),
+        ("due date", "5/7/2015"),
         ("man_ca_checkbox", "no"),
         ("ca_multiselect", "three,four"),
         ("man_ca_multiselect", "two,four,five"),
@@ -377,7 +381,7 @@ class TestCustomAttributeImportExport(TestCase):
         ("man_ca_dropdown", "two"),
     ])
 
-    self.import_data(regulation_data)
+    self.import_data(issue_data)
 
     reg_0_expected = {
         u"ca_text": u"edited normal text",
@@ -394,15 +398,15 @@ class TestCustomAttributeImportExport(TestCase):
         u"man_ca_dropdown": u"two"
     }
 
-    updated_regulation = Regulation.query.filter(
-        Regulation.slug == regulation_slug).first()
+    updated_issue = issue.query.filter(
+        issue.slug == issue.slug).first()
     reg_0_new = {c.custom_attribute.title: c.attribute_value
-                 for c in updated_regulation.custom_attribute_values}
+                 for c in updated_issue.custom_attribute_values}
 
     self.assertEqual(reg_0_expected, reg_0_new)
 
   def tests_ca_export(self):
-    """Test exporting regulations with custom attributes
+    """Test exporting Issue with custom attributes
 
     This test checks that we get a proper response when exporting objects with
     custom attributes and that the response data actually contains more lines
@@ -410,20 +414,21 @@ class TestCustomAttributeImportExport(TestCase):
     This tests relys on the import tests to work. If those fail they need to be
     fixied before this one.
     """
-    db.session.query(Regulation).delete()
+    db.session.query(Issue).delete()
     db.session.commit()
 
-    regulation_data = [
+    Issue_data = [
         collections.OrderedDict([
-            ("object_type", "Regulation"),
+            ("object_type", "Issue"),
             ("Code*", ""),
-            ("Title", "Regulation title1"),
+            ("Title", "Issue title1"),
             ("Admin", "user@example.com"),
             ("ca_text", "normal text"),
             ("man_ca_text", "mandatory text"),
             ("ca_rich_text", "normal <br> rich <br> text"),
             ("man_ca_rich_text", "mandatory <br> rich <br> text"),
             ("ca_date", "5/7/2015"),
+            ("due date", "5/7/2015"),
             ("man_ca_date", "9/15/2015"),
             ("ca_checkbox", "no"),
             ("man_ca_checkbox", "yes"),
@@ -433,15 +438,16 @@ class TestCustomAttributeImportExport(TestCase):
             ("man_ca_dropdown", "five"),
         ]),
         collections.OrderedDict([
-            ("object_type", "Regulation"),
+            ("object_type", "Issue"),
             ("Code*", ""),
-            ("Title", "Regulation title2"),
+            ("Title", "Issue title2"),
             ("Admin", "user@example.com"),
             ("ca_text", "normal text2"),
             ("man_ca_text", ""),
             ("ca_rich_text", "normal <br> rich <br> text2"),
             ("man_ca_rich_text", "mandatory <br> rich <br> text2"),
             ("ca_date", "5/7/2015"),
+            ("due date", "5/7/2015"),
             ("man_ca_date", "9/15/2015"),
             ("ca_checkbox", "no"),
             ("man_ca_checkbox", "yes"),
@@ -451,11 +457,12 @@ class TestCustomAttributeImportExport(TestCase):
             ("man_ca_dropdown", "five"),
         ]),
         collections.OrderedDict([
-            ("object_type", "Regulation"),
+            ("object_type", "Issue"),
             ("Code*", ""),
-            ("Title", "Regulation title3"),
+            ("Title", "Issue title3"),
             ("Admin", "user@example.com"),
             ("Assignee", "user@example.com"),
+            ("due date", "5/7/2015"),
             ("Verifier", "user@example.com"),
             ("ca_text", "normal text3"),
             ("man_ca_text", "mandatory text3"),
@@ -467,10 +474,10 @@ class TestCustomAttributeImportExport(TestCase):
         ]),
     ]
 
-    self.import_data(*regulation_data)
+    self.import_data(*Issue_data)
 
     data = [{
-        "object_name": "Regulation",
+        "object_name": "Issue",
         "fields": "all",
         "filters": {
             "expression": {}
@@ -488,7 +495,7 @@ class TestCustomAttributeImportExport(TestCase):
         "ca_dropdown",
         "man_ca_dropdown*",
     }
-    result = self.export_parsed_csv(data)["Regulation"]
+    result = self.export_parsed_csv(data)["Issue"]
 
     self.assertEqual(len(result), 2)
     for res in result:
@@ -500,11 +507,11 @@ class TestCustomAttributeImportExport(TestCase):
     """Test filtering on custom attribute values."""
 
     # TODO: check response data explicitly
-    regulation_data = [
+    issue_data = [
         collections.OrderedDict([
-            ("object_type", "Regulation"),
+            ("object_type", "Issue"),
             ("Code*", ""),
-            ("Title", "Regulation title1"),
+            ("Title", "Issue title1"),
             ("Admin", "user@example.com"),
             ("ca_text", "normal text"),
             ("man_ca_text", "mandatory text"),
@@ -513,6 +520,7 @@ class TestCustomAttributeImportExport(TestCase):
             ("ca_date", "5/7/2015"),
             ("man_ca_date", "9/15/2015"),
             ("ca_checkbox", "no"),
+            ("due date", "5/7/2015"),
             ("man_ca_checkbox", "yes"),
             ("ca_multiselect", "one,two"),
             ("man_ca_multiselect", "three,four"),
@@ -520,12 +528,13 @@ class TestCustomAttributeImportExport(TestCase):
             ("man_ca_dropdown", "five"),
         ]),
         collections.OrderedDict([
-            ("object_type", "Regulation"),
+            ("object_type", "Issue"),
             ("Code*", ""),
-            ("Title", "Regulation title2"),
+            ("Title", "Issue title2"),
             ("Admin", "user@example.com"),
             ("Assignee", "user@example.com"),
             ("Verifier", "user@example.com"),
+            ("due date", "5/7/2015"),
             ("ca_text", "normal text"),
             ("man_ca_text", "mandatory text2"),
             ("man_ca_rich_text", "mandatory <br> rich <br> text2"),
@@ -536,12 +545,12 @@ class TestCustomAttributeImportExport(TestCase):
         ]),
     ]
 
-    self.import_data(*regulation_data)
+    self.import_data(*issue_data)
 
     data = {
         "export_to": "csv",
         "objects": [{
-            "object_name": "Regulation",
+            "object_name": "Issue",
             "filters": {
                 "expression": {
                     "left": "ca_text",
@@ -556,30 +565,3 @@ class TestCustomAttributeImportExport(TestCase):
                                 headers=self.headers)
     self.assert200(response)
     self.assertIn(",normal text,", response.data)
-
-  def test_multi_word_object_with_ca(self):
-    """Test multi-word (e.g. Standard) object import"""
-
-    response = self.import_data(collections.OrderedDict([
-        ("object_type", "Standard"),
-        ("Code*", ""),
-        ("Title", "std-1"),
-        ("Admin", "user@example.com"),
-        ("Assignee", "user@example.com"),
-        ("Verifier", "user@example.com"),
-        ("standard_ca_text", "Multi word text"),
-    ]))
-
-    self.assertEqual([], response[0]["row_warnings"])
-    self.assertEqual([], response[0]["row_errors"])
-    self.assertEqual(1, response[0]["created"])
-    self.assertEqual(0, response[0]["ignored"])
-    self.assertEqual(0, response[0]["updated"])
-    self.assertEqual(1, Standard.query.count())
-
-    standard = Standard.query.filter(
-        Standard.title == "std-1").first()
-
-    filtered = [val for val in standard.custom_attribute_values if
-                val.attribute_value == "Multi word text"]
-    self.assertEqual(len(filtered), 1)

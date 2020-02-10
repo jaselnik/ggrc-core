@@ -17,9 +17,7 @@ class TestCommentsForReview(TestCase):
   """Test generate comments for review."""
 
   @ddt.data(
-      all_models.Standard,
       all_models.Contract,
-      all_models.Regulation,
       all_models.Policy,
       all_models.Program,
       all_models.Threat,
@@ -42,9 +40,7 @@ class TestCommentsForReview(TestCase):
     )
 
   @ddt.data(
-      all_models.Standard,
       all_models.Contract,
-      all_models.Regulation,
       all_models.Policy,
       all_models.Program,
       all_models.Threat,

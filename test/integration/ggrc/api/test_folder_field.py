@@ -5,9 +5,11 @@
 import ddt
 
 from ggrc import db
+from ggrc.models import all_models
 from ggrc.models.mixins.synchronizable import Synchronizable
 from integration.ggrc import TestCase, Api
 from integration.ggrc.models import factories
+from integration.external_app import external_api_helper
 
 CAD = factories.CustomAttributeDefinitionFactory
 CAV = factories.CustomAttributeValueFactory
@@ -51,6 +53,11 @@ class TestFolderField(TestCase):
     super(TestFolderField, self).setUp()
     self.api = Api()
     self.api.login_as_normal()
+    self.ext_api = external_api_helper.ExternalApiClient()
+
+  NOT_PUTABLE_FACTORIES = NOT_POSTABLE_FACTORIES = [
+      factories.DirectiveFactory,
+  ]
 
   @ddt.data(*FOLDERABLE_FACTORIES)
   def test_create_object(self, factory):
@@ -71,10 +78,6 @@ class TestFolderField(TestCase):
         test_folder_name,
         data[obj._inflector.table_singular.lower()]["folder"]
     )
-
-  NOT_PUTABLE_FACTORIES = NOT_POSTABLE_FACTORIES = [
-      factories.DirectiveFactory,
-  ]
 
   @ddt.data(*FOLDERABLE_FACTORIES)
   def test_put_object(self, factory):
@@ -117,7 +120,8 @@ class TestFolderField(TestCase):
     else:
       if isinstance(obj, Synchronizable):
         self.api.login_as_external()
-
+      if model in (all_models.Regulation, all_models.Standard):
+        post_data[key]["id"] = obj_id + 1
       resp = self.api.post(model, post_data)
       new_obj_id = resp.json[key]["id"]
       self.assertNotEqual(obj_id, new_obj_id)

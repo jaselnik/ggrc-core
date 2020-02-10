@@ -149,8 +149,6 @@ class TestCommentNotification(TestNotifications):
       all_models.Requirement,
       all_models.Issue,
       all_models.Policy,
-      all_models.Regulation,
-      all_models.Standard,
       all_models.Contract,
       all_models.Threat,
   )

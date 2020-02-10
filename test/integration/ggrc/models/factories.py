@@ -72,6 +72,10 @@ def single_commit():
 
 
 class SynchronizableExternalId:
+  """Helper class for object external ID generation.
+  Note: It should not be used as values for `id` field on factories due to
+  compatibility errors with factory boy library.
+  """
 
   _value_iterator = iter(xrange(sys.maxint))
 
@@ -84,10 +88,40 @@ class TitledFactory(ModelFactory):
   title = factory.LazyAttribute(lambda m: random_str(prefix='title '))
 
 
+class PersonFactory(ModelFactory):
+
+  class Meta:
+    model = all_models.Person
+
+  email = factory.LazyAttribute(
+      lambda _: random_str(chars=string.ascii_letters) + "@example.com"
+  )
+  name = factory.LazyAttribute(
+      lambda _: random_str(prefix="Person", chars=string.ascii_letters)
+  )
+
+
 class ExternalResourceFactory(ModelFactory):
-  external_id = factory.LazyAttribute(lambda _:
-                                      SynchronizableExternalId.next())
+
+  id = factory.Sequence(lambda x: x + 1)
+
+  external_id = factory.Sequence(lambda x: x + 1)
   external_slug = factory.LazyAttribute(lambda _: random_str())
+
+  created_by = factory.SubFactory(PersonFactory)
+  created_by_id = factory.SelfAttribute("created_by.id")
+
+
+class ExternalDirectiveFactory(ExternalResourceFactory):
+  """ExternalDirective factory class"""
+  class Meta:
+    model = all_models.ExternalDirective
+
+
+class SystemOrProcess(ExternalResourceFactory):
+  """SystemOrProcess factory class"""
+  class Meta:
+    model = all_models.SystemOrProcess
 
 
 class WithACLandCAFactory(ModelFactory):
@@ -153,7 +187,7 @@ class CustomAttributeDefinitionFactory(TitledFactory):
       if "external_id" in kwargs:
         external_id = int(kwargs.pop("external_id"))
       else:
-        external_id = SynchronizableExternalId.next()
+        external_id = factory.Sequence(lambda x: x + 1)
 
       if "external_type" in kwargs:
         external_type = kwargs.pop("external_type")
@@ -165,9 +199,10 @@ class CustomAttributeDefinitionFactory(TitledFactory):
         *args,
         **kwargs
     )
+    # pylint: disable=protected-access
     if issubclass(model, synchronizable.Synchronizable):
       cad._external_info = ExternalMappingFactory(
-          external_id=int(external_id),
+          external_id=external_id,
           object_type=target_class.type,
           external_type=external_type,
           object_id=int(cad.id)
@@ -194,31 +229,12 @@ class DirectiveFactory(TitledFactory):
     model = all_models.Directive
 
 
-class PersonFactory(ModelFactory):
-
-  class Meta:
-    model = all_models.Person
-
-  email = factory.LazyAttribute(
-      lambda _: random_str(chars=string.ascii_letters) + "@example.com"
-  )
-  name = factory.LazyAttribute(
-      lambda _: random_str(prefix="Person", chars=string.ascii_letters)
-  )
-
-
-class ControlFactory(TitledFactory):
+class ControlFactory(ExternalResourceFactory, TitledFactory):
 
   class Meta:
     model = all_models.Control
 
   assertions = factory.LazyAttribute(lambda _: '["{}"]'.format(random_str()))
-  directive = factory.LazyAttribute(lambda m: RegulationFactory())
-  external_id = factory.LazyAttribute(lambda m:
-                                      SynchronizableExternalId.next())
-  external_slug = factory.LazyAttribute(lambda m: random_str())
-  created_by = factory.SubFactory(PersonFactory)
-  created_by_id = factory.SelfAttribute("created_by.id")
   review_status = all_models.Review.STATES.UNREVIEWED
   review_status_display_name = "some status"
 
@@ -337,15 +353,28 @@ class RelationshipFactory(ModelFactory):
 
   class Meta:
     model = all_models.Relationship
-  source = None
-  destination = None
+
   automapping_id = None
 
   @classmethod
-  def randomize(cls, *args):
-    """Create a relationship with randomly shuffled source and destination."""
-    obj1, obj2 = random.sample(args, 2)
-    return cls(source=obj1, destination=obj2)
+  def _create(cls, target_class, *args, **kwargs):
+    destination = kwargs.pop("destination")
+    source = kwargs.pop("source")
+
+    if destination:
+      kwargs["destination_id"] = int(destination.id)
+      kwargs["destination_type"] = destination.type
+    if source:
+      kwargs["source_id"] = int(source.id)
+      kwargs["source_type"] = source.type
+
+    res = super(RelationshipFactory, cls)._create(
+        target_class, *args, **kwargs)
+
+    setattr(res, "{}_source".format(source.type), source)
+    setattr(res, "{}_destination".format(destination.type), destination)
+
+    return res
 
 
 class CommentFactory(ModelFactory):
@@ -407,10 +436,11 @@ class OptionFactory(TitledFactory):
     model = all_models.Option
 
 
-class RegulationFactory(TitledFactory):
+class RegulationFactory(ExternalDirectiveFactory, TitledFactory):
 
   class Meta:
     model = all_models.Regulation
+  kind = Meta.model.__name__
 
 
 class OrgGroupFactory(ExternalResourceFactory, TitledFactory):
@@ -419,7 +449,7 @@ class OrgGroupFactory(ExternalResourceFactory, TitledFactory):
     model = all_models.OrgGroup
 
 
-class SystemFactory(ExternalResourceFactory, TitledFactory):
+class SystemFactory(SystemOrProcess, TitledFactory):
 
   class Meta:
     model = all_models.System
@@ -437,7 +467,7 @@ class AccountBalanceFactory(ExternalResourceFactory, TitledFactory):
     model = all_models.AccountBalance
 
 
-class ProcessFactory(ExternalResourceFactory, TitledFactory):
+class ProcessFactory(SystemOrProcess, TitledFactory):
 
   class Meta:
     model = all_models.Process
@@ -529,13 +559,15 @@ class RequirementFactory(TitledFactory):
     model = all_models.Requirement
 
 
-class StandardFactory(TitledFactory):
+class StandardFactory(ExternalDirectiveFactory, TitledFactory):
   """Standard factory class"""
 
   class Meta:
     model = all_models.Standard
 
   description = factory.LazyAttribute(lambda _: random_str(length=100))
+  kind = Meta.model.__name__
+  # id = factory.LazyAttribute(lambda _: NoAutoincrementId.next())
 
 
 class VendorFactory(ExternalResourceFactory, TitledFactory):
@@ -545,7 +577,7 @@ class VendorFactory(ExternalResourceFactory, TitledFactory):
     model = all_models.Vendor
 
 
-class RiskFactory(TitledFactory):
+class RiskFactory(ExternalResourceFactory, TitledFactory):
   """Risk factory class"""
 
   class Meta:
@@ -553,10 +585,6 @@ class RiskFactory(TitledFactory):
 
   risk_type = "Some Type"
   description = factory.LazyAttribute(lambda _: random_str(length=100))
-  external_id = factory.LazyAttribute(lambda _:
-                                      SynchronizableExternalId.next())
-  created_by_id = factory.LazyAttribute(lambda _: PersonFactory().id)
-  external_slug = factory.LazyAttribute(lambda m: random_str())
   review_status = all_models.Review.STATES.UNREVIEWED
   review_status_display_name = "some status"
 

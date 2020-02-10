@@ -10,6 +10,7 @@ import ddt
 
 from flask.json import dumps
 
+from ggrc import db
 from ggrc import utils
 from ggrc.converters import get_exportables
 from ggrc.integrations import constants
@@ -113,9 +114,9 @@ class TestExportEmptyTemplate(TestCase):
             ("Issue", 6),
             ("Contract", 6),
             ("Policy", 6),
-            ("Regulation", 6),
+            ("Regulation", 4),
             ("Requirement", 6),
-            ("Standard", 6),
+            ("Standard", 4),
             ("Audit", 4),
             ("Program", 6),
             ("Assessment", 8),
@@ -533,11 +534,9 @@ class TestExportSingleObject(TestCase):
 
   @ddt.data(
       ("Program", factories.ProgramFactory),
-      ("Regulation", factories.RegulationFactory),
       ("Objective", factories.ObjectiveFactory),
       ("Contract", factories.ContractFactory),
       ("Policy", factories.PolicyFactory),
-      ("Standard", factories.StandardFactory),
       ("Threat", factories.ThreatFactory),
       ("Requirement", factories.RequirementFactory),
   )
@@ -683,74 +682,6 @@ class TestExportSingleObject(TestCase):
         self.assertIn(",Au-{},".format(i), response.data)
       else:
         self.assertNotIn(",Au-{},".format(i), response.data)
-
-  # pylint:disable=invalid-name
-  # pylint:disable=too-many-locals
-  def test_requirement_policy_relevant_query(self):
-    """Test requirement policy relevant query"""
-    with factories.single_commit():
-      policies = [factories.PolicyFactory(title="pol-{}".format(i))
-                  for i in range(1, 3)]
-      standards = [factories.StandardFactory(title="stand-{}".format(i))
-                   for i in range(1, 3)]
-      regulations = [factories.RegulationFactory(title="reg-{}".format(i))
-                     for i in range(1, 3)]
-      requirements = [factories.RequirementFactory(title="req-{}".format(i))
-                      for i in range(1, 4)]
-
-    policy_slugs = [policy.slug for policy in policies]
-    standard_slugs = [standard.slug for standard in standards]
-    regulation_slugs = [regulation.slug for regulation in regulations]
-    requirement_slugs = [requirement.slug for requirement in requirements]
-
-    policy_map_data = [
-        get_object_data("Policy", policy_slugs[0],
-                        requirement=requirement_slugs[0]),
-    ]
-    self.import_data(*policy_map_data)
-
-    standard_map_data = [
-        get_object_data("Standard", standard_slugs[0],
-                        requirement=requirement_slugs[1]),
-    ]
-    self.import_data(*standard_map_data)
-
-    regulation_map_data = [
-        get_object_data("Regulation", regulation_slugs[0],
-                        requirement=requirement_slugs[2]),
-    ]
-    self.import_data(*regulation_map_data)
-
-    data = [
-        get_related_objects("Policy", "Requirement", policy_slugs[:1]),
-        get_related_objects("Requirement", "Policy", requirement_slugs[:1]),
-        get_related_objects("Standard", "Requirement", standard_slugs[:1]),
-        get_related_objects("Requirement", "Standard", requirement_slugs[1:2]),
-        get_related_objects("Regulation", "Requirement", regulation_slugs[:1]),
-        get_related_objects("Requirement", "Regulation",
-                            requirement_slugs[2:3])
-    ]
-
-    response = self.export_csv(data)
-    titles = [",req-{},".format(i) for i in range(1, 4)]
-    titles.extend([",pol-1,", ",pol-2,",
-                   ",stand-1,", ",stand-2,",
-                   ",reg-1,", ",reg-2,"])
-
-    expected = set([
-        ",req-1,",
-        ",req-2,",
-        ",req-3,",
-        ",pol-1,",
-        ",stand-1,",
-        ",reg-1,",
-    ])
-
-    for title in titles:
-      if title in expected:
-        self.assertIn(title, response.data, "'{}' not found".format(title))
-      else:
-        self.assertNotIn(title, response.data, "'{}' was found".format(title))
 
   def test_multiple_relevant_query(self):
     """Test multiple relevant query"""
@@ -997,8 +928,6 @@ class TestExportMultipleObjects(TestCase):
   @ddt.data(
       "Assessment",
       "Policy",
-      "Regulation",
-      "Standard",
       "Contract",
       "Requirement",
       "Objective",
@@ -1056,9 +985,10 @@ class TestExportMultipleObjects(TestCase):
   @ddt.data(*all_models.get_scope_models())
   def test_export_for_scope(self, model):
     """Test export {} with assessment procedure."""
-    with factories.single_commit():
-      model_ = factories.get_model_factory(model.__name__)()
-      model_.test_plan = "Procedure-{}".format(model.__name__)
+    model_ = factories.get_model_factory(model.__name__)()
+    print(model_.id)
+    model_.test_plan = "Procedure-{}".format(model.__name__)
+    db.session.commit()
 
     obj_dict = [{
         "Code*": model_.slug,

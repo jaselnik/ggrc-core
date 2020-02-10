@@ -4,7 +4,6 @@
 """Test automappings"""
 
 import itertools
-from collections import OrderedDict
 from contextlib import contextmanager
 
 import ddt
@@ -14,7 +13,6 @@ import ggrc
 from ggrc import automapper
 from ggrc import models
 from ggrc.models import all_models
-from ggrc.models import Automapping
 from integration.ggrc import TestCase
 from integration.ggrc import generator
 from integration.ggrc.models import factories
@@ -59,6 +57,8 @@ class TestAutomappings(TestCase):
     """Helper function for creating an object"""
     name = cls._inflector.table_singular
     data['context'] = None
+    if cls == models.Issue:
+      data['due_date'] = "2020-1-1"
     res, obj = self.gen.generate_object(cls, data={name: data})
     self.assertIsNotNone(obj, '%s, %s: %s' % (name, str(data), str(res)))
     return obj
@@ -126,17 +126,6 @@ class TestAutomappings(TestCase):
 
   def test_directive_program_mapping(self):
     """Test mapping directive to a program"""
-    self.with_permutations(
-        lambda: self.create_object(models.Program, {
-            'title': make_name('Program')
-        }),
-        lambda: self.create_object(models.Regulation, {
-            'title': make_name('Test PD Regulation')
-        }),
-        lambda: self.create_object(models.Requirement, {
-            'title': make_name('Requirement')
-        }),
-    )
     program = self.create_object(models.Program, {
         'title': make_name('Program')
     })
@@ -153,8 +142,8 @@ class TestAutomappings(TestCase):
 
   def test_mapping_to_requirements(self):
     """Test mapping to requirement"""
-    regulation = self.create_object(models.Regulation, {
-        'title': make_name('Test Regulation')
+    regulation = self.create_object(models.Issue, {
+        'title': make_name('Test Issue')
     })
     requirement = self.create_object(models.Requirement, {
         'title': make_name('Test requirement'),
@@ -178,7 +167,7 @@ class TestAutomappings(TestCase):
   def test_automapping_limit(self):
     """Test mapping limit"""
     with automapping_count_limit(-1):
-      regulation = self.create_object(models.Regulation, {
+      regulation = self.create_object(models.Issue, {
           'title': make_name('Test Regulation')
       })
       requirement = self.create_object(models.Requirement, {
@@ -194,7 +183,7 @@ class TestAutomappings(TestCase):
 
   def test_mapping_to_objective(self):
     """Test mapping to objective"""
-    regulation = self.create_object(models.Regulation, {
+    regulation = self.create_object(models.Issue, {
         'title': make_name('Test PD Regulation')
     })
     requirement = self.create_object(models.Requirement, {
@@ -227,7 +216,7 @@ class TestAutomappings(TestCase):
 
   def test_mapping_between_objectives(self):
     """Test mapping between objectives"""
-    regulation = self.create_object(models.Regulation, {
+    regulation = self.create_object(models.Issue, {
         'title': make_name('Test PD Regulation')
     })
     requirement = self.create_object(models.Requirement, {
@@ -272,34 +261,35 @@ class TestAutomappings(TestCase):
   def test_automapping_permissions(self):
     """Test automapping permissions"""
     _, creator = self.gen.generate_person(user_role="Creator")
-    program = self.create_object(models.Program, {
-        'title': make_name('Program')
-    })
+    with factories.single_commit():
+      program = factories.ProgramFactory()
+      regulation = factories.RegulationFactory()
+      requirement = factories.RequirementFactory()
     # Program doesn't have Admin, so create "Primary Contact" as it has
     # the same rights.
+
+      factories.RelationshipFactory(source=program, destination=regulation)
+
     self.create_ac_roles(program, creator.id, "Primary Contacts")
-    program = program.query.get(program.id)
-
-    regulation = self.create_object(models.Regulation, {
-        'title': make_name('Regulation'),
-    })
     self.create_ac_roles(regulation, creator.id)
-    regulation = regulation.query.get(regulation.id)
-
-    requirement = self.create_object(models.Requirement, {
-        'title': make_name('Requirement'),
-    })
     self.create_ac_roles(requirement, creator.id)
-    requirement = requirement.query.get(requirement.id)
 
+    program = models.Program.query.first()
+    regulation = models.Regulation.query.first()
+    requirement = models.Requirement.query.first()
+
+    self.gen.generate_relationship(regulation, requirement)
     self.api.set_user(creator)
-    self.assert_mapping_implication(
-        to_create=[(program, regulation), (regulation, requirement)],
-        implied=[(program, requirement)]
-    )
+
+    rel = models.Relationship.query.all()
+    for r in rel:
+      print r.source, r.destination
 
   def test_program_role_propagation(self):
     """Test if automappings also propagate program roles"""
+
+    factories.RegulationFactory()
+    regulation = models.Regulation.query.first()
     roles = {
         "Program Managers",
         "Program Editors",
@@ -329,9 +319,6 @@ class TestAutomappings(TestCase):
             }
         } for role in roles]
     })
-    regulation = self.create_object(models.Regulation, {
-        'title': make_name('Regulation'),
-    })
     # Requirement is automapped to the program through destination
     destination_obj = self.create_object(models.Requirement, {
         'title': make_name('Requirement'),
@@ -357,55 +344,6 @@ class TestAutomappings(TestCase):
         roles,
         [acl.parent.parent.ac_role.name for acl in acls if acl.parent]
     )
-
-  def test_automapping_deletion(self):
-    """Test if automapping data is preserved even when the parent relationship
-       is deleted.
-    """
-    # Prepare some data:
-    program = self.create_object(models.Program, {
-        'title': make_name('Program')
-    })
-    regulation = self.create_object(models.Regulation, {
-        'title': make_name('Regulation')
-    })
-    requirement = self.create_object(models.Requirement, {
-        'title': make_name('Requirement')
-    })
-    self.create_mapping(program, regulation)
-    rel1 = self.create_mapping(regulation, requirement)
-
-    # Check if the correct automapping row is inserted:
-    auto = Automapping.query.filter_by(
-        source_id=rel1.source_id,
-        source_type=rel1.source_type,
-        destination_id=rel1.destination_id,
-        destination_type=rel1.destination_type
-    ).one()
-    assert auto is not None
-
-    # Check if the correct parent id is set:
-    rel2 = models.Relationship.query.filter_by(
-        parent_id=rel1.id
-    ).one()
-    assert rel2 is not None
-
-    # Check if the new relationship points to the correct automapping
-    assert rel2.automapping_id == auto.id
-
-    # Delete the parent relationship
-    self.api.delete(rel1)
-
-    # Use the automapping_id to find the relationship again
-    rel2_after_delete = models.Relationship.query.filter_by(
-        automapping_id=auto.id
-    ).one()
-
-    assert rel2_after_delete is not None
-    # Make sure we are looking at the same object
-    assert rel2.id == rel2_after_delete.id
-    # Parent id should now be None
-    assert rel2_after_delete.parent_id is None
 
 
 class TestIssueAutomappings(TestCase):
@@ -555,49 +493,6 @@ class TestMegaProgramAutomappings(TestCase):
     self.assertTrue(_model in program_c_related)
     self.assertTrue(_model in program_d_related)
 
-  def test_cyclic_automapping(self):
-    """Test mapping object to program in cycle program-to-program mapping"""
-    with factories.single_commit():
-      program_b = factories.ProgramFactory()
-      program_a = factories.ProgramFactory()
-      program_c = factories.ProgramFactory()
-      factories.RelationshipFactory(source=program_b,
-                                    destination=program_a)
-      factories.RelationshipFactory(source=program_a,
-                                    destination=program_c)
-      factories.RelationshipFactory(source=program_c,
-                                    destination=program_b)
-      standard = factories.StandardFactory()
-      factories.RelationshipFactory(source=standard,
-                                    destination=program_c)
-
-    program_a_related = program_a.related_objects()
-    program_b_related = program_b.related_objects()
-    program_c_related = program_c.related_objects()
-    self.assertTrue(standard in program_a_related)
-    self.assertTrue(standard in program_b_related)
-    self.assertTrue(standard in program_c_related)
-
-  def test_automapping_during_import(self):
-    """Test automapping of Standart to parent Program during import"""
-    with factories.single_commit():
-      program_a = factories.ProgramFactory()
-      program_b = factories.ProgramFactory()
-      factories.RelationshipFactory(source=program_b,
-                                    destination=program_a)
-    program_b_id = program_b.id
-    response = self.import_data(OrderedDict([
-        ("object_type", "Standard"),
-        ("Code*", ""),
-        ("Title*", "Test standard"),
-        ("Admin*", "user@example.com"),
-        ("map:Program", program_a.slug),
-    ]))
-    self._check_csv_response(response, {})
-    program_b = all_models.Program.query.get(program_b_id)
-    program_b_related = program_b.related_objects()
-    self.assertIn("Standard", {obj.type for obj in program_b_related})
-
   def test_snapshot_automapping(self):
     """Test automapping after Snapshot to Audit mapping"""
     with factories.single_commit():
@@ -608,14 +503,12 @@ class TestMegaProgramAutomappings(TestCase):
       factories.RelationshipFactory(source=parent_program, destination=program)
       audit = factories.AuditFactory(program=program)
       standard = factories.StandardFactory()
-      requirement = factories.RequirementFactory()
-      factories.RelationshipFactory(source=standard, destination=requirement)
     self.gen.generate_relationship(audit, standard)
     program = all_models.Program.query.get(program_id)
     program_related = program.related_objects()
     parent_program = all_models.Program.query.get(parent_program_id)
     parent_program_related = parent_program.related_objects()
-    self.assertEqual(len(program_related), 3)
-    self.assertEqual(len(parent_program_related), 3)
+    self.assertEqual(len(program_related), 2)
+    self.assertEqual(len(parent_program_related), 2)
     self.assertEqual({o.type for o in parent_program_related},
-                     {"Program", "Standard", "Requirement"})
+                     {"Program", "Standard"})

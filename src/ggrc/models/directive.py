@@ -52,8 +52,8 @@ class Directive(mixins.LastDeprecatedTimeboxed,
   # requirements = db.relationship(
   #     'Requirement', backref='directive',
   #     order_by='Requirement.slug', cascade='all, delete-orphan')
-  controls = db.relationship(
-      'Control', backref='directive', order_by='Control.slug')
+  # controls = db.relationship(
+  #     'Control', backref='directive', order_by='Control.slug')
   audit_frequency = db.relationship(
       'Option',
       primaryjoin='and_(foreign(Directive.audit_frequency_id) == Option.id, '
@@ -75,7 +75,6 @@ class Directive(mixins.LastDeprecatedTimeboxed,
       'audit_start_date',
       'audit_frequency',
       'audit_duration',
-      'controls',
       'kind',
       'organization',
       'scope',
@@ -86,7 +85,6 @@ class Directive(mixins.LastDeprecatedTimeboxed,
       'audit_start_date',
       'audit_frequency',
       'audit_duration',
-      'controls',
       'kind',
       'organization',
       'scope',
@@ -98,7 +96,6 @@ class Directive(mixins.LastDeprecatedTimeboxed,
     return super(Directive, cls).indexed_query().options(
         orm.Load(cls).joinedload('audit_frequency'),
         orm.Load(cls).joinedload('audit_duration'),
-        orm.Load(cls).subqueryload('controls'),
         orm.Load(cls).load_only(
             'audit_start_date',
             'kind',
@@ -141,7 +138,7 @@ class Directive(mixins.LastDeprecatedTimeboxed,
     return cls.eager_inclusions(query, Directive._include_links).options(
         orm.joinedload('audit_frequency'),
         orm.joinedload('audit_duration'),
-        orm.subqueryload('controls'))
+    )
 
   @staticmethod
   def _extra_table_args(cls):
@@ -159,6 +156,7 @@ class Policy(review.Reviewable,
              PublicDocumentable,
              Directive,
              Indexed):
+  """Class for Policy model"""
   __mapper_args__ = {
       'polymorphic_identity': 'Policy'
   }
@@ -202,6 +200,8 @@ class Contract(review.Reviewable,
                PublicDocumentable,
                Directive,
                Indexed):
+  """Class for Contract model"""
+
   __mapper_args__ = {
       'polymorphic_identity': 'Contract'
   }

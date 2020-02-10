@@ -54,11 +54,12 @@ class TestRevisions(query_helper.WithQueryApi, TestCase):
 
   def test_revisions(self):
     """ Test revision creation for POST and PUT """
-    cls = ggrc.models.Regulation
+    cls = ggrc.models.Issue
     name = cls._inflector.table_singular  # pylint: disable=protected-access
     _, obj = self.gen.generate(cls, name, {name: {
         "title": "revisioned v1",
         "context": None,
+        "due_date": "2020-1-1",
     }})
     revisions = _get_revisions(obj)
     self.assertEqual(len(revisions), 1)
@@ -67,6 +68,7 @@ class TestRevisions(query_helper.WithQueryApi, TestCase):
         "slug": obj.slug,
         "title": "revisioned v2",
         "context": None,
+        "due_date": "2020-1-1",
     }})
     revisions = _get_revisions(obj)
     expected = {("created", "revisioned v1"), ("modified", "revisioned v2")}
@@ -75,17 +77,19 @@ class TestRevisions(query_helper.WithQueryApi, TestCase):
 
   def test_relevant_revisions(self):
     """ Test revision creation for mapping to an object """
-    cls = ggrc.models.Regulation
+    cls = ggrc.models.Issue
     name = cls._inflector.table_singular  # pylint: disable=protected-access
 
     _, obj1 = self.gen.generate(cls, name, {name: {
         "title": "connected 1",
         "context": None,
+        "due_date": "2020-1-1",
     }})
 
     _, obj2 = self.gen.generate(cls, name, {name: {
         "title": "connected 2",
         "context": None,
+        "due_date": "2020-1-1",
     }})
 
     rel_data = {
@@ -658,18 +662,6 @@ class TestRevisions(query_helper.WithQueryApi, TestCase):
 
     self.assertIn("created_by", revision.content)
     self.assertEqual(expected_content, revision.content["created_by"])
-
-  def test_created_by_none_in_revision(self):
-    """Test revision for Risk contains created_by attr and contains None."""
-    risk = factories.RiskFactory()
-
-    revision = all_models.Revision.query.filter(
-        all_models.Revision.resource_id == risk.id,
-        all_models.Revision.resource_type == risk.type,
-    ).first()
-
-    self.assertIn("created_by", revision.content)
-    self.assertEqual(None, revision.content["created_by"])
 
   def test_assessment_template_revision(self):
     """Test changes in revision for assessment template with lca"""

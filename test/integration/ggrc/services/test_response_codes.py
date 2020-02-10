@@ -8,6 +8,7 @@ from mock import patch
 
 import ddt
 
+from ggrc import db
 from ggrc.models import all_models
 from integration.ggrc import api_helper
 from integration.ggrc.services import TestCase
@@ -97,6 +98,7 @@ class TestMapDeletedObject(TestCase):
   """Test mapping operations for deleted objects."""
 
   def setUp(self):
+    super(TestMapDeletedObject, self).setUp()
     self.api = api_helper.Api()
     with factories.single_commit():
       source_id = factories.RegulationFactory().id
@@ -111,8 +113,11 @@ class TestMapDeletedObject(TestCase):
         "deleted_destination": {"type": "Regulation", "id": del_dest_id},
     }
 
-    self.api.delete(all_models.Regulation, id_=del_source_id)
-    self.api.delete(all_models.Regulation, id_=del_dest_id)
+    with factories.single_commit():
+      del_source = all_models.Regulation.query.get(del_source_id)
+      del_dest = all_models.Regulation.query.get(del_dest_id)
+      db.session.delete(del_dest)
+      db.session.delete(del_source)
 
   @ddt.data(
       ("source", "destination", 201),

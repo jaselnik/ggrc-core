@@ -348,7 +348,6 @@ class ObjectGenerator(Generator):
     random_objects = []
     classes = [
         models.Objective,
-        models.Standard,
     ]
     for _ in range(count):
       obj_class = random.choice(classes)

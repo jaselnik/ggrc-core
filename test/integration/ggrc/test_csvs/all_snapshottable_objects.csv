@@ -19,20 +19,10 @@ Policy,Code*,Title*,Description,Notes,Admin*,Effective Date,State,Reference URL,
 user1@example.com",20/2/2020,Draft,http://url.example.zzz,company policy,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
 Object type,,,,,,,,,,,,,,,,,,,,,,
-Regulation,Code*,Title*,Description,Notes,Admin*,Effective Date,State,Reference URL,,,,,,,,,,,,,,
-,Regulation code,Regulation title,Regulation description,Regulation notes,"user@example.com
-user1@example.com",20/2/2020,Draft,http://url.example.zzz,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,
-Object type,,,,,,,,,,,,,,,,,,,,,,
 Requirement,Code*,Title*,description,Notes,Admin*,State,Reference URL,Policy / Regulation / Standard / Contract,CA date,CA dropdown,CA text,CA rich text,CA checkbox,CA multiselect,,,,,,,,
 ,Requirement code,Requirement title,Requirement description,Requirement notes,"user@example.com
 user1@example.com",Draft,http://url.example.zzz,policy code,22/2/2022,four,Requirement ca text,"Requirement<br><br>
 rich text",yes,yes,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,
-Object type,,,,,,,,,,,,,,,,,,,,,,
-Standard,Code*,Title*,Description,Notes,Admin*,Effective Date,State,Reference URL,,,,,,,,,,,,,,
-,Standard code,Standard title,Standard description,Standard notes,"user@example.com
-user1@example.com",20/2/2020,Draft,http://url.example.zzz,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
 Object type,,,,,,,,,,,,,,,,,,,,,,
 Threat,Code*,Title*,Description,Notes,Admin*,Effective Date,State,Reference URL,CA date,CA dropdown,CA text,CA rich text,CA checkbox,CA multiselect,,,,,,,,

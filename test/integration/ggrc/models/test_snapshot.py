@@ -164,7 +164,7 @@ class TestSnapshotQueryApi(TestCase):
     """Populate external model object that could not be imported."""
     with factories.single_commit():
       objects = [
-          factories.ControlFactory(directive=None),
+          factories.ControlFactory(),
           factories.RiskFactory(),
       ]
 
@@ -371,12 +371,12 @@ class TestSnapshot(TestCase):
     """Test checks correctly work of is_identical_revision flag"""
     with factories.single_commit():
       audit = factories.AuditFactory()
-      standard = factories.StandardFactory()
-      standard_id = standard.id
+      issue = factories.IssueFactory()
+      issue_id = issue.id
 
-    snapshot = self._create_snapshots(audit, [standard])[0]
+    snapshot = self._create_snapshots(audit, [issue])[0]
     snapshot_id = snapshot.id
-    standard = all_models.Standard.query.get(standard_id)
-    self.api.put(standard, {"title": "Test standard 1"})
+    issue = all_models.Issue.query.get(issue_id)
+    self.api.put(issue, {"title": "Test standard 1"})
     snapshot = all_models.Snapshot.query.get(snapshot_id)
     self.assertFalse(snapshot.is_identical_revision)

@@ -410,8 +410,7 @@ class TestAssessment(TestAssessmentBase):
 
   def test_assessment_when_get_model_none(self):
     """Test get_model return None in build_type_query for json"""
-    with factories.single_commit():
-      audit = factories.AuditFactory()
+    audit = factories.AuditFactory()
 
     with mock.patch('ggrc.models.get_model', return_value=None):
       response = self.api.post(all_models.Assessment, {

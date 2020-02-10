@@ -248,11 +248,9 @@ class TestImportReviewable(TestCase):
 
   @ddt.data(
       ("Program", all_models.Program, factories.ProgramFactory),
-      ("Regulation", all_models.Regulation, factories.RegulationFactory),
       ("Objective", all_models.Objective, factories.ObjectiveFactory),
       ("Contract", all_models.Contract, factories.ContractFactory),
       ("Policy", all_models.Policy, factories.PolicyFactory),
-      ("Standard", all_models.Standard, factories.StandardFactory),
       ("Threat", all_models.Threat, factories.ThreatFactory),
       ("Requirement", all_models.Requirement, factories.RequirementFactory),
   )

@@ -21,7 +21,7 @@ class TestBasicCsvImport(TestCase):
     self.generator = ObjectGenerator()
     self.client.get("/login")
 
-  @ddt.data("Regulation", "Policy", "Standard", "Contract")
+  @ddt.data("Policy", "Contract")
   def test_basic_automappings(self, object_name):
     """"Test Basic Automapping for {}"""
 

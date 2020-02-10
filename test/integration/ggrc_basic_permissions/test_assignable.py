@@ -121,21 +121,22 @@ class TestReader(TestCase):
 
     # Editor creates a System object and maps it to the assignable object
     self.api.set_user(self.users["editor"])
-    response = self.api.post(all_models.Regulation, {
-        "regulation": {
+    response = self.api.post(all_models.Issue, {
+        "issue": {
             "title": "System",
             "context": None,
+            "due_date": "2020-2-12",
         }
     })
-    regulation_id = response.json.get("regulation").get("id")
-    system = all_models.Regulation.query.get(regulation_id)
+    issue_id = response.json.get("issue").get("id")
+    system = all_models.Issue.query.get(issue_id)
     self.api.post(all_models.Relationship, {
         "relationship": {"source": {
             "id": self.obj.id,
             "type": "Assessment"
         }, "destination": {
-            "id": regulation_id,
-            "type": "Regulation"
+            "id": issue_id,
+            "type": "Issue"
         }, "context": None},
     })
 
@@ -144,7 +145,7 @@ class TestReader(TestCase):
     self.api.set_user(self.users["creator"])
     response = self.api.get(all_models.Assessment, self.obj.id)
     self.assertEqual(response.status_code, 403)
-    response = self.api.get(all_models.Regulation, regulation_id)
+    response = self.api.get(all_models.Issue, issue_id)
     self.assertEqual(response.status_code, 403)
 
     # Editor adds creator as an assignee
@@ -154,7 +155,7 @@ class TestReader(TestCase):
 
     # Creator should now have read access on the mapped object
     self.api.set_user(self.users["creator"])
-    response = self.api.get(all_models.Regulation, regulation_id)
+    response = self.api.get(all_models.Issue, issue_id)
     self.assertEqual(response.status_code, 403)
 
     # But he should still not be allowed to update

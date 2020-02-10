@@ -23,12 +23,9 @@ class ExternalDirective(synchronizable.Synchronizable,
                         mixins.WithWorkflowState,
                         mixins.LastDeprecatedTimeboxed,
                         mixins.base.ContextRBAC,
-                        mixins.BusinessObject,
                         mixins.Folderable,
                         ExternalCommentable,
-                        Indexed,
-                        mixins.Slugged,
-                        mixins.Base,
+                        mixins.BusinessObject,
                         db.Model):
   """Class for ExternalDirective model"""
 
@@ -98,7 +95,7 @@ class Regulation(Roleable,
       "documents_file": None,
   }
 
-  # pylint: disable=unused-argument
+  # pylint: disable=unused-argument,no-self-use
   @validates('kind')
   def validates_kind(self, key, value):
     return 'Regulation'
@@ -126,7 +123,7 @@ class Standard(Roleable,
       "documents_file": None,
   }
 
-  # pylint: disable=unused-argument
+  # pylint: disable=unused-argument,no-self-use
   @validates('kind')
   def validates_kind(self, key, value):
     return 'Standard'

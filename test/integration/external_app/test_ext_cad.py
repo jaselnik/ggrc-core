@@ -13,11 +13,11 @@ from integration import ggrc
 from integration.external_app import external_api_helper
 from integration.ggrc import query_helper
 from integration.ggrc.models import factories
-from integration.ggrc.services.test_custom_attributes import ProductTestCase
+from integration.ggrc.services.test_custom_attributes import RegulationTestCase
 
 
 @ddt.ddt
-class TestExternalGlobalCustomAttributes(ProductTestCase):
+class TestExternalGlobalCustomAttributes(RegulationTestCase):
   """Test case for external cads."""
 
   @classmethod

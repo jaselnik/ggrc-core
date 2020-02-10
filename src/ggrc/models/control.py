@@ -49,8 +49,8 @@ class Control(with_external_created_by.WithExternalCreatedBy,
   __tablename__ = 'controls'
 
   company_control = deferred(db.Column(db.Boolean), 'Control')
-  directive_id = deferred(
-      db.Column(db.Integer, db.ForeignKey('directives.id')), 'Control')
+  # directive_id = deferred(
+  #     db.Column(db.Integer, db.ForeignKey('directives.id')), 'Control')
   version = deferred(db.Column(db.String), 'Control')
   fraud_related = deferred(db.Column(db.Boolean), 'Control')
   key_control = deferred(db.Column(db.Boolean), 'Control')
@@ -93,7 +93,6 @@ class Control(with_external_created_by.WithExternalCreatedBy,
   _api_attrs = reflection.ApiAttributes(
       'active',
       'company_control',
-      'directive',
       'fraud_related',
       'key_control',
       'kind',
@@ -114,7 +113,6 @@ class Control(with_external_created_by.WithExternalCreatedBy,
   _fulltext_attrs = [
       'active',
       'company_control',
-      'directive',
       attributes.BooleanFullTextAttr(
           'fraud_related',
           'fraud_related',
@@ -162,11 +160,6 @@ class Control(with_external_created_by.WithExternalCreatedBy,
     return super(Control, cls).indexed_query().options(
         orm.Load(cls).undefer_group(
             "Control_complete"
-        ),
-        orm.Load(cls).joinedload(
-            "directive"
-        ).undefer_group(
-            "Directive_complete"
         ),
     )
 
@@ -217,17 +210,12 @@ class Control(with_external_created_by.WithExternalCreatedBy,
   @classmethod
   def eager_query(cls, **kwargs):
     query = super(Control, cls).eager_query(**kwargs)
-    return cls.eager_inclusions(query, Control._include_links).options(
-        orm.joinedload('directive'),
-    )
+    return cls.eager_inclusions(query, Control._include_links)
 
   def log_json(self):
     out_json = super(Control, self).log_json()
     out_json["last_submitted_by"] = ggrc_utils.last_submitted_by_stub(self)
     out_json["last_verified_by"] = ggrc_utils.last_verified_by_stub(self)
-    # so that event log can refer to deleted directive
-    if self.directive:
-      out_json["mapped_directive"] = self.directive.display_name
     return out_json
 
   @validates('review_status')

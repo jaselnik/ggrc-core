@@ -718,8 +718,6 @@ class TestGetObjectColumnDefinitions(TestCase):
 
   @ddt.data(
       all_models.Contract,
-      all_models.Regulation,
-      all_models.Standard,
   )
   def test_common_model_definitions(self, model):
     """Test common definition names"""

@@ -50,8 +50,8 @@ class TestCreator(TestCase):
     creator_id = self.users["creator"].id
     audit_id = factories.AuditFactory().id
     all_errors = []
-    base_models = {"Contract", "Requirement", "Policy", "Regulation",
-                   "Standard", "Document", "Objective"}
+    base_models = {"Contract", "Requirement", "Policy",
+                   "Document", "Objective"}
 
     for model_singular in base_models:
       try:
@@ -183,12 +183,14 @@ class TestCreator(TestCase):
     """Check if creator cannot access relationship objects"""
     self.api.set_user(self.users['admin'])
     _, first_regulation = self.object_generator.generate_object(
-        all_models.Regulation,
-        data={"regulation": {"title": "Test regulation", "context": None}}
+        all_models.Issue,
+        data={"issue": {"title": "Test regulation",
+                        "due_date": "2222-1-1", "context": None}}
     )
     _, second_regulation = self.object_generator.generate_object(
-        all_models.Regulation,
-        data={"regulation": {"title": "Test regulation 2", "context": None}}
+        all_models.Issue,
+        data={"issue": {"title": "Test regulation 2",
+                        "due_date": "2222-1-1", "context": None}}
     )
     response, rel = self.object_generator.generate_relationship(
         first_regulation, second_regulation

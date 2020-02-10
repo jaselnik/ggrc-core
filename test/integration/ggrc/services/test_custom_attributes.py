@@ -13,23 +13,67 @@ import ddt
 
 from ggrc import utils
 from ggrc import models
-from ggrc import builder
 from ggrc.models import all_models
 from ggrc.models.mixins import customattributable
 
 from integration.ggrc.api_helper import Api
+from integration.external_app import external_api_helper
 from integration.ggrc.services import TestCase
 from integration.ggrc.generator import ObjectGenerator
 from integration.ggrc.models import factories
 
 
-class ProductTestCase(TestCase):
+class RegulationTestCase(TestCase):
   """Test case for Product post and put requests."""
 
   def setUp(self):
-    super(ProductTestCase, self).setUp()
+    super(RegulationTestCase, self).setUp()
     self.generator = ObjectGenerator()
     self.client.get("/login")
+    self.ext_api = external_api_helper.ExternalApiClient()
+
+  @staticmethod
+  def _regulation_payload(cad, person_id):
+    """
+
+    Args:
+      cad: an CustomAttributeDefinition instance
+      person_id: an int() ID of Person instance
+    Returns:
+      list() with Regulation payload
+    """
+    return [{
+        "regulation": {
+            "id": 1,
+            "kind": "Regulation",
+            "owners": [],
+            "custom_attribute_definitions":[
+                {"id": cad.id},
+            ],
+            "custom_attribute_values": [{
+                "attribute_value": "new value",
+                "custom_attribute_id": cad.id,
+            }],
+            "custom_attributes": {
+                cad.id: "old value",
+            },
+            "contact": {
+                "id": person_id,
+                "href": "/api/people/{}".format(person_id),
+                "type": "Person"
+            },
+            "title": "simple product",
+            "description": "",
+            "secondary_contact": None,
+            "notes": "",
+            "url": "",
+            "documents_reference_url": "",
+            "slug": "",
+            "context": None,
+            "external_id": 1,
+            "external_slug": "reg1",
+        },
+    }]
 
   def _put(self, url, data, extra_headers=None):
     """Perform a put request."""
@@ -53,51 +97,32 @@ class ProductTestCase(TestCase):
 
 
 @ddt.ddt
-class TestGlobalCustomAttributes(ProductTestCase):
+class TestGlobalCustomAttributes(RegulationTestCase):
   """Tests for API updates for custom attribute values."""
 
   def test_custom_attribute_post(self):
     """Test post object with custom attributes."""
-    gen = self.generator.generate_custom_attribute
-    _, cad = gen("regulation", attribute_type="Text", title="normal text")
+    cad = factories.CustomAttributeDefinitionFactory(
+        definition_type="regulation",
+        attribute_type="Text",
+        title="normal text",
+    )
     pid = models.Person.query.first().id
 
-    product_data = [{
-        "regulation": {
-            "kind": None,
-            "owners": [],
-            "custom_attribute_values": [{
-                "attribute_value": "my custom attribute value",
-                "custom_attribute_id": cad.id,
-            }],
-            "contact": {
-                "id": pid,
-                "href": "/api/people/{}".format(pid),
-                "type": "Person"
-            },
-            "title": "simple product",
-            "description": "",
-            "secondary_contact": None,
-            "notes": "",
-            "url": "",
-            "documents_reference_url": "",
-            "slug": "",
-            "context": None,
-        },
-    }]
+    regulation_data = self._regulation_payload(cad, pid)
 
-    response = self._post(product_data)
+    response = self.ext_api.post(all_models.Regulation, data=regulation_data)
     ca_json = response.json[0][1]["regulation"]["custom_attribute_values"][0]
     self.assertIn("attributable_id", ca_json)
     self.assertIn("attributable_type", ca_json)
     self.assertIn("attribute_value", ca_json)
     self.assertIn("id", ca_json)
-    self.assertEqual(ca_json["attribute_value"], "my custom attribute value")
+    self.assertEqual(ca_json["attribute_value"], "new value")
 
-    product = models.Regulation.eager_query().first()
-    self.assertEqual(len(product.custom_attribute_values), 1)
-    self.assertEqual(product.custom_attribute_values[0].attribute_value,
-                     "my custom attribute value")
+    regulation = models.Regulation.eager_query().first()
+    self.assertEqual(len(regulation.custom_attribute_values), 1)
+    self.assertEqual(regulation.custom_attribute_values[0].attribute_value,
+                     "new value")
 
   @ddt.data(
       ("control", "Control title")
@@ -125,33 +150,16 @@ class TestGlobalCustomAttributes(ProductTestCase):
 
   def test_custom_attribute_put_add(self):
     """Test edits with adding new CA values."""
-    gen = self.generator.generate_custom_attribute
-    _, cad = gen("regulation", attribute_type="Text", title="normal text")
+    cad = factories.CustomAttributeDefinitionFactory(
+        definition_type="regulation",
+        attribute_type="Text",
+        title="normal text",
+    )
     pid = models.Person.query.first().id
+    regulation_data = self._regulation_payload(cad, pid)
+    response = self.ext_api.post(all_models.Regulation, data=regulation_data)
 
-    regulation_data = [{
-        "regulation": {
-            "kind": None,
-            "owners": [],
-            "contact": {
-                "id": pid,
-                "href": "/api/people/{}".format(pid),
-                "type": "Person"
-            },
-            "title": "simple product",
-            "description": "",
-            "secondary_contact": None,
-            "notes": "",
-            "url": "",
-            "documents_reference_url": "",
-            "slug": "",
-            "context": None,
-        },
-    }]
-
-    response = self._post(regulation_data)
-    product_url = response.json[0][1]["regulation"]["selfLink"]
-    headers = self.client.get(product_url).headers
+    self.assert200(response)
 
     regulation_data[0]["regulation"]["custom_attribute_values"] = [{
         "attribute_value":
@@ -159,19 +167,18 @@ class TestGlobalCustomAttributes(ProductTestCase):
         "custom_attribute_id":
         cad.id,
     }]
+    response = self.ext_api.put(
+        obj="regulation",
+        obj_id=regulation_data[0]["regulation"]["id"],
+        data=regulation_data[0],
+    )
 
-    response = self._put(
-        product_url,
-        regulation_data[0],
-        extra_headers={
-            'If-Unmodified-Since': headers["Last-Modified"],
-            'If-Match': headers["Etag"],
-        })
+    self.assert200(response)
 
     regulation = response.json["regulation"]
+    ca_json = regulation["custom_attribute_values"][0]
 
     self.assertEqual(len(regulation["custom_attribute_values"]), 1)
-    ca_json = regulation["custom_attribute_values"][0]
     self.assertIn("attributable_id", ca_json)
     self.assertIn("attributable_type", ca_json)
     self.assertIn("attribute_value", ca_json)
@@ -183,8 +190,6 @@ class TestGlobalCustomAttributes(ProductTestCase):
     self.assertEqual(regulation.custom_attribute_values[0].attribute_value,
                      "added value")
 
-    headers = self.client.get(product_url).headers
-
     regulation_data[0]["regulation"]["custom_attribute_values"] = [{
         "attribute_value":
         "edited value",
@@ -192,13 +197,11 @@ class TestGlobalCustomAttributes(ProductTestCase):
         cad.id,
     }]
 
-    response = self._put(
-        product_url,
-        regulation_data[0],
-        extra_headers={
-            'If-Unmodified-Since': headers["Last-Modified"],
-            'If-Match': headers["Etag"],
-        })
+    response = self.ext_api.put(
+        obj="regulation",
+        obj_id=regulation_data[0]["regulation"]["id"],
+        data=regulation_data[0],
+    )
 
     regulation = response.json["regulation"]
     ca_json = regulation["custom_attribute_values"][0]
@@ -210,35 +213,16 @@ class TestGlobalCustomAttributes(ProductTestCase):
 
   def test_custom_attribute_get(self):
     """Check if get returns the whole CA value and not just the stub."""
-    gen = self.generator.generate_custom_attribute
-    _, cad = gen("regulation", attribute_type="Text", title="normal text")
+    cad = factories.CustomAttributeDefinitionFactory(
+        definition_type="regulation",
+        attribute_type="Text",
+        title="normal text",
+    )
     pid = models.Person.query.first().id
 
-    regulation_data = [{
-        "regulation": {
-            "kind": None,
-            "owners": [],
-            "custom_attribute_values": [{
-                "attribute_value": "my custom attribute value",
-                "custom_attribute_id": cad.id,
-            }],
-            "contact": {
-                "id": pid,
-                "href": "/api/people/{}".format(pid),
-                "type": "Person",
-            },
-            "title": "simple product",
-            "description": "",
-            "secondary_contact": None,
-            "notes": "",
-            "url": "",
-            "documents_reference_url": "",
-            "slug": "",
-            "context": None,
-        },
-    }]
+    regulation_data = self._regulation_payload(cad, pid)
 
-    response = self._post(regulation_data)
+    response = self.ext_api.post(all_models.Regulation, data=regulation_data)
     regulation_url = response.json[0][1]["regulation"]["selfLink"]
     get_response = self.client.get(regulation_url)
     regulation = get_response.json["regulation"]
@@ -413,7 +397,7 @@ class TestGlobalCustomAttributes(ProductTestCase):
     self.assertEquals(is_changed, is_editable)
 
 
-class TestOldApiCompatibility(ProductTestCase):
+class TestOldApiCompatibility(RegulationTestCase):
   """Test Legacy CA values API.
 
   These tests check that the old way of setting custom attribute values still
@@ -426,43 +410,16 @@ class TestOldApiCompatibility(ProductTestCase):
     This tests tries to set a custom attribute on the new and the old way at
     once. The old option should be ignored and the new value should be set.
     """
-    gen = self.generator.generate_custom_attribute
-    _, cad = gen("regulation", attribute_type="Text", title="normal text")
-    cad_json = builder.json.publish(cad.__class__.query.get(cad.id))
-    cad_json = builder.json.publish_representation(cad_json)
+    cad = factories.CustomAttributeDefinitionFactory(
+        definition_type="regulation",
+        attribute_type="Text",
+        title="normal text",
+    )
     pid = models.Person.query.first().id
 
-    regulation_data = [{
-        "regulation": {
-            "kind": None,
-            "owners": [],
-            "custom_attribute_definitions":[
-                cad_json,
-            ],
-            "custom_attribute_values": [{
-                "attribute_value": "new value",
-                "custom_attribute_id": cad.id,
-            }],
-            "custom_attributes": {
-                cad.id: "old value",
-            },
-            "contact": {
-                "id": pid,
-                "href": "/api/people/{}".format(pid),
-                "type": "Person"
-            },
-            "title": "simple product",
-            "description": "",
-            "secondary_contact": None,
-            "notes": "",
-            "url": "",
-            "documents_reference_url": "",
-            "slug": "",
-            "context": None
-        },
-    }]
+    regulation_data = self._regulation_payload(cad, pid)
 
-    response = self._post(regulation_data)
+    response = self.ext_api.post(obj="Regulation", data=regulation_data)
     ca_json = response.json[0][1]["regulation"]["custom_attribute_values"][0]
     self.assertEqual(ca_json["attribute_value"], "new value")
 
@@ -477,49 +434,21 @@ class TestOldApiCompatibility(ProductTestCase):
     This tests that the legacy way of setting custom attribute values still
     works.
     """
-    gen = self.generator.generate_custom_attribute
-    _, cad = gen("regulation", attribute_type="Text", title="normal text")
-    cad_json = builder.json.publish(cad.__class__.query.get(cad.id))
-    cad_json = builder.json.publish_representation(cad_json)
+    cad = factories.CustomAttributeDefinitionFactory(
+        definition_type="regulation",
+        attribute_type="Text",
+        title="normal text",
+    )
     pid = models.Person.query.first().id
+    regulation_data = self._regulation_payload(cad, pid)
+    response = self.ext_api.post(all_models.Regulation, data=regulation_data)
 
-    product_data = [{
-        "regulation": {
-            "kind": None,
-            "owners": [],
-            "custom_attribute_definitions":[
-                cad_json,
-            ],
-            "custom_attribute_values": [{
-                "id": 1,
-                "href": "/api/custom_attribute_values/1",
-                "type": "CustomAttributeValues",
-            }],
-            "custom_attributes": {
-                cad.id: "old value",
-            },
-            "contact": {
-                "id": pid,
-                "href": "/api/people/{}".format(pid),
-                "type": "Person",
-            },
-            "title": "simple product",
-            "description": "",
-            "secondary_contact": None,
-            "notes": "",
-            "url": "",
-            "documents_reference_url": "",
-            "slug": "",
-            "context": None,
-        },
-    }]
-
-    response = self._post(product_data)
     self.assert200(response)
+
     ca_json = response.json[0][1]["regulation"]["custom_attribute_values"][0]
-    self.assertEqual(ca_json["attribute_value"], "old value")
+    self.assertEqual(ca_json["attribute_value"], "new value")
 
     product = models.Regulation.eager_query().first()
     self.assertEqual(len(product.custom_attribute_values), 1)
     self.assertEqual(product.custom_attribute_values[0].attribute_value,
-                     "old value")
+                     "new value")

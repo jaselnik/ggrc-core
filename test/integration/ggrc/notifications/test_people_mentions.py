@@ -153,7 +153,7 @@ class TestPeopleMentions(TestCase):
     """Test sending mention email after import an object with comments."""
     with factories.single_commit():
       factories.PersonFactory(email="some_user@example.com")
-      obj = factories.RegulationFactory(title="Regulation4")
+      obj = factories.IssueFactory(title="Regulation4")
       obj_slug = obj.slug
       url = urljoin(get_url_root(), utils.view_url_for(obj))
 
@@ -162,7 +162,7 @@ class TestPeopleMentions(TestCase):
 
     import_data = OrderedDict(
         [
-            ("object_type", "Regulation"),
+            ("object_type", "Issue"),
             ("Code*", obj_slug),
             ("comments", first_comment + u";;" + second_comment)
         ]
@@ -191,7 +191,7 @@ class TestPeopleMentions(TestCase):
     with factories.single_commit():
       factories.PersonFactory(email="first@example.com")
       factories.PersonFactory(email="second@example.com")
-      obj = factories.RegulationFactory(title="Product5")
+      obj = factories.IssueFactory(title="Product5")
       obj_slug = obj.slug
 
     first_comment = u"One <a href=\"mailto:first@example.com\"></a>"
@@ -200,7 +200,7 @@ class TestPeopleMentions(TestCase):
 
     import_data = OrderedDict(
         [
-            ("object_type", "Regulation"),
+            ("object_type", "Issue"),
             ("Code*", obj_slug),
             ("comments", first_comment + u";;" + second_comment)
         ]
@@ -209,7 +209,7 @@ class TestPeopleMentions(TestCase):
       response = self.import_data(import_data)
     self._check_csv_response(response, {})
 
-    obj = all_models.Regulation.query.filter_by(title="Product5").one()
+    obj = all_models.Issue.query.filter_by(title="Product5").one()
     url = urljoin(get_url_root(), utils.view_url_for(obj))
 
     expected_title = (u"user@example.com mentioned you on "
@@ -258,9 +258,7 @@ class TestPeopleMentions(TestCase):
 
   @mock.patch("ggrc.notifications.common.send_email")
   @ddt.data(
-      all_models.Standard,
       all_models.Program,
-      all_models.Regulation,
       all_models.Contract,
       all_models.Policy,
       all_models.Threat,

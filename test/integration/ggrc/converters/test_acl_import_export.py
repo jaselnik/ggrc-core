@@ -27,22 +27,23 @@ class TestACLImportExport(TestCase):
 
   def test_single_acl_entry(self):
     """Test ACL column import with single email."""
-    role = factories.AccessControlRoleFactory(object_type="Regulation")
+    role = factories.AccessControlRoleFactory(object_type="Issue")
     role_id = role.id
 
     response = self.import_data(collections.OrderedDict([
-        ("object_type", "Regulation"),
+        ("object_type", "Issue"),
         ("code", ""),
         ("title", "Title"),
         ("Admin", "user@example.com"),
+        ("due date", "2022-1-2"),
         (role.name, "user@example.com"),
     ]))
     self._check_csv_response(response, {})
-    market = models.Regulation.query.first()
+    issue = models.Issue.query.first()
     acl = models.AccessControlList.query.filter_by(
         ac_role_id=role_id,
-        object_id=market.id,
-        object_type="Regulation"
+        object_id=issue.id,
+        object_type="Issue"
     )
     self.assertEqual(acl.count(), 1)
     self.assertEqual(acl.first().ac_role_id, role_id)
@@ -54,20 +55,21 @@ class TestACLImportExport(TestCase):
   def test_acl_multiple_entries(self):
     """Test ACL column import with multiple emails."""
     with factories.single_commit():
-      role = factories.AccessControlRoleFactory(object_type="Regulation")
+      role = factories.AccessControlRoleFactory(object_type="Issue")
       emails = {factories.PersonFactory().email for _ in range(3)}
 
     response = self.import_data(collections.OrderedDict([
-        ("object_type", "Regulation"),
+        ("object_type", "Issue"),
         ("code", ""),
         ("title", "Title"),
+        ("due date", "2022-11-21"),
         ("Admin", "user@example.com"),
         (role.name, "\n".join(emails)),
     ]))
     self._check_csv_response(response, {})
-    market = models.Regulation.query.first()
+    issue = models.Issue.query.first()
     self.assertEqual(
-        {person.email for person, _ in market.access_control_list},
+        {person.email for person, _ in issue.access_control_list},
         emails | {"user@example.com"},
     )
 
@@ -75,32 +77,33 @@ class TestACLImportExport(TestCase):
     """Test ACL column import with multiple emails."""
     with factories.single_commit():
       role_name = factories.AccessControlRoleFactory(
-          object_type="Regulation").name
+          object_type="Issue").name
       emails = {factories.PersonFactory().email for _ in range(4)}
 
     update_emails = set(list(emails)[:2]) | {"user@example.com"}
 
     response = self.import_data(collections.OrderedDict([
-        ("object_type", "Regulation"),
+        ("object_type", "Issue"),
         ("code", ""),
         ("title", "Title"),
         ("Admin", "user@example.com"),
+        ("due date", "2022-1-2"),
         (role_name, "\n".join(emails)),
     ]))
     self._check_csv_response(response, {})
 
-    regulation = all_models.Regulation.query.filter_by(title="Title").first()
+    issue = all_models.Issue.query.filter_by(title="Title").first()
     response = self.import_data(collections.OrderedDict([
-        ("object_type", "Regulation"),
-        ("code", regulation.slug),
+        ("object_type", "Issue"),
+        ("code", issue.slug),
         ("title", "Title"),
         ("Admin", "user@example.com"),
         (role_name, "\n".join(update_emails)),
     ]))
     self._check_csv_response(response, {})
-    regulation = models.Regulation.query.first()
+    issue = models.Issue.query.first()
     self.assertEqual(
-        {person.email for person, _ in regulation.access_control_list},
+        {person.email for person, _ in issue.access_control_list},
         update_emails,
     )
 
@@ -108,30 +111,32 @@ class TestACLImportExport(TestCase):
     """Test ACL column import with multiple emails."""
     with factories.single_commit():
       role_name = factories.AccessControlRoleFactory(
-          object_type="Regulation").name
+          object_type="Issue").name
       emails = {factories.PersonFactory().email for _ in range(3)}
 
     response = self.import_data(collections.OrderedDict([
-        ("object_type", "Regulation"),
+        ("object_type", "Issue"),
         ("code", ""),
         ("title", "Title"),
         ("Admin", "user@example.com"),
+        ("due date", "2022-1-2"),
         (role_name, "\n".join(emails)),
     ]))
     self._check_csv_response(response, {})
 
-    regulation = all_models.Regulation.query.filter_by(title="Title").first()
+    issue = all_models.Issue.query.filter_by(title="Title").first()
     response = self.import_data(collections.OrderedDict([
-        ("object_type", "Regulation"),
-        ("code", regulation.slug),
+        ("object_type", "Issue"),
+        ("code", issue.slug),
         ("title", "Title"),
         ("Admin", "user@example.com"),
+        ("due date", "2022-1-2"),
         (role_name, ""),
     ]))
     self._check_csv_response(response, {})
-    regulation = models.Regulation.query.first()
+    issue = models.Issue.query.first()
     self.assertEqual(
-        {person.email for person, _ in regulation.access_control_list},
+        {person.email for person, _ in issue.access_control_list},
         emails | {"user@example.com"},
     )
 
@@ -139,22 +144,23 @@ class TestACLImportExport(TestCase):
     """Test ACL field export."""
     with factories.single_commit():
       role_name = factories.AccessControlRoleFactory(
-          object_type="Regulation").name
+          object_type="Issue").name
       empty_name = factories.AccessControlRoleFactory(
-          object_type="Regulation",
+          object_type="Issue",
       ).name
       emails = {factories.PersonFactory().email for _ in range(3)}
 
     self.import_data(collections.OrderedDict([
-        ("object_type", "Regulation"),
+        ("object_type", "Issue"),
         ("code", ""),
         ("title", "Title"),
         ("Admin", "user@example.com"),
+        ("due date", "2022-1-2"),
         (role_name, "\n".join(emails)),
     ]))
 
     search_request = [{
-        "object_name": "Regulation",
+        "object_name": "Issue",
         "filters": {
             "expression": {}
         },
@@ -167,7 +173,7 @@ class TestACLImportExport(TestCase):
     self.client.get("/login")
     parsed_data = self.export_parsed_csv(
         search_request
-    )["Regulation"]
+    )["Issue"]
     self.assertEqual(
         set(parsed_data[0][role_name].splitlines()),
         emails
@@ -175,12 +181,10 @@ class TestACLImportExport(TestCase):
     self.assertEqual(parsed_data[0][empty_name], "")
 
   @staticmethod
-  def _generate_role_import_dict(roles, object_type="Regulation"):
+  def _generate_role_import_dict(roles, object_type="Issue"):
     """Generate simple import dict with all roles and emails."""
     scoping_models_names = [m.__name__ for m in all_models.all_models
                             if issubclass(m, ScopeObject)]
-
-    regulation = models.Regulation.query.first()
 
     import_dict = collections.OrderedDict([
         ("object_type", object_type),
@@ -189,8 +193,9 @@ class TestACLImportExport(TestCase):
         ("title", "Title"),
         ("Admin", "user@example.com"),
     ])
-    if regulation:
-      import_dict["code"] = regulation.slug
+    if object_type == "Issue":
+      import_dict["code"] = "Issue12"
+      import_dict["due date"] = "2022-11-12"
     if object_type == "Control":
       import_dict["Assertions*"] = "Privacy"
     if object_type in scoping_models_names:
@@ -216,18 +221,18 @@ class TestACLImportExport(TestCase):
 
       for role_name in roles.keys():
         factories.AccessControlRoleFactory(
-            object_type="Regulation",
+            object_type="Issue",
             name=role_name + "  ",
         )
 
     import_dict = self._generate_role_import_dict(roles)
     self.import_data(import_dict)
-    regulation = models.Regulation.query.first()
+    issue = models.Issue.query.first()
 
     stored_roles = {}
     for role_name in roles.keys():
       stored_roles[role_name] = {
-          person.email for person, acl in regulation.access_control_list
+          person.email for person, acl in issue.access_control_list
           if acl.ac_role.name == role_name
       }
 
@@ -259,18 +264,18 @@ class TestACLImportExport(TestCase):
 
       for role_name in first_roles.keys():
         factories.AccessControlRoleFactory(
-            object_type="Regulation",
+            object_type="Issue",
             name=role_name,
         )
 
     import_dict = self._generate_role_import_dict(first_roles)
     self.import_data(import_dict)
-    regulation = models.Regulation.query.first()
+    issue = models.Issue.query.first()
 
     stored_roles = {}
     for role_name in first_roles.keys():
       stored_roles[role_name] = {
-          person.email for person, acl in regulation.access_control_list
+          person.email for person, acl in issue.access_control_list
           if acl.ac_role.name == role_name
       }
 
@@ -278,12 +283,12 @@ class TestACLImportExport(TestCase):
 
     import_dict = self._generate_role_import_dict(edited_roles)
     self.import_data(import_dict)
-    regulation = models.Regulation.query.first()
+    issue = models.Issue.query.first()
 
     stored_roles = {}
     for role_name in edited_roles.keys():
       stored_roles[role_name] = {
-          person.email for person, acl in regulation.access_control_list
+          person.email for person, acl in issue.access_control_list
           if acl.ac_role.name == role_name
       }
 
@@ -327,19 +332,20 @@ class TestACLImportExport(TestCase):
     """Test creation of separate revision for ACL in import"""
     with factories.single_commit():
       role_name = factories.AccessControlRoleFactory(
-          object_type="Regulation").name
+          object_type="Issue").name
       emails = {factories.PersonFactory().email for _ in range(3)}
 
     response = self.import_data(collections.OrderedDict([
-        ("object_type", "Regulation"),
+        ("object_type", "Issue"),
         ("code", ""),
         ("title", "Title"),
         ("Admin", "user@example.com"),
+        ("due date", "2022-1-2"),
         (role_name, "\n".join(emails)),
     ]))
     self._check_csv_response(response, {})
     regulation_revisions = models.Revision.query.filter_by(
-        resource_type="Regulation"
+        resource_type="Issue"
     ).count()
     self.assertEqual(regulation_revisions, 1)
 

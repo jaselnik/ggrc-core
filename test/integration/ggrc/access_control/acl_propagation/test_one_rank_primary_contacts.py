@@ -173,12 +173,6 @@ class TestPrimaryContactsPropagation(base.TestACLPropagation):
               "update_review": True,
               "delete_review": False,
           },
-          "MappedReview Regulation": {
-              "create_review": True,
-              "read_review": True,
-              "update_review": True,
-              "delete_review": False,
-          },
           "MappedReview Objective": {
               "create_review": True,
               "read_review": True,
@@ -192,12 +186,6 @@ class TestPrimaryContactsPropagation(base.TestACLPropagation):
               "delete_review": False,
           },
           "MappedReview Policy": {
-              "create_review": True,
-              "read_review": True,
-              "update_review": True,
-              "delete_review": False,
-          },
-          "MappedReview Standard": {
               "create_review": True,
               "read_review": True,
               "update_review": True,

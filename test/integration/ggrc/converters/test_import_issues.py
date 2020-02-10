@@ -138,50 +138,52 @@ class TestImportIssues(TestCase):
     # without any errors and warnings
     with factories.single_commit():
       mandatory_role = factories.AccessControlRoleFactory(
-          object_type="Regulation",
+          object_type="Issue",
           mandatory=True
       ).name
       factories.AccessControlRoleFactory(
-          object_type="Regulation",
+          object_type="Issue",
           mandatory=False
       )
       email = factories.PersonFactory().email
 
     response_json = self.import_data(OrderedDict([
-        ("object_type", "Regulation"),
+        ("object_type", "Issue"),
         ("code", ""),
         ("title", "Title"),
         ("Admin", "user@example.com"),
+        ("Due Date*", "2016-10-24T15:35:37"),
         (mandatory_role, email),
     ]))
     self._check_csv_response(response_json, {})
     self.assertEqual(1, response_json[0]["created"])
-    self.assertEqual(1, models.Regulation.query.count())
+    self.assertEqual(1, models.Issue.query.count())
 
   def test_import_without_mandatory(self):
     """Test import of data without mandatory role"""
     # Data can't be imported if mandatory role is not provided
     with factories.single_commit():
       mandatory_role = factories.AccessControlRoleFactory(
-          object_type="Regulation",
+          object_type="Issue",
           mandatory=True
       ).name
       not_mandatory_role = factories.AccessControlRoleFactory(
-          object_type="Regulation",
+          object_type="Issue",
           mandatory=False
       ).name
       email = factories.PersonFactory().email
 
     response_json = self.import_data(OrderedDict([
-        ("object_type", "Regulation"),
+        ("object_type", "Issue"),
         ("code", ""),
         ("title", "Title"),
         ("Admin", "user@example.com"),
+        ("Due Date*", "2016-10-24T15:35:37"),
         (not_mandatory_role, email),
     ]))
 
     expected_errors = {
-        "Regulation": {
+        "Issue": {
             "row_errors": {
                 errors.MISSING_COLUMN.format(
                     line=3, column_names=mandatory_role, s=""
@@ -191,32 +193,33 @@ class TestImportIssues(TestCase):
     }
 
     self._check_csv_response(response_json, expected_errors)
-    self.assertEqual(0, models.Regulation.query.count())
+    self.assertEqual(0, models.Issue.query.count())
 
   def test_import_empty_mandatory(self):
     """Test import of data with empty mandatory role"""
     with factories.single_commit():
       mandatory_role = factories.AccessControlRoleFactory(
-          object_type="Regulation",
+          object_type="Issue",
           mandatory=True
       ).name
       not_mandatory_role = factories.AccessControlRoleFactory(
-          object_type="Regulation",
+          object_type="Issue",
           mandatory=False
       ).name
       email = factories.PersonFactory().email
 
     response_json = self.import_data(OrderedDict([
-        ("object_type", "Regulation"),
+        ("object_type", "Issue"),
         ("code", ""),
         ("title", "Title"),
-        ("Admin", "user@example.com"),
+        ("Admin*", "user@example.com"),
         (not_mandatory_role, email),
+        ("Due Date*", "2016-10-24T15:35:37"),
         (mandatory_role, ""),
     ]))
 
     expected_errors = {
-        "Regulation": {
+        "Issue": {
             "row_warnings": {
                 errors.OWNER_MISSING.format(
                     line=3, column_name=mandatory_role
@@ -226,7 +229,7 @@ class TestImportIssues(TestCase):
     }
 
     self._check_csv_response(response_json, expected_errors)
-    self.assertEqual(1, models.Regulation.query.count())
+    self.assertEqual(1, models.Issue.query.count())
 
   def test_import_issue_with_snapshot(self):
     """Test checks impossibility to map snapshot to issue via import"""

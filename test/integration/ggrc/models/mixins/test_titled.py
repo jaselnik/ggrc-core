@@ -22,8 +22,10 @@ class TestTitledMixin(TestCase):
 
   def test_post_no_title(self):
     """Test object creation request without title key"""
-    response = self.api.post(all_models.Regulation,
-                             {'regulation': {"description": "desc"}})
+    response = self.api.post(
+        all_models.Issue,
+        {'issue': {"description": "desc", "due_date": "2022-11-22"}}
+    )
 
     self.assert400(response)
     self.assertEqual(response.json, "'title' must be specified")
@@ -31,8 +33,10 @@ class TestTitledMixin(TestCase):
   def test_post_title_is_null(self):
     """Test object creation request title=null"""
     response = self.api.post(
-        all_models.Regulation,
-        {'regulation': {"description": "desc", "title": None}}
+        all_models.Issue,
+        {'issue': {"description": "desc",
+                   "title": None,
+                   "due_date": "2022-11-22"}}
     )
 
     self.assert400(response)
@@ -48,12 +52,14 @@ class TestTitledMixin(TestCase):
   def test_post_title_is_valid(self, title, expected):
     """Test object creation request title={0!r}"""
     response = self.api.post(
-        all_models.Regulation,
-        {'regulation': {"description": "desc", "title": title}}
+        all_models.Issue,
+        {'issue': {"description": "desc",
+                   "title": title,
+                   "due_date": "2022-11-22"}}
     )
 
     self.assertStatus(response, 201)
-    product = all_models.Regulation.query.get(
-        response.json['regulation']['id']
+    issue = all_models.Issue.query.get(
+        response.json['issue']['id']
     )
-    self.assertEqual(product.title, expected)
+    self.assertEqual(issue.title, expected)
