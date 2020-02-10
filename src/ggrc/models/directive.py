@@ -194,60 +194,6 @@ class Policy(review.Reviewable,
     return 'Policy'
 
 
-class Regulation(review.Reviewable,
-                 Roleable,
-                 mixins.CustomAttributable,
-                 Relatable,
-                 Personable,
-                 PublicDocumentable,
-                 Directive,
-                 Indexed):
-  __mapper_args__ = {
-      'polymorphic_identity': 'Regulation'
-  }
-
-  _table_plural = 'regulations'
-
-  VALID_KINDS = ("Regulation",)
-
-  _aliases = {
-      "kind": None,
-      "documents_file": None,
-  }
-
-  # pylint: disable=unused-argument
-  @validates('meta_kind')
-  def validates_meta_kind(self, key, value):
-    return 'Regulation'
-
-
-class Standard(review.Reviewable,
-               Roleable,
-               mixins.CustomAttributable,
-               Relatable,
-               Personable,
-               PublicDocumentable,
-               Directive,
-               Indexed):
-  __mapper_args__ = {
-      'polymorphic_identity': 'Standard'
-  }
-
-  _table_plural = 'standards'
-
-  VALID_KINDS = ("Standard",)
-
-  _aliases = {
-      "kind": None,
-      "documents_file": None,
-  }
-
-  # pylint: disable=unused-argument
-  @validates('meta_kind')
-  def validates_meta_kind(self, key, value):
-    return 'Standard'
-
-
 class Contract(review.Reviewable,
                Roleable,
                mixins.CustomAttributable,

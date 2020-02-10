@@ -7,11 +7,15 @@ from sqlalchemy import orm
 from sqlalchemy.orm import validates
 
 from ggrc import db
+from ggrc.access_control.roleable import Roleable
 from ggrc.fulltext.mixin import Indexed
 from ggrc.models import reflection
 from ggrc.models.comment import ExternalCommentable
 from ggrc.models import mixins
 from ggrc.models.mixins import synchronizable
+from ggrc.models.object_document import PublicDocumentable
+from ggrc.models.object_person import Personable
+from ggrc.models.relationship import Relatable
 
 
 class ExternalDirective(synchronizable.Synchronizable,
@@ -70,3 +74,59 @@ class ExternalDirective(synchronizable.Synchronizable,
   def eager_query(cls, **kwargs):
     query = super(ExternalDirective, cls).eager_query(**kwargs)
     return cls.eager_inclusions(query, ExternalDirective._include_links)
+
+
+class Regulation(Roleable,
+                 mixins.CustomAttributable,
+                 Relatable,
+                 Personable,
+                 PublicDocumentable,
+                 ExternalDirective,
+                 Indexed):
+  """Class for Regulation model"""
+
+  __mapper_args__ = {
+      'polymorphic_identity': 'Regulation'
+  }
+
+  _table_plural = 'regulations'
+
+  VALID_KINDS = ("Regulation",)
+
+  _aliases = {
+      "kind": None,
+      "documents_file": None,
+  }
+
+  # pylint: disable=unused-argument
+  @validates('kind')
+  def validates_kind(self, key, value):
+    return 'Regulation'
+
+
+class Standard(Roleable,
+               mixins.CustomAttributable,
+               Relatable,
+               Personable,
+               PublicDocumentable,
+               ExternalDirective,
+               Indexed):
+  """Class for Standard model"""
+
+  __mapper_args__ = {
+      'polymorphic_identity': 'Standard'
+  }
+
+  _table_plural = 'standards'
+
+  VALID_KINDS = ("Standard",)
+
+  _aliases = {
+      "kind": None,
+      "documents_file": None,
+  }
+
+  # pylint: disable=unused-argument
+  @validates('kind')
+  def validates_kind(self, key, value):
+    return 'Standard'

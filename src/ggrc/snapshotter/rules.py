@@ -72,6 +72,8 @@ class Types(object):
       "Product",
       "ProductGroup",
       "Project",
+      "Regulation",
+      "Standard",
       "System",
       "Vendor",
       "TechnologyEnvironment",
