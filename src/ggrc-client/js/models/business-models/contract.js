@@ -4,13 +4,7 @@
 */
 
 import Cacheable from '../cacheable';
-import AccessControlList from '../mixins/access-control-list';
-import Reviewable from '../mixins/reviewable';
-import UniqueTitle from '../mixins/unique-title';
-import CaUpdate from '../mixins/ca-update';
-import BaseNotifications from '../mixins/notifications/base-notifications';
 import ChangeableExternally from '../mixins/changeable-externally';
-import Stub from '../stub';
 
 export default Cacheable.extend({
   root_object: 'contract',
@@ -24,15 +18,7 @@ export default Cacheable.extend({
   category: 'governance',
   findAll: 'GET /api/contracts',
   findOne: 'GET /api/contracts/{id}',
-  create: 'POST /api/contracts',
-  update: 'PUT /api/contracts/{id}',
-  destroy: 'DELETE /api/contracts/{id}',
   mixins: [
-    AccessControlList,
-    Reviewable,
-    UniqueTitle,
-    CaUpdate,
-    BaseNotifications,
     ChangeableExternally,
   ],
   is_custom_attributable: true,
@@ -40,15 +26,7 @@ export default Cacheable.extend({
   sub_tree_view_options: {
     default_filter: ['Requirement'],
   },
-  defaults: {
-    status: 'Draft',
-    kind: 'Contract',
-  },
   statuses: ['Draft', 'Deprecated', 'Active'],
-  attributes: {
-    context: Stub,
-    modified_by: Stub,
-  },
   tree_view_options: {
     attr_list: Cacheable.attr_list.concat([
       {

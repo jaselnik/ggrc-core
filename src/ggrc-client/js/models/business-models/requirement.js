@@ -4,14 +4,7 @@
 */
 
 import Cacheable from '../cacheable';
-import UniqueTitle from '../mixins/unique-title';
-import CaUpdate from '../mixins/ca-update';
-import AccessControlList from '../mixins/access-control-list';
-import BaseNotifications from '../mixins/notifications/base-notifications';
-import Relationship from '../service-models/relationship';
-import Reviewable from '../mixins/reviewable';
 import ChangeableExternally from '../mixins/changeable-externally';
-import Stub from '../stub';
 
 export default Cacheable.extend({
   root_object: 'requirement',
@@ -26,23 +19,11 @@ export default Cacheable.extend({
   root_model: 'Requirement',
   findAll: 'GET /api/requirements',
   findOne: 'GET /api/requirements/{id}',
-  create: 'POST /api/requirements',
-  update: 'PUT /api/requirements/{id}',
-  destroy: 'DELETE /api/requirements/{id}',
   is_custom_attributable: true,
   isRoleable: true,
   mixins: [
-    UniqueTitle,
-    CaUpdate,
-    AccessControlList,
-    BaseNotifications,
-    Reviewable,
     ChangeableExternally,
   ],
-  attributes: {
-    context: Stub,
-    modified_by: Stub,
-  },
   tree_view_options: {
     attr_list: Cacheable.attr_list.concat([
       {attr_title: 'Reference URL', attr_name: 'reference_url'},
@@ -70,42 +51,5 @@ export default Cacheable.extend({
   sub_tree_view_options: {
     default_filter: ['Objective'],
   },
-  defaults: {
-    status: 'Draft',
-  },
   statuses: ['Draft', 'Deprecated', 'Active'],
-}, {
-  define: {
-    title: {
-      value: '',
-      validate: {
-        required: true,
-        validateUniqueTitle: true,
-      },
-    },
-    _transient_title: {
-      value: '',
-      validate: {
-        validateUniqueTitle: true,
-      },
-    },
-    _directive: {
-      value: null,
-    },
-  },
-  created() {
-    this._super(...arguments);
-
-    if (!this._directive || !this._directive.id) {
-      return;
-    }
-
-    let directiveDfd = new Relationship({
-      source: this,
-      destination: this._directive,
-      context: this.context,
-    }).save();
-
-    this.delay_resolving_save_until($.when(directiveDfd));
-  },
-});
+}, {});

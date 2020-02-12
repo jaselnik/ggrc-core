@@ -4,13 +4,7 @@
 */
 
 import Cacheable from '../cacheable';
-import AccessControlList from '../mixins/access-control-list';
-import Reviewable from '../mixins/reviewable';
-import UniqueTitle from '../mixins/unique-title';
-import CaUpdate from '../mixins/ca-update';
-import BaseNotifications from '../mixins/notifications/base-notifications';
 import ChangeableExternally from '../mixins/changeable-externally';
-import Stub from '../stub';
 
 export default Cacheable.extend({
   root_object: 'policy',
@@ -24,31 +18,15 @@ export default Cacheable.extend({
   category: 'governance',
   findAll: 'GET /api/policies',
   findOne: 'GET /api/policies/{id}',
-  create: 'POST /api/policies',
-  update: 'PUT /api/policies/{id}',
-  destroy: 'DELETE /api/policies/{id}',
   is_custom_attributable: true,
   isRoleable: true,
   mixins: [
-    AccessControlList,
-    Reviewable,
-    UniqueTitle,
-    CaUpdate,
-    BaseNotifications,
     ChangeableExternally,
   ],
   sub_tree_view_options: {
     default_filter: ['DataAsset'],
   },
-  defaults: {
-    status: 'Draft',
-    kind: null,
-  },
   statuses: ['Draft', 'Deprecated', 'Active'],
-  attributes: {
-    context: Stub,
-    modified_by: Stub,
-  },
   tree_view_options: {
     attr_list: Cacheable.attr_list.concat([
       {
@@ -66,7 +44,6 @@ export default Cacheable.extend({
       }, {
         attr_title: 'Kind/Type',
         attr_name: 'kind',
-        attr_sort_field: 'kind',
         order: 86,
       }, {
         attr_title: 'Reference URL',
