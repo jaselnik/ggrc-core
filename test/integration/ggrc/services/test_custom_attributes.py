@@ -8,6 +8,7 @@ These tests include:
 - Adding custom attributes to existing object.
 
 """
+import json
 
 import ddt
 
@@ -24,7 +25,7 @@ from integration.ggrc.models import factories
 
 
 class RegulationTestCase(TestCase):
-  """Test case for Product post and put requests."""
+  """Test case for Regulation post and put requests."""
 
   def setUp(self):
     super(RegulationTestCase, self).setUp()
@@ -94,6 +95,266 @@ class RegulationTestCase(TestCase):
         data=utils.as_json(data),
         headers={'X-Requested-By': 'Unit Tests'},
     )
+
+
+class GCADirectiveTestCase(RegulationTestCase):
+  """Test case with GCAs payload preparation and testing."""
+  @staticmethod
+  def _get_text_payload(definition_type):
+    """Gets payload for text GCA.
+
+    Args:
+      definition_type: String representation of definition type.
+    Returns:
+      Dictionary with attribute configuration.
+    """
+    return {
+        "title": "GCA Text",
+        "attribute_type": "Text",
+        "definition_type": definition_type,
+        "mandatory": False,
+        "helptext": "GCA Text attribute",
+        "placeholder": "Input text",
+        "context": None,
+        "external_id": 1,
+        "external_name": "random_string_123123",
+        "external_type": "CustomAttributeDefinition",
+    }
+
+  @staticmethod
+  def _get_rich_text_payload(definition_type):
+    """Gets payload for rich text GCA.
+
+    Args:
+      definition_type: String representation of definition type.
+    Returns:
+      Dictionary with attribute configuration.
+    """
+    return {
+        "title": "GCA Rich Text",
+        "attribute_type": "Rich Text",
+        "definition_type": definition_type,
+        "mandatory": False,
+        "helptext": "GCA Text attribute",
+        "placeholder": "Input text",
+        "context": None,
+        "external_id": 1,
+        "external_name": "random_html_123123",
+        "external_type": "CustomAttributeDefinition",
+    }
+
+  @staticmethod
+  def _get_date_payload(definition_type):
+    """Gets payload for date GCA.
+
+    Args:
+      definition_type: String representation of definition type.
+    Returns:
+      Dictionary with attribute configuration.
+    """
+    return {
+        "title": "GCA Date",
+        "attribute_type": "Date",
+        "definition_type": definition_type,
+        "mandatory": False,
+        "helptext": "GCA Date attribute",
+        "context": None,
+        "external_id": 1,
+        "external_name": "random_date_123123",
+        "external_type": "CustomAttributeDefinition",
+    }
+
+  @staticmethod
+  def _get_dropdown_payload(definition_type):
+    """Gets payload for dropdown GCA.
+
+    Args:
+      definition_type: String representation of definition type.
+    Returns:
+      Dictionary with attribute configuration.
+    """
+    return {
+        "title": "GCA Dropdown",
+        "attribute_type": "Dropdown",
+        "definition_type": definition_type,
+        "mandatory": False,
+        "helptext": "GCA Dropdown attribute",
+        "context": None,
+        "external_id": 1,
+        "external_name": "random_dropdown_123123",
+        "multi_choice_options": "1,3,2",
+        "external_type": "CustomAttributeDefinition",
+    }
+
+  @staticmethod
+  def _get_multiselect_payload(definition_type):
+    """Gets payload for multiselect GCA.
+
+    Args:
+      definition_type: String representation of definition type.
+    Returns:
+      Dictionary with attribute configuration.
+    """
+    return {
+        "title": "GCA Multiselect",
+        "attribute_type": "Multiselect",
+        "definition_type": definition_type,
+        "mandatory": False,
+        "helptext": "GCA Multiselect attribute",
+        "context": None,
+        "external_id": 1,
+        "external_name": "random_multistring_123123",
+        "multi_choice_options": "1,3,2",
+        "external_type": "CustomAttributeDefinition",
+    }
+
+  @classmethod
+  def _get_payload(cls, attribute_type, definition_type):
+    """Gets payload for GCA by attribute type.
+
+    Args:
+      attribute_type: String representation of attribute type.
+      definition_type: String representation of definition type.
+    Returns:
+      Dictionary with attribute configuration.
+    """
+    payload_handlers = {
+        "Text": cls._get_text_payload,
+        "Rich Text": cls._get_rich_text_payload,
+        "Date": cls._get_date_payload,
+        "Dropdown": cls._get_dropdown_payload,
+        "Multiselect": cls._get_multiselect_payload,
+    }
+
+    return payload_handlers[attribute_type](definition_type)
+
+  def _run_text_asserts(self, external_cad, attribute_payload):
+    """Runs CAD text/rich asserts.
+
+    Args:
+      external_cad: CAD for validation.
+      attribute_payload: Dictionary with attribute configuration.
+    """
+    self.assertEqual(
+        external_cad.title,
+        attribute_payload["title"]
+    )
+    self.assertEqual(
+        external_cad.definition_type,
+        attribute_payload["definition_type"]
+    )
+    self.assertEqual(
+        external_cad.attribute_type,
+        attribute_payload["attribute_type"]
+    )
+    self.assertEqual(
+        external_cad.mandatory,
+        attribute_payload["mandatory"]
+    )
+    self.assertEqual(
+        external_cad.helptext,
+        attribute_payload["helptext"]
+    )
+    self.assertEqual(
+        external_cad.placeholder,
+        attribute_payload["placeholder"]
+    )
+    self.assertEqual(
+        external_cad.external_name,
+        attribute_payload["external_name"]
+    )
+
+  def _run_date_asserts(self, external_cad, attribute_payload):
+    """Runs CAD date asserts.
+
+    Args:
+      external_cad: CAD for validation.
+      attribute_payload: Dictionary with attribute configuration.
+    """
+    self.assertEqual(
+        external_cad.title,
+        attribute_payload["title"]
+    )
+    self.assertEqual(
+        external_cad.definition_type,
+        attribute_payload["definition_type"]
+    )
+    self.assertEqual(
+        external_cad.attribute_type,
+        attribute_payload["attribute_type"]
+    )
+    self.assertEqual(
+        external_cad.mandatory,
+        attribute_payload["mandatory"]
+    )
+    self.assertEqual(
+        external_cad.helptext,
+        attribute_payload["helptext"]
+    )
+    self.assertEqual(
+        external_cad.external_name,
+        attribute_payload["external_name"]
+    )
+
+  def _run_select_asserts(self, external_cad, attribute_payload):
+    """Runs CAD dropdown/multiselect asserts.
+
+    Args:
+      external_cad: CAD for validation.
+      attribute_payload: Dictionary with attribute configuration.
+    """
+    self.assertEqual(
+        external_cad.title,
+        attribute_payload["title"]
+    )
+    self.assertEqual(
+        external_cad.definition_type,
+        attribute_payload["definition_type"]
+    )
+    self.assertEqual(
+        external_cad.attribute_type,
+        attribute_payload["attribute_type"]
+    )
+    self.assertEqual(
+        external_cad.mandatory,
+        attribute_payload["mandatory"]
+    )
+    self.assertEqual(
+        external_cad.helptext,
+        attribute_payload["helptext"]
+    )
+    self.assertEqual(
+        external_cad.multi_choice_options,
+        attribute_payload["multi_choice_options"]
+    )
+    self.assertEqual(
+        external_cad.external_name,
+        attribute_payload["external_name"]
+    )
+
+  def _run_cad_asserts(self, attribute_type, external_cad, attribute_payload):
+    """Runs CAD asserts by attribute type.
+
+    Args:
+      external_cad: CAD for validation.
+      attribute_type: String representation of attribute type.
+      attribute_payload: Dictionary with attribute configuration.
+    """
+    asserts = {
+        "Text": self._run_text_asserts,
+        "Rich Text": self._run_text_asserts,
+        "Date": self._run_date_asserts,
+        "Dropdown": self._run_select_asserts,
+        "Multiselect": self._run_select_asserts,
+    }
+    asserts[attribute_type](external_cad, attribute_payload)
+
+
+GCA_SYNC_TEST_DATA = [
+    (model, attr_type)
+    for attr_type in ["Text", "Rich Text", "Date", "Dropdown", "Multiselect"]
+    for model in all_models.get_external_models()
+]
 
 
 @ddt.ddt
@@ -455,3 +716,86 @@ class TestOldApiCompatibility(RegulationTestCase):
     self.assertEqual(len(product.custom_attribute_values), 1)
     self.assertEqual(product.custom_attribute_values[0].attribute_value,
                      "new value")
+
+
+@ddt.ddt
+class TestInternalGCASyncObjects(GCADirectiveTestCase):
+  """Tests for GCA model for sync models."""
+
+  def setUp(self):
+    """setUp, nothing else to add."""
+    super(TestInternalGCASyncObjects, self).setUp()
+    self.api = Api()
+
+  @ddt.data(*GCA_SYNC_TEST_DATA)
+  @ddt.unpack
+  def test_create_custom_attribute_405(self, object_model, attribute_type):
+    """Test unable create external CAD via C API."""
+    # pylint: disable=invalid-name
+    definition_type = object_model._inflector.table_singular
+    attribute_payload = self._get_payload(
+        attribute_type,
+        definition_type,
+    )
+    payload = [
+        {
+            "custom_attribute_definition": attribute_payload,
+        },
+    ]
+
+    response = self.api.post(
+        all_models.CustomAttributeDefinition,
+        data=payload
+    )
+
+    self.assert405(response)
+    cad_count = all_models.CustomAttributeDefinition.query.count()
+    self.assertEqual(cad_count, 0)
+
+  @ddt.data(*GCA_SYNC_TEST_DATA)
+  @ddt.unpack
+  def test_update_custom_attribute_405(self, object_model, attribute_type):
+    """Test unable update external CAD via C API."""
+    # pylint: disable=invalid-name
+    definition_type = object_model._inflector.table_singular
+    internal_cad = factories.CustomAttributeDefinitionFactory(
+        title="GCA test",
+        definition_type=definition_type,
+        attribute_type=attribute_type,
+        multi_choice_options="1,3,2,4,5",
+    )
+    attribute_payload = self._get_payload(
+        attribute_type,
+        definition_type,
+    )
+    payload = {
+        "custom_attribute_definition": attribute_payload,
+    }
+    response = self.api.put(internal_cad, payload)
+    self.assert405(response)
+
+  @ddt.data(*GCA_SYNC_TEST_DATA)
+  @ddt.unpack
+  def test_get_custom_attribute(self, object_model, attribute_type):
+    """Test for get external CAD validation."""
+    definition_type = object_model._inflector.table_singular
+    attribute_payload = self._get_payload(
+        attribute_type,
+        definition_type,
+    )
+    external_cad = factories.CustomAttributeDefinitionFactory(
+        **attribute_payload
+    )
+    response = self.api.get(
+        all_models.CustomAttributeDefinition,
+        external_cad.id,
+    )
+
+    self.assertEqual(response.status_code, 200)
+    response_json = json.loads(response.data)
+    external_cad = all_models.CustomAttributeDefinition.query.one()
+    self._run_cad_asserts(
+        attribute_type,
+        external_cad,
+        response_json["custom_attribute_definition"]
+    )
