@@ -86,40 +86,63 @@
                 <div class="hidden-fields-area">
                   <div class="row-fluid wrap-row">
                     <div class="span3">
-                      <h6>Code</h6>
-                      <p>
-                        {{slug}}
-                      </p>
+                      <div class="action-toolbar-container">
+                        <div class="action-toolbar">
+                          <h6 class="action-toolbar__header">
+                            Code
+                          </h6>
+                        </div>
+                        <p>
+                          {{slug}}
+                        </p>
+                      </div>
                     </div>
                     <div class="span3">
-                      <h6>Kind/Type</h6>
-                      {{#if kind}}
-                        <p>
-                          {{kind}}
-                        </p>
-                      {{else}}
-                        <span class="empty-message">None</span>
-                      {{/if}}
+                      <div class="action-toolbar-container">
+                        <div class="action-toolbar">
+                          <h6 class="action-toolbar__header">
+                            Kind/Type
+                          </h6>
+                        </div>
+                        {{#if kind}}
+                          <p>
+                            {{kind}}
+                          </p>
+                        {{else}}
+                          <span class="empty-message">None</span>
+                        {{/if}}
+                      </div>
                     </div>
                     <div class="span3">
-                      <h6>Effective Date</h6>
-                      {{#if start_date}}
-                        <p>
-                          {{localize_date start_date}}
-                        </p>
-                      {{else}}
-                        <span class="empty-message">None</span>
-                      {{/if}}
+                      <external-attribute
+                        instance:from="instance"
+                        title:from="'Effective Date'"
+                        attrName:from="'start_date'"
+                      >
+                        {{#if start_date}}
+                          <p>
+                            {{localize_date start_date}}
+                          </p>
+                        {{else}}
+                          <span class="empty-message">None</span>
+                        {{/if}}
+                      </external-attribute>
                     </div>
                     <div class="span3">
-                      <h6>Last Deprecated Date</h6>
-                      {{#if end_date}}
-                        <p>
-                          {{localize_date end_date}}
-                        </p>
-                      {{else}}
-                        <span class="empty-message">None</span>
-                      {{/if}}
+                      <div class="action-toolbar-container">
+                        <div class="action-toolbar">
+                          <h6 class="action-toolbar__header">
+                            Last Deprecated Date
+                          </h6>
+                        </div>
+                        {{#if end_date}}
+                          <p>
+                            {{localize_date end_date}}
+                          </p>
+                        {{else}}
+                          <span class="empty-message">None</span>
+                        {{/if}}
+                      </div>
                     </div>
                   </div>
                 </div>
