@@ -11,11 +11,11 @@ from sqlalchemy import or_, and_, false
 from sqlalchemy.ext.declarative import declared_attr
 
 from ggrc import db
-from ggrc.login import is_external_app_user
 from ggrc.models import reflection
 from ggrc.models.exceptions import ValidationError
 from ggrc.models.mixins import base
 from ggrc.models.mixins import Base
+from ggrc.utils.validators import relationship as relationship_validators
 
 logger = logging.getLogger(__name__)
 
@@ -183,7 +183,10 @@ class Relationship(base.ContextRBAC, Base, db.Model):
                             u"Relatable type: {}".format(value.type))
     tgt_type = self.source_type
     tgt_id = self.source_id
-    self.validate_relation_by_type(self.source_type, self.destination_type)
+    relationship_validators.validate_relation_by_type(
+        self.source_type,
+        self.destination_type,
+    )
 
     if field == "source":
       tgt_type = self.destination_type
@@ -208,25 +211,6 @@ class Relationship(base.ContextRBAC, Base, db.Model):
             .format(self.type, self.source_type, self.destination_type)
         )
 
-  @staticmethod
-  def _check_relation_types_group(type1, type2, group1, group2):
-    """Checks if 2 types belong to 2 groups
-
-    Args:
-      type1: name of model 1
-      type2: name of model 2
-      group1: Collection of model names which belong to group 1
-      group1: Collection of model names which belong to group 2
-    Return:
-      True if types belong to different groups, else False
-    """
-
-    if (type1 in group1 and type2 in group2) or (type2 in group1 and
-                                                 type1 in group2):
-      return True
-
-    return False
-
   @property
   def is_orphan(self):
     """Check if relationship's source or destination is deleted."""
@@ -248,71 +232,15 @@ class Relationship(base.ContextRBAC, Base, db.Model):
       # should be deleted as well in spite of source and destination types.
       return
 
-    cls.validate_relation_by_type(target.source_type,
-                                  target.destination_type)
+    relationship_validators.validate_relation_by_type(
+        target.source_type,
+        target.destination_type,
+    )
     if is_ext_app_request() and not target.is_external:
       if hasattr(target, 'is_duplicate') and target.is_duplicate:
         return
       raise ValidationError(
           'External application can delete only external relationships.')
-
-  @classmethod
-  def validate_relation_by_type(cls, source_type, destination_type):
-    """Checks if a mapping is allowed between given types."""
-    if is_external_app_user():
-      # external users can map and unmap scoping objects
-      return
-
-    from ggrc.models import all_models
-    scoping_models_names = all_models.get_scope_model_names()
-
-    # Check Regulation and Standard
-    if cls._check_relation_types_group(source_type, destination_type,
-                                       scoping_models_names,
-                                       ("Regulation", "Standard")):
-      raise ValidationError(
-          u"You do not have the necessary permissions to map and unmap "
-          u"scoping objects to directives in this application. Please "
-          u"contact your administrator if you have any questions.")
-
-    # Check Control
-    control_external_only_mappings = set(scoping_models_names)
-    control_external_only_mappings.update(("Regulation", "Standard", "Risk"))
-    if cls._check_relation_types_group(source_type, destination_type,
-                                       control_external_only_mappings,
-                                       ("Control", )):
-      raise ValidationError(
-          u"You do not have the necessary permissions to map and unmap "
-          u"controls to scoping objects, standards and regulations in this "
-          u"application. Please contact your administrator "
-          u"if you have any questions.")
-
-    # Check Risk
-    risk_external_only_mappings = set(scoping_models_names)
-    risk_external_only_mappings.update(("Regulation", "Standard", "Control"))
-    if cls._check_relation_types_group(source_type, destination_type,
-                                       risk_external_only_mappings,
-                                       ("Risk", )):
-      raise ValidationError(
-          u"You do not have the necessary permissions to map and unmap "
-          u"risks to scoping objects, controls, standards "
-          u"and regulations in this application."
-          u"Please contact your administrator if you have any questions.")
-
-    # Check Scope Objects
-    scope_external_only_mappings = set(scoping_models_names)
-    scope_external_only_mappings.update(("Regulation",
-                                         "Standard",
-                                         "Control",
-                                         "Risk"))
-    if cls._check_relation_types_group(source_type, destination_type,
-                                       scope_external_only_mappings,
-                                       set(scoping_models_names)):
-      raise ValidationError(
-          u"You do not have the necessary permissions to map and unmap "
-          u"scoping objects to scoping objects, risks, controls, standards "
-          u"and regulations in this application."
-          u"Please contact your administrator if you have any questions.")
 
 
 class Relatable(object):

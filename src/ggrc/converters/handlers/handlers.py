@@ -20,6 +20,7 @@ from ggrc.models.exceptions import ValidationError
 from ggrc.models.mixins.with_custom_restrictions import WithCustomRestrictions
 from ggrc.models.reflection import AttributeInfo
 from ggrc.rbac import permissions
+from ggrc.utils.validators import relationship as relationship_validators
 
 # pylint: disable=invalid-name,too-many-lines
 from ggrc.services import signals
@@ -632,8 +633,10 @@ class MappingColumnHandler(ColumnHandler):
     # pylint: disable=no-self-use
     """Checks if a mapping is allowed between given types."""
     try:
-      all_models.Relationship.validate_relation_by_type(source_type,
-                                                        destination_type)
+      relationship_validators.validate_relation_by_type(
+          source_type,
+          destination_type,
+      )
     except ValidationError:
       return False
 

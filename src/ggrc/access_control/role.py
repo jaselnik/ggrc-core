@@ -18,7 +18,7 @@ from ggrc.models import mixins
 from ggrc.models import reflection
 from ggrc.models.mixins import attributevalidator
 from ggrc.models.mixins import base
-from ggrc.utils import validators
+from ggrc.utils.validators import ggrcq
 
 
 class AccessControlRole(attributevalidator.AttributeValidator,
@@ -111,7 +111,7 @@ class AccessControlRole(attributevalidator.AttributeValidator,
     value = value.strip()
 
     if key == "name":
-      validators.validate_name_correctness(value)
+      ggrcq.validate_name_correctness(value)
 
     if key == "name" and self.object_type:
       name = value.lower()
@@ -169,17 +169,17 @@ def invalidate_noneditable_change(session, flush_context, instances):
 sa.event.listen(
     AccessControlRole,
     "before_insert",
-    validators.validate_object_type_ggrcq
+    ggrcq.validate_object_type_ggrcq
 )
 sa.event.listen(
     AccessControlRole,
     "before_update",
-    validators.modified_only(validators.validate_object_type_ggrcq)
+    ggrcq.modified_only(ggrcq.validate_object_type_ggrcq)
 )
 sa.event.listen(
     AccessControlRole,
     "before_delete",
-    validators.validate_object_type_ggrcq
+    ggrcq.validate_object_type_ggrcq
 )
 sa.event.listen(
     AccessControlRole,

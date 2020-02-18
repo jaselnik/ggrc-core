@@ -23,7 +23,7 @@ from ggrc.models.mixins import attributevalidator
 from ggrc.models.mixins import base
 from ggrc.models.mixins.with_external_mapping import WithExternalMapping
 from ggrc.utils import errors
-from ggrc.utils import validators
+from ggrc.utils.validators import ggrcq
 
 
 class CustomAttributeDefinitionBase(attributevalidator.AttributeValidator,
@@ -163,7 +163,7 @@ class CustomAttributeDefinitionBase(attributevalidator.AttributeValidator,
       raise ValueError("Invalid value: {}".format(value))
 
     if key == "title":
-      validators.validate_name_correctness(value)
+      ggrcq.validate_name_correctness(value)
 
     if key == "title" and self.definition_type:
       orig_name = value
@@ -469,7 +469,7 @@ def init_cad_listeners():
   for action in ("before_insert", "before_update", "before_delete"):
     sa.event.listen(CustomAttributeDefinition,
                     action,
-                    validators.validate_definition_type_ecad)
+                    ggrcq.validate_definition_type_ecad)
   for action in ("after_insert", "after_update", "after_delete"):
     sa.event.listen(CustomAttributeDefinition,
                     action,

@@ -5,7 +5,7 @@
 
 from ggrc import login
 from ggrc.services import common
-from ggrc.utils import validators
+from ggrc.utils.validators import ggrcq
 
 
 class ExternalInternalResource(common.Resource):
@@ -40,6 +40,6 @@ class ExternalInternalCADResource(ExternalInternalResource):
     if src.get("multi_choice_options"):
       read_only_attrs.add("multi_choice_options")
     for attr in read_only_attrs:
-      validators.validate_cad_attrs_update(obj, src, attr)
+      ggrcq.validate_cad_attrs_update(obj, src, attr)
 
     return super(ExternalInternalCADResource, self).put(id)

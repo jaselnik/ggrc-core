@@ -19,6 +19,7 @@ from ggrc.models.mixins.with_readonly_access import WithReadOnlyAccess
 from ggrc.login import get_current_user
 from ggrc.rbac import permissions
 from ggrc.utils import referenced_objects
+from ggrc.utils.validators import relationship as relationship_validators
 
 
 class RelationshipResource(ggrc.services.common.Resource):
@@ -141,6 +142,14 @@ class RelationshipResource(ggrc.services.common.Resource):
   def put(self, id):  # pylint: disable=redefined-builtin
     """Disable ability to make PUT operation handler."""
     raise MethodNotAllowed()
+
+  def _check_post_create_options(self, body):
+    """Check post relationship params"""
+    for obj in body:
+      relationship_validators.validate_relation_by_type(
+          obj["relationship"]["source"]["type"],
+          obj["relationship"]["destination"]["type"],
+      )
 
   def _check_post_permissions(self, objects):
     for obj in objects:
