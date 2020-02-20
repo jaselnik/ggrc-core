@@ -57,7 +57,8 @@ class TestDisabledObjectsPage(base.Test):
                            [next(objects.SINGULAR_SCOPE_OBJS_ITERATOR)],
                            indirect=True)
   @pytest.mark.parametrize("mapped_obj", [
-      objects.STANDARDS, objects.REGULATIONS,
+      objects.get_plural(next(
+          objects.SINGULAR_STANDARDS_AND_REGULATIONS_ITERATOR)),
       objects.get_plural(next(objects.SINGULAR_SCOPE_OBJS_ITERATOR))])
   def test_cannot_map_disabled_obj_via_unified_mapper(self, obj, mapped_obj,
                                                       selenium):
@@ -77,7 +78,8 @@ class TestDisabledObjectsPage(base.Test):
                            [next(objects.SINGULAR_SCOPE_OBJS_ITERATOR)],
                            indirect=True)
   @pytest.mark.parametrize("mapped_obj", [
-      objects.STANDARDS, objects.REGULATIONS,
+      objects.get_plural(next(
+          objects.SINGULAR_STANDARDS_AND_REGULATIONS_ITERATOR)),
       objects.get_plural(next(objects.SINGULAR_SCOPE_OBJS_ITERATOR))])
   def test_cannot_map_created_disabled_obj_via_um(self, obj, mapped_obj,
                                                   soft_assert, selenium):

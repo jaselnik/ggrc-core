@@ -261,10 +261,22 @@ def perform_disabled_mapping(
     dest_obj_modal = map_modal.click_create_and_map_obj()
     if objects.get_plural(dest_obj.type) not in objects.ALL_DISABLED_OBJECTS:
       dest_obj_modal.submit_obj(dest_obj)
-    object_modal.CommonConfirmModal().confirm()
+    confirm_modal = object_modal.CommonConfirmModal()
+    check_ggrc_8484(dest_obj, confirm_modal.exists)
+    confirm_modal.confirm()
   else:
     map_modal.open_in_new_frontend_btn.click()
   return map_modal
+
+
+def check_ggrc_8484(dest_obj, condition):
+  """Check if Confirm modal is visible when Regulations and Standards are
+  disabled."""
+  if objects.get_plural(dest_obj.type) in objects.STANDARDS_AND_REGULATIONS:
+    base.Test().check_xfail_or_fail(
+        condition, "GGRC-8484.\n",
+        "Confirm modal should be visible when Regulations and Standards are"
+        " disabled.")
 
 
 def create_audit(selenium, program, **kwargs):

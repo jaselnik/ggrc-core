@@ -18,4 +18,5 @@ class TestObjectsImport(base.Test):
     expected_list = sorted([objects.get_normal_form(obj_name)
                             for obj_name in list(objects.IMPORTABLE_OBJECTS) +
                             [download_template.SELECT_ALL_OPTION]])
-    assert webui_facade.get_available_templates_list() == expected_list
+    available_templates = webui_facade.get_available_templates_list()
+    assert available_templates == expected_list

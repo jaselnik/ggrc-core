@@ -917,6 +917,18 @@ class StandardsFactory(DirectivesFactory):
     self._acl_roles = [
         ("admins", roles.ACLRolesIDs.STANDARD_ADMINS, [users.current_user()])]
 
+  def _create_random_obj(self, is_add_rest_attrs):
+    """Creates Standard entity."""
+    object = super(StandardsFactory, self)._create_random_obj(
+        is_add_rest_attrs)
+    obj_id = self.generate_external_id()
+    return object.update_attrs(
+        kind=self.obj_type,
+        external_slug=self.generate_slug(),
+        id=obj_id,
+        external_id=obj_id
+    )
+
 
 class RegulationsFactory(DirectivesFactory):
   """Factory class for regulations."""
@@ -926,6 +938,18 @@ class RegulationsFactory(DirectivesFactory):
     self._acl_roles = [
         ("admins", roles.ACLRolesIDs.REGULATION_ADMINS,
          [users.current_user()])]
+
+  def _create_random_obj(self, is_add_rest_attrs):
+    """Create regulation entity."""
+    object = super(RegulationsFactory, self)._create_random_obj(
+        is_add_rest_attrs)
+    obj_id = self.generate_external_id()
+    return object.update_attrs(
+        external_slug=self.generate_slug(),
+        kind=self.obj_type,
+        id=obj_id,
+        external_id=obj_id
+    )
 
 
 class RequirementsFactory(DirectivesFactory):
