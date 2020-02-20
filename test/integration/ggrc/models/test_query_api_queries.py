@@ -30,8 +30,8 @@ class TestAllModels(WithQueryApi, TestCase):
       'AccountBalance': 12,
       'Audit': 12,
       'Comment': 6,
-      'Contract': 13,
-      'Control': 14,
+      'Contract': 11,
+      'Control': 13,
       'Cycle': 7,
       'CycleTaskGroup': 8,
       'CycleTaskGroupObjectTask': 14,
@@ -42,7 +42,7 @@ class TestAllModels(WithQueryApi, TestCase):
       'Objective': 13,
       'OrgGroup': 12,
       'Person': 10,
-      'Policy': 13,
+      'Policy': 11,
       'Process': 12,
       'System': 12,
       'Program': 16,
@@ -98,7 +98,7 @@ class TestAllModels(WithQueryApi, TestCase):
   @ddt.data(*QUERY_API_TEST_CASES)
   @ddt.unpack
   def test_index_on_commit(self, factory, obj_count):
-    """Test count number of queries on eager query procedure."""
+    """Test number of queries on eager query for {0._meta.model.__name__}."""
 
     model = factory._meta.model  # pylint: disable=protected-access
     with ggrc_factories.single_commit():

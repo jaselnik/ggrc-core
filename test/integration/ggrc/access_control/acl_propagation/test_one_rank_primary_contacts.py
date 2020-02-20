@@ -29,37 +29,7 @@ class TestPrimaryContactsPropagation(base.TestACLPropagation):
               "update_review": True,
               "delete_review": False,
           },
-          "MappedReview Objective": {
-              "create_review": True,
-              "read_review": True,
-              "update_review": True,
-              "delete_review": False,
-          },
-          "MappedReview Contract": {
-              "create_review": True,
-              "read_review": True,
-              "update_review": True,
-              "delete_review": False,
-          },
-          "MappedReview Policy": {
-              "create_review": True,
-              "read_review": True,
-              "update_review": True,
-              "delete_review": False,
-          },
           "MappedReview Standard": {
-              "create_review": True,
-              "read_review": True,
-              "update_review": True,
-              "delete_review": False,
-          },
-          "MappedReview Threat": {
-              "create_review": True,
-              "read_review": True,
-              "update_review": True,
-              "delete_review": False,
-          },
-          "MappedReview Requirement": {
               "create_review": True,
               "read_review": True,
               "update_review": True,

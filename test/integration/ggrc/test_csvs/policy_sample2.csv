@@ -1,6 +1,0 @@
-Object type,"Must be unique.  Can be left empty for autogeneration.  If updating or deleting, code is required",,,"Options are:
-draft
-final
-"
-PolicY,code*,title*,admin,state
-,will-this-work2,will this work,user@example.com,Draft

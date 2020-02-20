@@ -17,7 +17,7 @@ from integration.ggrc.generator import ObjectGenerator
 
 @ddt.ddt
 class TestReader(TestCase):
-  """ Test reader role """
+  """Test reader role."""
 
   def setUp(self):
     super(TestReader, self).setUp()
@@ -49,8 +49,7 @@ class TestReader(TestCase):
     """ Test Basic create/read,update/delete operations """
     self.api.set_user(self.users["reader"])
     all_errors = []
-    base_models = set(["Contract", "Policy", "Regulation",
-                       "Standard", "Document", "Objective"])
+    base_models = set(["Regulation", "Standard", "Document"])
 
     for model_singular in base_models:
       try:
@@ -104,20 +103,24 @@ class TestReader(TestCase):
 
   def test_reader_search(self):
     """ Test if reader can see the correct object while using search api """
-    self.api.set_user(self.users['admin'])
-    self.api.post(all_models.Regulation, {
-        "regulation": {"title": "Admin regulation", "context": None},
-    })
-    self.api.set_user(self.users['reader'])
-    response = self.api.post(all_models.Policy, {
-        "policy": {"title": "reader Policy", "context": None},
-    })
+    with factories.single_commit():
+      factories.RegulationFactory()
+      factories.PolicyFactory()
+
+    self.api.set_user(self.users["reader"])
+
     response, _ = self.api.search("Regulation,Policy")
+    self.assert200(response)
+    # Global Reader has read access to all objects.
     entries = response.json["results"]["entries"]
-    self.assertEqual(len(entries), 2)
+    self.assertEqual(2, len(entries))
+
     response, _ = self.api.search("Regulation,Policy", counts=True)
-    self.assertEqual(response.json["results"]["counts"]["Policy"], 1)
-    self.assertEqual(response.json["results"]["counts"]["Regulation"], 1)
+    self.assert200(response)
+    # Global Reader has read access only to all objects.
+    counts = response.json["results"]["counts"]
+    self.assertEqual(1, counts.get("Regulation", 1))
+    self.assertEqual(1, counts.get("Policy", 1))
 
   def _get_count(self, obj):
     """ Return the number of counts for the given object from search """

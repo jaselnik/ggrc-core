@@ -17,8 +17,6 @@ from integration.ggrc.converters import constants
 
 from ggrc import db
 from ggrc.converters import errors
-from ggrc.models.objective import Objective
-from ggrc_workflows.models.task_group import TaskGroup
 from ggrc_workflows.models.task_group_task import TaskGroupTask
 from ggrc_workflows.models.workflow import Workflow
 
@@ -30,111 +28,6 @@ class TestWorkflowObjectsImport(TestCase):
   def setUp(self):
     super(TestWorkflowObjectsImport, self).setUp()
     self.generator = wf_generator.WorkflowsGenerator()
-
-  def test_full_good_import(self):
-    """Test full good import without any warnings."""
-    user_data = [
-        collections.OrderedDict([
-            ("object_type", "Person"),
-            ("name", "TestUser"),
-            ("email", "testuser@example.com"),
-        ]),
-    ]
-    response = self.import_data(*user_data)
-
-    objective_data = [
-        collections.OrderedDict([
-            ("object_type", "objective"),
-            ("Code*", ""),
-            ("title", "obj-1"),
-            ("admin", "testuser@example.com"),
-        ]),
-        collections.OrderedDict([
-            ("object_type", "objective"),
-            ("Code*", ""),
-            ("title", "obj-2"),
-            ("admin", "testuser@example.com"),
-        ]),
-    ]
-    response += self.import_data(*objective_data)
-
-    workflow_data = [
-        collections.OrderedDict([
-            ("object_type", "Workflow"),
-            ("code", ""),
-            ("title", "wf-1"),
-            ("Need Verification", True),
-            ("force real-time email updates", "no"),
-            ("Admin", "testuser@example.com"),
-        ]),
-    ]
-    response += self.import_data(*workflow_data)
-
-    workflow = Workflow.query.filter_by(title="wf-1").first()
-    objective = Objective.query.filter_by(title="obj-1").first()
-    task_group_data = [
-        collections.OrderedDict([
-            ("object_type", "TaskGroup"),
-            ("code", ""),
-            ("title", "tg-1"),
-            ("workflow", workflow.slug),
-            ("Assignee", "testuser@example.com"),
-            ("map:objective", objective.slug)
-        ]),
-    ]
-    response += self.import_data(*task_group_data)
-
-    task_group = TaskGroup.query.filter_by(title="tg-1").first()
-    tgt_data_block = [
-        collections.OrderedDict([
-            ("object_type", "Task Group Task"),
-            ("code", ""),
-            ("task title", "task-1"),
-            ("task type", "Rich Text"),
-            ("task group code", task_group.slug),
-            ("task start date", date(2015, 7, 1)),
-            ("task due date", date(2015, 7, 15)),
-            ("task assignees", "testuser@example.com"),
-        ]),
-        collections.OrderedDict([
-            ("object_type", "Task Group Task"),
-            ("code", ""),
-            ("task title", "task-2"),
-            ("task type", "Rich Text"),
-            ("task group code", task_group.slug),
-            ("task start date", date(2015, 7, 10)),
-            ("task due date", date(2016, 12, 30)),
-            ("task assignees", "testuser@example.com"),
-        ]),
-        collections.OrderedDict([
-            ("object_type", "Task Group Task"),
-            ("code", ""),
-            ("task title", "task-3"),
-            ("task type", "Checkboxes"),
-            ("task description", "ch1, ch2 , some checkbox 3"),
-            ("task group code", task_group.slug),
-            ("task start date", date(2016, 7, 8)),
-            ("task due date", date(2017, 12, 29)),
-            ("task assignees", "testuser@example.com"),
-        ]),
-    ]
-    response += self.import_data(*tgt_data_block)
-
-    self._check_csv_response(response, {})
-    self.assertEqual(1, Workflow.query.count())
-    self.assertEqual(1, TaskGroup.query.count())
-    self.assertEqual(3, TaskGroupTask.query.count())
-
-    task_group = TaskGroup.query.filter_by(title="tg-1").first()
-    mapped_objs = [rel_obj for rel_obj in task_group.related_objects()
-                   if rel_obj.type == 'Objective']
-    self.assertEqual(1, len(mapped_objs))
-
-    task2 = TaskGroupTask.query.filter_by(title="task-2").first()
-    task3 = TaskGroupTask.query.filter_by(title="task-3").first()
-    self.assertEqual(task2.start_date, date(2015, 7, 10))
-    self.assertEqual(task2.end_date, date(2016, 12, 30))
-    self.assertIn("ch2", task3.response_options)
 
   def test_invalid_import(self):
     """Test import of a workflow with missing data"""

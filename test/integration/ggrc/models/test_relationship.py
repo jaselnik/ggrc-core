@@ -9,8 +9,8 @@ import ddt
 
 from ggrc import db
 from ggrc.models import all_models
-from ggrc.models.exceptions import ValidationError
 
+from integration.external_app import external_api_helper
 from integration.ggrc import TestCase, READONLY_MAPPING_PAIRS, _SCOPING_MODELS
 from integration.ggrc import api_helper
 from integration.ggrc.models import factories
@@ -124,10 +124,26 @@ class TestRelationship(TestCase):
         child_type=snapshottable.type,
         child_id=snapshottable.id,
     )
-    with self.assertRaises(ValidationError):
-      factories.RelationshipFactory(source=snapshottable, destination=snapshot)
-    with self.assertRaises(ValidationError):
-      factories.RelationshipFactory(source=snapshot, destination=snapshottable)
+
+    response = self.client.post(
+        self.REL_URL,
+        data=self.build_relationship_json(snapshot, snapshottable),
+        headers=self.HEADERS
+    )
+
+    self.assert400(response)
+    self.assertIn("Invalid source-destination types pair for Relationship",
+                  response.data)
+
+    response = self.client.post(
+        self.REL_URL,
+        data=self.build_relationship_json(snapshottable, snapshot),
+        headers=self.HEADERS
+    )
+
+    self.assert400(response)
+    self.assertIn("Invalid source-destination types pair for Relationship",
+                  response.data)
 
   def test_relationship_validation(self):
     """Test validator that forbid creation of Relationship with the same object
@@ -207,6 +223,7 @@ class TestExternalRelationship(TestCase):
     super(TestExternalRelationship, self).setUp()
     self.object_generator = ObjectGenerator()
     self.api = api_helper.Api()
+    self.ext_api = external_api_helper.ExternalApiClient()
     with factories.single_commit():
       editor_role = all_models.Role.query.filter(
           all_models.Role.name == "Editor").first()
@@ -398,37 +415,40 @@ class TestExternalRelationship(TestCase):
     """Test deletion of relationship between {0.__name__} and {1.__name__}"""
 
     # Set up relationships
-    with self.object_generator.api.as_external():
-      _, obj1 = self.object_generator.generate_object(model1)
-      _, obj2 = self.object_generator.generate_object(model2)
-
-      _, rel = self.object_generator.generate_relationship(
-          obj1, obj2, is_external=True)
+    factory1 = factories.get_model_factory(model1.__name__)
+    factory2 = factories.get_model_factory(model2.__name__)
+    with factories.single_commit():
+      obj1 = factory1()
+      obj2 = factory2()
+      rel = factories.RelationshipFactory(source=obj1, destination=obj2,
+                                          is_external=True)
+      rel_id = rel.id
 
     # check that relationship cannot be deleted by regular user
     self.api.set_user(all_models.Person.query.get(self.person_id))
-    relationship = all_models.Relationship.query.get(rel.id)
+    relationship = all_models.Relationship.query.get(rel_id)
     response = self.api.delete(relationship)
     self.assert400(response)
 
-  @ddt.data(*itertools.product(_SCOPING_MODELS, (all_models.Objective, )))
+  @ddt.data(*itertools.product(_SCOPING_MODELS, (all_models.Issue, )))
   @ddt.unpack
   def test_local_delete_relationship_if_orphan(self, model1, model2):
     """Test deletion of orphan relationship {0.__name__} - {1.__name__}."""
-    with self.object_generator.api.as_external():
-      _, obj1 = self.object_generator.generate_object(model1)
-      _, obj2 = self.object_generator.generate_object(model2)
-      _, rel = self.object_generator.generate_relationship(
-          obj1, obj2, is_external=True)
-
-    relationship_id = rel.id
+    factory1 = factories.get_model_factory(model1.__name__)
+    factory2 = factories.get_model_factory(model2.__name__)
+    with factories.single_commit():
+      obj1 = factory1()
+      obj2 = factory2()
+      rel = factories.RelationshipFactory(source=obj1, destination=obj2,
+                                          is_external=True)
+      rel_id = rel.id
 
     self.api.set_user(all_models.Person.query.get(self.person_id))
-    obj_to_delete = model2.query.get(obj2.id)
-    response = self.api.delete(obj_to_delete)
+    obj_to_delete = model2.query.first()
+    response = self.api.delete(obj_to_delete, obj_to_delete.id)
     self.assert200(response)
 
-    rel_q = all_models.Relationship.query.filter_by(id=relationship_id)
+    rel_q = all_models.Relationship.query.filter_by(id=rel_id)
     self.assertFalse(db.session.query(rel_q.exists()).scalar())
 
   @ddt.data(*READONLY_MAPPING_PAIRS)
@@ -436,15 +456,17 @@ class TestExternalRelationship(TestCase):
   def test_local_create_relationship_scoping_directive(self, model1, model2):
     """Test creation of relationship between {0.__name__} and {1.__name__}"""
     # Set up relationships
-    with self.object_generator.api.as_external():
-      _, obj1 = self.object_generator.generate_object(model1)
-      _, obj2 = self.object_generator.generate_object(model2)
+    factory1 = factories.get_model_factory(model1.__name__)
+    factory2 = factories.get_model_factory(model2.__name__)
+    with factories.single_commit():
+      obj1 = factory1()
+      obj2 = factory2()
 
-    self.object_generator.api.set_user(
-        all_models.Person.query.get(self.person_id))
+      self.object_generator.api.set_user(
+          all_models.Person.query.get(self.person_id))
 
-    response, _ = self.object_generator.generate_relationship(
-        obj1, obj2, is_external=True)
+      response, _ = self.object_generator.generate_relationship(
+          obj1, obj2, is_external=True)
 
     self.assert400(response)
 
@@ -456,17 +478,16 @@ class TestExternalRelationship(TestCase):
     """Test ext user and relationship between {0.__name__} and {1.__name__}"""
 
     # Set up relationships
-    with self.object_generator.api.as_external():
-      _, obj1 = self.object_generator.generate_object(model1)
-      _, obj2 = self.object_generator.generate_object(model2)
-
-      _, rel = self.object_generator.generate_relationship(
-          obj1, obj2, is_external=True)
-
-      self.assertIsNotNone(rel)
+    factory1 = factories.get_model_factory(model1.__name__)
+    factory2 = factories.get_model_factory(model2.__name__)
+    with factories.single_commit():
+      obj1 = factory1()
+      obj2 = factory2()
+      rel = factories.RelationshipFactory(source=obj1, destination=obj2)
+      rel_id = rel.id
 
     # check that external relationship can be deleted by external user
     self.api.set_user(all_models.Person.query.get(self.person_ext_id))
-    relationship = all_models.Relationship.query.get(rel.id)
+    relationship = all_models.Relationship.query.get(rel_id)
     response = self.api.delete(relationship)
     self.assert200(response)

@@ -16,14 +16,12 @@ from ggrc.models import object_document
 from ggrc.models import object_person
 from ggrc.models import reflection
 from ggrc.models import relationship
-from ggrc.models import review
 
 
 class Requirement(mixins.synchronizable.Synchronizable,
                   mixins.WithExternalCreatedBy,
                   comment.ExternalCommentable,
                   roleable.Roleable,
-                  review.Reviewable,
                   mixins.CustomAttributable,
                   mixins.WithStartDate,
                   mixins.WithLastDeprecatedDate,

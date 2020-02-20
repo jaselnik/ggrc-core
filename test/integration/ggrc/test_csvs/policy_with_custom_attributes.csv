@@ -1,8 +1,0 @@
-Object type,,,,,,,,
-policy,code,title,description,Primary Contact,notes,state,admin,This is a weird attribute name
-,p1,some weird policy,"This is still 
-a single
-line description",miha@policy.com,,Draft,user@example.com,5
-,p2,another weird policy,"This should<br>
-be in two lines",,not all fields have notes,Draft,miha@policy.com,NTHNTH
-,,Who let the dogs out,not my fault,,,Draft,user@example.com,And a weird value

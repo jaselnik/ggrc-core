@@ -3,29 +3,24 @@
 
 """Tests for snapshot model."""
 
-from collections import OrderedDict
-
 import ddt
 
-from ggrc.app import app
 from ggrc.models import all_models
-from ggrc.snapshotter.rules import Types
-from integration.ggrc import TestCase, Api
+from ggrc.snapshotter import rules as snapshotter_rules
+from integration import ggrc as integration_ggrc
+from integration.ggrc import api_helper
 from integration.ggrc.models import factories
 from integration.ggrc import generator
 
 
 def get_snapshottable_models():
-  return {getattr(all_models, stype) for stype in Types.all}
-
-
-def get_external_models():
-  return {getattr(all_models, stype) for stype in Types.external}
+  """Return the set of snapshottable models."""
+  return {getattr(all_models, stype) for stype in snapshotter_rules.Types.all}
 
 
 @ddt.ddt
-class TestSnapshotQueryApi(TestCase):
-  """Basic tests for /query api."""
+class TestSnapshotContent(integration_ggrc.TestCase):
+  """Basic tests for snapshot's content."""
 
   IGNORE_KEYS = {
       # currently not working fields:
@@ -105,96 +100,14 @@ class TestSnapshotQueryApi(TestCase):
       # computed attributes are not stored in revisions and should be ignored.
       "attributes",
       "last_assessment_date",
-
-      "access_control_list",  # TODO: remove this line (GGRC-2402)
   }
 
-  def setUp(self):
-    """Set up test cases for all tests."""
-    super(TestSnapshotQueryApi, self).setUp()
+  def setUp(self):  # pylint: disable=missing-docstring
+    super(TestSnapshotContent, self).setUp()
     self.client.get("/login")
 
-  def _create_cas(self):  # pylint: disable=no-self-use
-    """Create custom attribute definitions."""
-    ca_model_name = "threat"
-
-    ca_args = [
-        {"title": "CA text", "attribute_type": "Text"},
-        {"title": "CA rich text", "attribute_type": "Rich Text"},
-        {"title": "CA date", "attribute_type": "Date"},
-        {"title": "CA checkbox", "attribute_type": "Checkbox"},
-        {"title": "CA multiselect", "attribute_type": "Multiselect",
-         "multi_choice_options": "yes,no"},
-        {"title": "CA dropdown", "attribute_type": "Dropdown",
-         "multi_choice_options": "one,two,three,four,five"},
-    ]
-
-    with app.app_context():
-      for args in ca_args:
-        factories.CustomAttributeDefinitionFactory(
-            definition_type=ca_model_name,
-            **args
-        )
-
-  def _create_external_object(self):  # pylint: disable=no-self-use
-    """Populate external model object that could not be imported."""
-    with factories.single_commit():
-      obj = factories.ThreatFactory()
-
-      ca_definitions = {
-          cad.title: cad
-          for cad in obj.get_custom_attribute_definitions([
-              "CA text",
-              "CA rich text",
-              "CA date",
-              "CA multiselect",
-              "CA dropdown"
-          ])
-      }
-      ca_values = {
-          "CA text": "Control ca text",
-          "CA rich text": "control<br><br>\nrich text",
-          "CA date": "22/02/2022",
-          "CA multiselect": "yes",
-          "CA dropdown": "one"
-      }
-
-      for title, value in ca_values.items():
-        factories.CustomAttributeValueFactory(
-            custom_attribute=ca_definitions[title],
-            attributable=obj,
-            attribute_value=value
-        )
-
-  def test_revision_content(self):
-    """Test that revision contains all content needed."""
-
-    self._create_cas()
-    self._create_external_object()
-    threat = OrderedDict([
-        ("object_type", "Threat"),
-        ("Code*", ""),
-        ("State", "Draft"),
-        ("Title", "Test threat"),
-        ("Admin*", "user@example.com"),
-        ("CA text", "text"),
-        ("CA rich text", "Threat<br><br> rich text"),
-        ("CA date", "2/24/2020"),
-        ("CA checkbox", "no"),
-        ("CA multiselect", "no"),
-        ("CA dropdown", "four")
-    ])
-    response = self.import_data(threat)
-    self._check_csv_response(response, {})
-    facility_revision = all_models.Revision.query.filter(
-        all_models.Revision.resource_type == "Threat").order_by(
-        all_models.Revision.id.desc()).first()
-
-    self.assertIn("custom_attribute_values", facility_revision.content)
-    self.assertNotEqual(facility_revision.content[
-                        "custom_attribute_values"], [])
-
   def _get_object(self, obj):
+    """Get JSON representation of passed object."""
     return self.client.get(
         "/api/{}/{}".format(obj._inflector.table_plural, obj.id)  # noqa # pylint: disable=protected-access
     ).json[obj._inflector.table_singular]  # noqa # pylint: disable=protected-access
@@ -235,7 +148,7 @@ class TestSnapshotQueryApi(TestCase):
 
     return clean
 
-  @ddt.data(*get_snapshottable_models() - get_external_models())
+  @ddt.data(*get_snapshottable_models())
   def test_snapshot_content(self, model):
     """Test the content of stored revisions for {0.__name__}
 
@@ -244,17 +157,8 @@ class TestSnapshotQueryApi(TestCase):
     created from a snapshot on the frontend, it will have all the needed
     fields.
     """
-
-    data = OrderedDict([
-        ("object_type", model.__name__),
-        ("Code*", ""),
-        ("State", "Draft"),
-        ("Title", "Test {model}".format(model=model.__name__)),
-        ("Admin*", "user@example.com")
-    ])
-
-    response = self.import_data(data)
-    self._check_csv_response(response, {})
+    with factories.single_commit():
+      factories.get_model_factory(model.__name__)()
 
     obj = model.eager_query().first()
     generated_json = self._clean_json(obj.log_json())
@@ -262,12 +166,12 @@ class TestSnapshotQueryApi(TestCase):
     self.assertEqual(expected_json, generated_json)
 
 
-class TestSnapshot(TestCase):
+class TestSnapshot(integration_ggrc.TestCase):
   """Basic tests snapshots"""
 
-  def setUp(self):
+  def setUp(self):  # pylint: disable=missing-docstring
     super(TestSnapshot, self).setUp()
-    self.api = Api()
+    self.api = api_helper.Api()
     self.generator = generator.ObjectGenerator()
 
   def test_search_by_reference_url(self):

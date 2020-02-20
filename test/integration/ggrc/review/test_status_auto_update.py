@@ -160,14 +160,14 @@ class TestReviewStatusUpdate(TestCase):
   def test_acl_roles(self):
     """Update of reviewable ACL shouldn't change review status"""
     with factories.single_commit():
-      threat = factories.ThreatFactory()
+      program = factories.ProgramFactory()
       review = factories.ReviewFactory(
-          status=all_models.Review.STATES.REVIEWED, reviewable=threat
+          status=all_models.Review.STATES.REVIEWED, reviewable=program
       )
     review_id = review.id
 
     ac_role_id = all_models.AccessControlRole.query.filter_by(
-        name="Primary Contacts", object_type="Threat"
+        name="Primary Contacts", object_type="Program"
     ).one().id
 
     user_id = all_models.Person.query.filter_by(
@@ -175,7 +175,7 @@ class TestReviewStatusUpdate(TestCase):
     ).one().id
 
     self.api.modify_object(
-        threat, {
+        program, {
             "access_control_list":
             [{
                 "ac_role_id": ac_role_id,
@@ -330,11 +330,12 @@ class TestReviewStatusUpdate(TestCase):
 
   def test_review_status_update(self):
     """Test updating folder preserves review status"""
-    threat = factories.ThreatFactory()
-    factories.ReviewFactory(
-        reviewable=threat,
-        status=all_models.Review.STATES.REVIEWED,
-    )
-    self.api.put(threat, {"folder": factories.random_str()})
-    program = all_models.Threat.query.get(threat.id)
+    with factories.single_commit():
+      program = factories.ProgramFactory()
+      factories.ReviewFactory(
+          reviewable=program,
+          status=all_models.Review.STATES.REVIEWED,
+      )
+    self.api.put(program, {"folder": factories.random_str()})
+    program = all_models.Program.query.get(program.id)
     self.assertEqual(program.review.status, all_models.Review.STATES.REVIEWED)

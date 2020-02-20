@@ -36,17 +36,20 @@ class TestResource(TestCase):
     |---|   |---|   |
     |-------|-------|
     """
-    self.objects = [
-        self.object_generator.generate_object(all_models.Requirement)[1].id
-        for _ in xrange(5)
-    ]
+    with factories.single_commit():
+      self.objects = [
+          factories.RequirementFactory()
+          for _ in xrange(5)
+      ]
+      for src, dst in [(0, 1), (0, 2), (2, 3), (2, 4)]:
+        factories.RelationshipFactory(
+            source=self.objects[src],
+            destination=self.objects[dst],
+        )
+
     self.objects = all_models.Requirement.eager_query().filter(
-        all_models.Requirement.id.in_(self.objects)
+        all_models.Requirement.id.in_([o.id for o in self.objects])
     ).all()
-    for src, dst in [(0, 1), (0, 2), (2, 3), (2, 4)]:
-      self.object_generator.generate_relationship(
-          self.objects[src], self.objects[dst]
-      )
 
   def search(self, *args, **kwargs):
     res, _ = self.api.search(*args, **kwargs)

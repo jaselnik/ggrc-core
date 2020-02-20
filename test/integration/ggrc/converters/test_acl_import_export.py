@@ -191,6 +191,9 @@ class TestACLImportExport(TestCase):
     ])
     if regulation:
       import_dict["code"] = regulation.slug
+    if object_type == "Issue":
+      import_dict["code"] = "Issue12"
+      import_dict["due date"] = "2022-11-12"
     if object_type == "Control":
       import_dict["Assertions*"] = "Privacy"
     if object_type in scoping_models_names:
@@ -289,7 +292,7 @@ class TestACLImportExport(TestCase):
 
     self.assertEqual(stored_roles, edited_roles)
 
-  @ddt.data({"Policy": {"other role name": set(_random_emails[:1])}})
+  @ddt.data({"Issue": {"other role name": set(_random_emails[:1])}})
   def test_same_name_roles(self, model_dict):
     """Test role with the same names on different objects."""
     with factories.single_commit():

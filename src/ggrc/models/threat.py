@@ -8,7 +8,6 @@ from ggrc.access_control import roleable
 from ggrc.fulltext import mixin as ft_mixins
 from ggrc.models import comment
 from ggrc.models import mixins
-from ggrc.models import review
 from ggrc.models import object_document
 from ggrc.models import object_person
 from ggrc.models import relationship
@@ -18,7 +17,6 @@ class Threat(mixins.synchronizable.Synchronizable,
              mixins.WithExternalCreatedBy,
              comment.ExternalCommentable,
              roleable.Roleable,
-             review.Reviewable,
              mixins.CustomAttributable,
              object_person.Personable,
              relationship.Relatable,

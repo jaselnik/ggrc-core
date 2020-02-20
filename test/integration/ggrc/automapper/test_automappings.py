@@ -14,7 +14,6 @@ import ggrc
 from ggrc import automapper
 from ggrc import models
 from ggrc.models import all_models
-from ggrc.models import Automapping
 from integration.ggrc import TestCase
 from integration.ggrc import generator
 from integration.ggrc.models import factories
@@ -111,41 +110,18 @@ class TestAutomappings(TestCase):
     for src, dst in possible - mappings:
       self.assert_mapping(src, dst, missing=True)
 
-  def with_permutations(self, mk1, mk2, mk3):
-    """Helper function for creating permutations"""
-    obj1, obj2, obj3 = mk1(), mk2(), mk3()
-    self.assert_mapping_implication(
-        to_create=[(obj1, obj2), (obj2, obj3)],
-        implied=(obj1, obj3),
-    )
-    obj1, obj2, obj3 = mk1(), mk2(), mk3()
-    self.assert_mapping_implication(
-        to_create=[(obj2, obj3), (obj1, obj2)],
-        implied=(obj1, obj3),
-    )
-
   def test_directive_program_mapping(self):
     """Test mapping directive to a program"""
-    self.with_permutations(
-        lambda: self.create_object(models.Program, {
-            'title': make_name('Program')
-        }),
-        lambda: self.create_object(models.Regulation, {
-            'title': make_name('Test PD Regulation')
-        }),
-        lambda: self.create_object(models.Requirement, {
-            'title': make_name('Requirement')
-        }),
-    )
     program = self.create_object(models.Program, {
         'title': make_name('Program')
     })
-    objective1 = self.create_object(models.Objective, {
-        'title': make_name('Objective')
-    })
-    objective2 = self.create_object(models.Objective, {
-        'title': make_name('Objective')
-    })
+    with self.api.as_external():
+      objective1 = self.create_object(models.Objective, {
+          'title': make_name('Objective')
+      })
+      objective2 = self.create_object(models.Objective, {
+          'title': make_name('Objective')
+      })
     self.assert_mapping_implication(
         to_create=[(program, objective1), (objective1, objective2)],
         implied=[],
@@ -156,12 +132,13 @@ class TestAutomappings(TestCase):
     regulation = self.create_object(models.Regulation, {
         'title': make_name('Test Regulation')
     })
-    requirement = self.create_object(models.Requirement, {
-        'title': make_name('Test requirement'),
-    })
-    objective = self.create_object(models.Objective, {
-        'title': make_name('Objective')
-    })
+    with self.api.as_external():
+      requirement = self.create_object(models.Requirement, {
+          'title': make_name('Test requirement'),
+      })
+      objective = self.create_object(models.Objective, {
+          'title': make_name('Objective')
+      })
     self.assert_mapping_implication(
         to_create=[(regulation, requirement), (objective, requirement)],
         implied=[],
@@ -181,12 +158,13 @@ class TestAutomappings(TestCase):
       regulation = self.create_object(models.Regulation, {
           'title': make_name('Test Regulation')
       })
-      requirement = self.create_object(models.Requirement, {
-          'title': make_name('Test requirement'),
-      })
-      objective = self.create_object(models.Objective, {
-          'title': make_name('Objective')
-      })
+      with self.api.as_external():
+        requirement = self.create_object(models.Requirement, {
+            'title': make_name('Test requirement'),
+        })
+        objective = self.create_object(models.Objective, {
+            'title': make_name('Objective')
+        })
       self.assert_mapping_implication(
           to_create=[(regulation, requirement), (objective, requirement)],
           implied=[],
@@ -197,18 +175,17 @@ class TestAutomappings(TestCase):
     regulation = self.create_object(models.Regulation, {
         'title': make_name('Test PD Regulation')
     })
-    requirement = self.create_object(models.Requirement, {
-        'title': make_name('Test requirement'),
-        'directive': {'id': regulation.id},
-    })
     with self.api.as_external():
+      requirement = self.create_object(models.Requirement, {
+          'title': make_name('Test requirement'),
+          'directive': {'id': regulation.id},
+      })
       control = self.create_object(models.Control, {
           'title': make_name('Test control')
       })
-
-    objective = self.create_object(models.Objective, {
-        'title': make_name('Test control')
-    })
+      objective = self.create_object(models.Objective, {
+          'title': make_name('Test control')
+      })
     self.assert_mapping_implication(
         to_create=[(regulation, requirement),
                    (requirement, objective),
@@ -230,16 +207,17 @@ class TestAutomappings(TestCase):
     regulation = self.create_object(models.Regulation, {
         'title': make_name('Test PD Regulation')
     })
-    requirement = self.create_object(models.Requirement, {
-        'title': make_name('Test requirement'),
-        'directive': {'id': regulation.id},
-    })
-    objective1 = self.create_object(models.Objective, {
-        'title': make_name('Test Objective')
-    })
-    objective2 = self.create_object(models.Objective, {
-        'title': make_name('Test Objective')
-    })
+    with self.api.as_external():
+      requirement = self.create_object(models.Requirement, {
+          'title': make_name('Test requirement'),
+          'directive': {'id': regulation.id},
+      })
+      objective1 = self.create_object(models.Objective, {
+          'title': make_name('Test Objective')
+      })
+      objective2 = self.create_object(models.Objective, {
+          'title': make_name('Test Objective')
+      })
     self.assert_mapping_implication(
         to_create=[(regulation, requirement),
                    (requirement, objective1),
@@ -249,10 +227,10 @@ class TestAutomappings(TestCase):
 
   def test_mapping_nested_controls(self):
     """Test mapping of nested controls"""
-    objective = self.create_object(models.Objective, data={
-        'title': make_name('Test Objective')
-    })
     with self.api.as_external():
+      objective = self.create_object(models.Objective, data={
+          'title': make_name('Test Objective')
+      })
       control_p = self.create_object(models.Control, {
           'title': make_name('Test control')
       })
@@ -286,9 +264,12 @@ class TestAutomappings(TestCase):
     self.create_ac_roles(regulation, creator.id)
     regulation = regulation.query.get(regulation.id)
 
-    requirement = self.create_object(models.Requirement, {
-        'title': make_name('Requirement'),
-    })
+    with self.api.as_external():
+      requirement = self.create_object(models.Requirement, {
+          'title': make_name('Requirement'),
+      })
+
+    requirement = requirement.query.get(requirement.id)
     self.create_ac_roles(requirement, creator.id)
     requirement = requirement.query.get(requirement.id)
 
@@ -332,14 +313,15 @@ class TestAutomappings(TestCase):
     regulation = self.create_object(models.Regulation, {
         'title': make_name('Regulation'),
     })
-    # Requirement is automapped to the program through destination
-    destination_obj = self.create_object(models.Requirement, {
-        'title': make_name('Requirement'),
-    })
-    # Objective is automapped to the program through source
-    source_obj = self.create_object(models.Objective, {
-        'title': make_name('Objective'),
-    })
+    with self.api.as_external():
+      # Requirement is automapped to the program through destination
+      destination_obj = self.create_object(models.Requirement, {
+          'title': make_name('Requirement'),
+      })
+      # Objective is automapped to the program through source
+      source_obj = self.create_object(models.Objective, {
+          'title': make_name('Objective'),
+      })
     self.assert_mapping_implication(
         to_create=[
             (program, regulation),
@@ -357,55 +339,6 @@ class TestAutomappings(TestCase):
         roles,
         [acl.parent.parent.ac_role.name for acl in acls if acl.parent]
     )
-
-  def test_automapping_deletion(self):
-    """Test if automapping data is preserved even when the parent relationship
-       is deleted.
-    """
-    # Prepare some data:
-    program = self.create_object(models.Program, {
-        'title': make_name('Program')
-    })
-    regulation = self.create_object(models.Regulation, {
-        'title': make_name('Regulation')
-    })
-    requirement = self.create_object(models.Requirement, {
-        'title': make_name('Requirement')
-    })
-    self.create_mapping(program, regulation)
-    rel1 = self.create_mapping(regulation, requirement)
-
-    # Check if the correct automapping row is inserted:
-    auto = Automapping.query.filter_by(
-        source_id=rel1.source_id,
-        source_type=rel1.source_type,
-        destination_id=rel1.destination_id,
-        destination_type=rel1.destination_type
-    ).one()
-    assert auto is not None
-
-    # Check if the correct parent id is set:
-    rel2 = models.Relationship.query.filter_by(
-        parent_id=rel1.id
-    ).one()
-    assert rel2 is not None
-
-    # Check if the new relationship points to the correct automapping
-    assert rel2.automapping_id == auto.id
-
-    # Delete the parent relationship
-    self.api.delete(rel1)
-
-    # Use the automapping_id to find the relationship again
-    rel2_after_delete = models.Relationship.query.filter_by(
-        automapping_id=auto.id
-    ).one()
-
-    assert rel2_after_delete is not None
-    # Make sure we are looking at the same object
-    assert rel2.id == rel2_after_delete.id
-    # Parent id should now be None
-    assert rel2_after_delete.parent_id is None
 
 
 class TestIssueAutomappings(TestCase):

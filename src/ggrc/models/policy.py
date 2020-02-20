@@ -14,7 +14,6 @@ from ggrc.models import object_document
 from ggrc.models import object_person
 from ggrc.models import reflection
 from ggrc.models import relationship
-from ggrc.models import review
 
 
 class Policy(mixins.synchronizable.Synchronizable,
@@ -30,7 +29,6 @@ class Policy(mixins.synchronizable.Synchronizable,
              object_document.PublicDocumentable,
              object_person.Personable,
              relationship.Relatable,
-             review.Reviewable,
              roleable.Roleable,
              mixins.Base,
              ft_mixins.Indexed,

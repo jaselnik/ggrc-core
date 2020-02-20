@@ -37,57 +37,7 @@ class TestReviewersPropagation(base.TestACLPropagation):
               "read_document_comment": True,
               "create_and_map_document_comment": False,
           },
-          "MappedReview Objective": {
-              "read_parent": True,
-              "read_document": True,
-              "update_document": False,
-              "delete_document": False,
-              "read_comment": True,
-              "create_and_map_comment": False,
-              "read_document_comment": True,
-              "create_and_map_document_comment": False,
-          },
-          "MappedReview Contract": {
-              "read_parent": True,
-              "read_document": True,
-              "update_document": False,
-              "delete_document": False,
-              "read_comment": True,
-              "create_and_map_comment": False,
-              "read_document_comment": True,
-              "create_and_map_document_comment": False,
-          },
-          "MappedReview Policy": {
-              "read_parent": True,
-              "read_document": True,
-              "update_document": False,
-              "delete_document": False,
-              "read_comment": True,
-              "create_and_map_comment": False,
-              "read_document_comment": True,
-              "create_and_map_document_comment": False,
-          },
           "MappedReview Standard": {
-              "read_parent": True,
-              "read_document": True,
-              "update_document": False,
-              "delete_document": False,
-              "read_comment": True,
-              "create_and_map_comment": False,
-              "read_document_comment": True,
-              "create_and_map_document_comment": False,
-          },
-          "MappedReview Threat": {
-              "read_parent": True,
-              "read_document": True,
-              "update_document": False,
-              "delete_document": False,
-              "read_comment": True,
-              "create_and_map_comment": False,
-              "read_document_comment": True,
-              "create_and_map_document_comment": False,
-          },
-          "MappedReview Requirement": {
               "read_parent": True,
               "read_document": True,
               "update_document": False,
@@ -99,7 +49,7 @@ class TestReviewersPropagation(base.TestACLPropagation):
           },
       },
       "Reader": {
-          "MappedReview Contract": {
+          "MappedReview Program": {
               "read_parent": True,
               "read_document": True,
               "update_document": False,
@@ -111,7 +61,7 @@ class TestReviewersPropagation(base.TestACLPropagation):
           },
       },
       "Editor": {
-          "MappedReview Requirement": {
+          "MappedReview Program": {
               "read_parent": True,
               "read_document": True,
               "update_document": True,

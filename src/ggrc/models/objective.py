@@ -11,7 +11,6 @@ from ggrc.models import mixins
 from ggrc.models import object_document
 from ggrc.models import object_person
 from ggrc.models import relationship
-from ggrc.models import review
 
 
 class Objective(mixins.synchronizable.Synchronizable,
@@ -19,7 +18,6 @@ class Objective(mixins.synchronizable.Synchronizable,
                 comment.ExternalCommentable,
                 mixins.with_last_assessment_date.WithLastAssessmentDate,
                 roleable.Roleable,
-                review.Reviewable,
                 mixins.CustomAttributable,
                 mixins.WithStartDate,
                 mixins.WithLastDeprecatedDate,

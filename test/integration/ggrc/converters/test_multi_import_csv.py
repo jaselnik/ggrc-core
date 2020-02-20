@@ -5,168 +5,134 @@
 # pylint: disable=invalid-name
 
 import collections
-from sqlalchemy import and_, or_
 
-from ggrc.models import Objective
-from ggrc.models import Policy
-from ggrc.models import Regulation
-from ggrc.models import Relationship
+import sqlalchemy as sa
+
 from ggrc.converters import errors
+from ggrc.models import all_models
+from integration import ggrc as integration_ggrc
 from integration.ggrc import factories
-from integration.ggrc import TestCase
-from integration.ggrc.generator import ObjectGenerator
 
 
-class TestCsvImport(TestCase):
-  """Tests for import of multiple objects"""
+class TestCsvImport(integration_ggrc.TestCase):
+  """Tests for import of multiple objects."""
 
-  def setUp(self):
+  def setUp(self):  # pulint: disable=missing-docstring
     super(TestCsvImport, self).setUp()
-    self.generator = ObjectGenerator()
     self.client.get("/login")
-    self.policy_data = [
+
+    self.test_data = [
         collections.OrderedDict([
-            ("object_type", "Policy"),
+            ("object_type", "Program"),
             ("Code*", ""),
-            ("Title*", "Policy-1"),
-            ("Admin*", "user@example.com"),
+            ("Title*", "Program-1"),
+            ("Program managers", "user@example.com"),
         ]),
         collections.OrderedDict([
-            ("object_type", "Policy"),
+            ("object_type", "Program"),
             ("Code*", ""),
-            ("Title*", "Policy-2"),
-            ("Admin*", "user@example.com"),
+            ("Title*", "Program-2"),
+            ("Program managers", "user@example.com"),
         ]),
     ]
 
-  def tearDown(self):
-    pass
-
-  def generate_people(self, people):
-    for person in people:
-      self.generator.generate_person({
-          "name": person,
-          "email": "{}@reciprocitylabs.com".format(person),
-      }, "Administrator")
-
-  def test_multi_basic_policy_orggroup_product(self):
-    """Tests for import of multiple objects, defined correctly"""
-    test_data = self.policy_data
-    responses = self.import_data(*test_data)
-
-    object_counts = {
-        "Policy": (2, 0, 0),
+  def test_multi_basic_program(self):
+    """Tests for import of multiple programs, defined correctly."""
+    expected_object_counts = {
+        "Program": (2, 0, 0),
     }
 
-    for response in responses:
-      created, updated, ignored = object_counts[response["name"]]
-      self.assertEqual(created, response["created"])
-      self.assertEqual(updated, response["updated"])
-      self.assertEqual(ignored, response["ignored"])
-      self.assertEqual(set(), set(response["row_warnings"]))
+    response = self.import_data(*self.test_data)
 
-    self.assertEqual(Policy.query.count(), 2)
+    for block in response:
+      created, updated, ignored = expected_object_counts[block["name"]]
+      self.assertEqual(created, block["created"])
+      self.assertEqual(updated, block["updated"])
+      self.assertEqual(ignored, block["ignored"])
+      self.assertEqual(set(), set(block["row_warnings"]))
 
-  def test_multi_basic_policy_orggroup_product_with_warnings(self):
-    """Test multi basic policy orggroup product with warnings"""
+    self.assertEqual(all_models.Program.query.count(), 2)
 
-    wrong_policy_data = self.policy_data + [collections.OrderedDict([
-        ("object_type", "Policy"),
-        ("Code*", ""),
-        ("Title*", "Policy-1"),
-        ("Admin*", "user@example.com"),
-    ])]
+  def test_multi_basic_program_with_warnings(self):
+    """Test for import of multiple programs with warnings."""
+    test_data = (
+        self.test_data +
+        [
+            collections.OrderedDict([
+                ("object_type", "Program"),
+                ("Code*", ""),
+                ("Title*", "Program-1"),
+                ("Program managers", "user@example.com"),
+            ])
+        ]
+    )
 
-    test_data = wrong_policy_data
-    responses = self.import_data(*test_data)
+    expected_object_counts = {
+        "Program": (2, 0, 1),
+    }
+
+    response = self.import_data(*test_data)
 
     row_messages = []
-    object_counts = {
-        "Policy": (2, 0, 1),
-    }
-    for response in responses:
-      created, updated, ignored = object_counts[response["name"]]
-      self.assertEqual(created, response["created"])
-      self.assertEqual(updated, response["updated"])
-      self.assertEqual(ignored, response["ignored"])
-      row_messages.extend(response["row_warnings"])
-      row_messages.extend(response["row_errors"])
+    for block in response:
+      created, updated, ignored = expected_object_counts[block["name"]]
+      self.assertEqual(created, block["created"])
+      self.assertEqual(updated, block["updated"])
+      self.assertEqual(ignored, block["ignored"])
+      row_messages.extend(block["row_warnings"])
+      row_messages.extend(block["row_errors"])
 
     expected_warnings = {
         errors.DUPLICATE_VALUE_IN_CSV.format(
             line="5", processed_line="3",
-            column_name="Title", value="Policy-1",
+            column_name="Title", value="Program-1",
         ),
     }
 
     self.assertEqual(expected_warnings, set(row_messages))
-    self.assertEqual(Policy.query.count(), 2)
+    self.assertEqual(2, all_models.Program.query.count())
 
-  def test_multi_basic_policy_orggroup_product_with_mappings(self):
+  @staticmethod
+  def get_relationships_for(obj):
+    """Return Relationships for given `obj`."""
+    return all_models.Relationship.query.filter(
+        sa.or_(
+            sa.and_(
+                all_models.Relationship.destination_type == obj.type,
+                all_models.Relationship.destination_id == obj.id,
+            ),
+            sa.and_(
+                all_models.Relationship.source_type == obj.type,
+                all_models.Relationship.source_id == obj.id,
+            ),
+        ),
+    )
+
+  def test_multi_basic_program_with_mappings(self):
     """Tests mapping of multiple objects"""
-
-    def get_relationships_for(obj):
-      return Relationship.query.filter(or_(
-          and_(Relationship.source_id == obj.id,
-               Relationship.source_type == obj.type),
-          and_(Relationship.destination_id == obj.id,
-               Relationship.destination_type == obj.type),
-      ))
-
     with factories.single_commit():
-      factories.RegulationFactory()
-      factories.ObjectiveFactory()
+      issue = factories.IssueFactory()
+    for data in self.test_data:
+      data["map:issue"] = issue.slug
 
-    objective = Objective.query.first()
-    regulation = Regulation.query.first()
-
-    mapped_policy_data = [
-        collections.OrderedDict([
-            ("object_type", "Policy"),
-            ("Code*", ""),
-            ("Title*", "Policy-1"),
-            ("Admin*", "user@example.com"),
-            ("map:objective", objective.slug),
-            ("map:regulation", regulation.slug),
-        ]),
-        collections.OrderedDict([
-            ("object_type", "Policy"),
-            ("Code*", ""),
-            ("Title*", "Policy-2"),
-            ("Admin*", "user@example.com"),
-            ("map:objective", objective.slug),
-            ("map:regulation", ""),
-        ]),
-        collections.OrderedDict([
-            ("object_type", "Policy"),
-            ("Code*", ""),
-            ("Title*", "Policy-3"),
-            ("Admin*", "user@example.com"),
-            ("map:objective", ""),
-            ("map:regulation", regulation.slug),
-        ]),
-    ]
-
-    responses = self.import_data(*mapped_policy_data)
-
-    object_counts = {
-        "Policy": (3, 0, 0),
+    expected_object_counts = {
+        "Program": (2, 0, 0),
     }
-    for response in responses:
-      created, updated, ignored = object_counts[response["name"]]
-      self.assertEqual(created, response["created"])
-      self.assertEqual(updated, response["updated"])
-      self.assertEqual(ignored, response["ignored"])
-      self.assertEqual(set(), set(response["row_warnings"]))
 
-    self.assertEqual(Policy.query.count(), 3)
+    response = self.import_data(*self.test_data)
 
-    policy1 = Policy.query.filter_by(title="Policy-1").first()
-    policy2 = Policy.query.filter_by(title="Policy-2").first()
-    policy3 = Policy.query.filter_by(title="Policy-3").first()
+    for block in response:
+      created, updated, ignored = expected_object_counts[block["name"]]
+      self.assertEqual(created, block["created"])
+      self.assertEqual(updated, block["updated"])
+      self.assertEqual(ignored, block["ignored"])
+      self.assertEqual(set(), set(block["row_warnings"]))
 
-    self.assertEqual(get_relationships_for(objective).count(), 2)
-    self.assertEqual(get_relationships_for(regulation).count(), 2)
-    self.assertEqual(get_relationships_for(policy1).count(), 2)
-    self.assertEqual(get_relationships_for(policy2).count(), 1)
-    self.assertEqual(get_relationships_for(policy3).count(), 1)
+    self.assertEqual(2, all_models.Program.query.count())
+
+    program_1 = all_models.Program.query.filter_by(title="Program-1").one()
+    program_2 = all_models.Program.query.filter_by(title="Program-2").one()
+
+    self.assertEqual(2, self.get_relationships_for(issue).count())
+    self.assertEqual(1, self.get_relationships_for(program_1).count())
+    self.assertEqual(1, self.get_relationships_for(program_2).count())
