@@ -28,13 +28,12 @@ from ggrc.models.background_operation import BackgroundOperation
 from ggrc.models.calendar_event import CalendarEvent
 from ggrc.models.comment import Comment, ExternalComment
 from ggrc.models.context import Context
+from ggrc.models.contract import Contract
 from ggrc.models.control import Control
 from ggrc.models.custom_attribute_definition import CustomAttributeDefinition
 from ggrc.models.custom_attribute_value import CustomAttributeValue
 from ggrc.models.data_asset import DataAsset
-from ggrc.models.directive import Contract
 from ggrc.models.directive import Directive
-from ggrc.models.directive import Policy
 from ggrc.models.directive import Regulation
 from ggrc.models.directive import Standard
 from ggrc.models.document import Document
@@ -61,6 +60,7 @@ from ggrc.models.option import Option
 from ggrc.models.org_group import OrgGroup
 from ggrc.models.person import Person
 from ggrc.models.person_profile import PersonProfile
+from ggrc.models.policy import Policy
 from ggrc.models.product import Product
 from ggrc.models.product_group import ProductGroup
 from ggrc.models.program import Program

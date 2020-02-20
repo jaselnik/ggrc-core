@@ -3,37 +3,39 @@
 
 """Module with Requirement model."""
 
-from sqlalchemy import orm
+import sqlalchemy as sa
 
 from ggrc import db
-from ggrc.access_control.roleable import Roleable
-from ggrc.fulltext.mixin import Indexed
-from ggrc.models.comment import Commentable
-from ggrc.models.directive import Directive
+from ggrc.access_control import roleable
+from ggrc.fulltext import mixin as ft_mixins
 from ggrc.models.deferred import deferred
-from ggrc.models import mixins, review
-from ggrc.models.object_document import PublicDocumentable
-from ggrc.models.object_person import Personable
+from ggrc.models import comment
+from ggrc.models import directive
+from ggrc.models import mixins
+from ggrc.models import object_document
+from ggrc.models import object_person
 from ggrc.models import reflection
-from ggrc.models.relationship import Relatable
-from ggrc.models.relationship import Relationship
+from ggrc.models import relationship
+from ggrc.models import review
 
 
-class Requirement(Roleable,
+class Requirement(mixins.synchronizable.Synchronizable,
+                  mixins.WithExternalCreatedBy,
+                  comment.ExternalCommentable,
+                  roleable.Roleable,
                   review.Reviewable,
                   mixins.CustomAttributable,
                   mixins.WithStartDate,
                   mixins.WithLastDeprecatedDate,
-                  Personable,
-                  Relatable,
-                  Commentable,
+                  object_person.Personable,
+                  relationship.Relatable,
                   mixins.TestPlanned,
-                  PublicDocumentable,
+                  object_document.PublicDocumentable,
                   mixins.base.ContextRBAC,
                   mixins.BusinessObject,
                   mixins.Folderable,
                   mixins.WithWorkflowState,
-                  Indexed,
+                  ft_mixins.Indexed,
                   db.Model):
   """Requirement model."""
 
@@ -60,26 +62,40 @@ class Requirement(Roleable,
   def eager_query(cls, **kwargs):
     """Define fields to be loaded eagerly to lower the count of DB queries."""
     query = super(Requirement, cls).eager_query(**kwargs)
-    return query.options(orm.undefer('notes'))
+    return query.options(sa.orm.undefer('notes'))
 
   @classmethod
   def _filter_by_directive(cls, predicate):
     """Apply predicate to the object referenced by directive field."""
     types = ["Policy", "Regulation", "Standard", "Contract"]
-    dst = Relationship.query \
-        .filter(
-            (Relationship.source_id == cls.id) &
-            (Relationship.source_type == cls.__name__) &
-            (Relationship.destination_type.in_(types))) \
-        .join(Directive, Directive.id == Relationship.destination_id) \
-        .filter(predicate(Directive.slug) | predicate(Directive.title)) \
-        .exists()
-    src = Relationship.query \
-        .filter(
-            (Relationship.destination_id == cls.id) &
-            (Relationship.destination_type == cls.__name__) &
-            (Relationship.source_type.in_(types))) \
-        .join(Directive, Directive.id == Relationship.source_id) \
-        .filter(predicate(Directive.slug) | predicate(Directive.title)) \
-        .exists()
+    rel_model = relationship.Relationship
+    directve_model = directive.Directive
+
+    dst = rel_model.query.filter(
+        rel_model.source_id == cls.id,
+        rel_model.source_type == cls.__name__,
+        rel_model.destination_type.in_(types),
+    ).join(
+        directve_model,
+        directve_model.id == rel_model.destination_id,
+    ).filter(
+        sa.or_(
+            predicate(directve_model.slug),
+            predicate(directve_model.title),
+        ),
+    ).exists()
+
+    src = rel_model.query.filter(
+        rel_model.destination_id == cls.id,
+        rel_model.destination_type == cls.__name__,
+        rel_model.source_type.in_(types),
+    ).join(
+        directve_model,
+        directve_model.id == rel_model.source_id,
+    ).filter(
+        sa.or_(
+            predicate(directve_model.slug),
+            predicate(directve_model.title),
+        ),
+    ).exists()
     return dst | src

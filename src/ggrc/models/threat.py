@@ -4,30 +4,34 @@
 """Module for threat model."""
 
 from ggrc import db
-from ggrc.access_control.roleable import Roleable
-from ggrc.fulltext.mixin import Indexed
-from ggrc.models import mixins, review
-from ggrc.models.comment import Commentable
-from ggrc.models.object_document import PublicDocumentable
-from ggrc.models.object_person import Personable
-from ggrc.models.relationship import Relatable
+from ggrc.access_control import roleable
+from ggrc.fulltext import mixin as ft_mixins
+from ggrc.models import comment
+from ggrc.models import mixins
+from ggrc.models import review
+from ggrc.models import object_document
+from ggrc.models import object_person
+from ggrc.models import relationship
 
 
-class Threat(Roleable,
+class Threat(mixins.synchronizable.Synchronizable,
+             mixins.WithExternalCreatedBy,
+             comment.ExternalCommentable,
+             roleable.Roleable,
              review.Reviewable,
              mixins.CustomAttributable,
-             Personable,
-             Relatable,
+             object_person.Personable,
+             relationship.Relatable,
              mixins.LastDeprecatedTimeboxed,
-             PublicDocumentable,
-             Commentable,
+             object_document.PublicDocumentable,
              mixins.TestPlanned,
              mixins.base.ContextRBAC,
              mixins.BusinessObject,
              mixins.Folderable,
              mixins.WithWorkflowState,
-             Indexed,
+             ft_mixins.Indexed,
              db.Model):
+  """Threat model."""
   __tablename__ = 'threats'
 
   _aliases = {
