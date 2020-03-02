@@ -305,8 +305,8 @@ class TestInternalAppObjects(TestBaseExternalObjects):
     super(TestInternalAppObjects, self).setUp()
     self.api = api_helper.Api()
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_scoped_import_deprecated(self, model):
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_import_deprecated(self, model):
     """
         Test that import of'{0.__name__}' model is deprecated
     """
