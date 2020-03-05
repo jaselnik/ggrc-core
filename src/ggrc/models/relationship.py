@@ -314,6 +314,35 @@ class Relationship(base.ContextRBAC, Base, db.Model):
           u"and regulations in this application."
           u"Please contact your administrator if you have any questions.")
 
+    business_objects_only_mapping = set(scoping_models_names)
+    business_objects_only_mapping.update(("Regulation",
+                                          "Standard",
+                                          "Control",
+                                          "Risk"))
+    if cls._check_relation_types_group(source_type, destination_type,
+                                       business_objects_only_mapping,
+                                       ("Threat", "Requirement", "Policy",
+                                        "Objective", "Contract")):
+      raise ValidationError(
+          u"You do not have the necessary permissions to map and unmap "
+          u"Threat, Requirement, Policy, Objective or Contact to scoping "
+          u"objects, risks, controls, standards and regulations in this "
+          u"application."
+          u"Please contact your administrator if you have any questions.")
+
+    if cls._check_relation_types_group(source_type, destination_type,
+                                       ("Threat", "Requirement", "Policy",
+                                        "Objective", "Contract"),
+                                       ("Threat", "Requirement", "Policy",
+                                        "Objective", "Contract")
+                                       ):
+      raise ValidationError(
+          u"You do not have the necessary permissions to map and unmap "
+          u"Threat, Requirement, Policy, Objective or Contact to scoping "
+          u"objects, risks, controls, standards and regulations in this "
+          u"application."
+          u"Please contact your administrator if you have any questions.")
+
 
 class Relatable(object):
   """Mixin adding Relationship functionality to an object"""

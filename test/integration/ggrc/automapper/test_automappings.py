@@ -8,7 +8,6 @@ from collections import OrderedDict
 from contextlib import contextmanager
 
 import ddt
-from sqlalchemy.orm import load_only
 
 import ggrc
 from ggrc import automapper
@@ -110,46 +109,17 @@ class TestAutomappings(TestCase):
     for src, dst in possible - mappings:
       self.assert_mapping(src, dst, missing=True)
 
-  def test_directive_program_mapping(self):
-    """Test mapping directive to a program"""
-    program = self.create_object(models.Program, {
-        'title': make_name('Program')
-    })
-    with self.api.as_external():
-      objective1 = self.create_object(models.Objective, {
-          'title': make_name('Objective')
-      })
-      objective2 = self.create_object(models.Objective, {
-          'title': make_name('Objective')
-      })
+  def with_permutations(self, mk1, mk2, mk3):
+    """Helper function for creating permutations"""
+    obj1, obj2, obj3 = mk1(), mk2(), mk3()
     self.assert_mapping_implication(
-        to_create=[(program, objective1), (objective1, objective2)],
-        implied=[],
+        to_create=[(obj1, obj2), (obj2, obj3)],
+        implied=(obj1, obj3),
     )
-
-  def test_mapping_to_requirements(self):
-    """Test mapping to requirement"""
-    regulation = self.create_object(models.Regulation, {
-        'title': make_name('Test Regulation')
-    })
-    with self.api.as_external():
-      requirement = self.create_object(models.Requirement, {
-          'title': make_name('Test requirement'),
-      })
-      objective = self.create_object(models.Objective, {
-          'title': make_name('Objective')
-      })
+    obj1, obj2, obj3 = mk1(), mk2(), mk3()
     self.assert_mapping_implication(
-        to_create=[(regulation, requirement), (objective, requirement)],
-        implied=[],
-    )
-    program = self.create_object(models.Program, {
-        'title': make_name('Program')
-    })
-    self.assert_mapping_implication(
-        to_create=[(objective, program)],
-        implied=[(regulation, requirement), (objective, requirement)],
-        relevant=[regulation, requirement, objective]
+        to_create=[(obj2, obj3), (obj1, obj2)],
+        implied=(obj1, obj3),
     )
 
   def test_automapping_limit(self):
@@ -169,38 +139,6 @@ class TestAutomappings(TestCase):
           to_create=[(regulation, requirement), (objective, requirement)],
           implied=[],
       )
-
-  def test_mapping_to_objective(self):
-    """Test mapping to objective"""
-    regulation = self.create_object(models.Regulation, {
-        'title': make_name('Test PD Regulation')
-    })
-    with self.api.as_external():
-      requirement = self.create_object(models.Requirement, {
-          'title': make_name('Test requirement'),
-          'directive': {'id': regulation.id},
-      })
-      control = self.create_object(models.Control, {
-          'title': make_name('Test control')
-      })
-      objective = self.create_object(models.Objective, {
-          'title': make_name('Test control')
-      })
-    self.assert_mapping_implication(
-        to_create=[(regulation, requirement),
-                   (requirement, objective),
-                   (objective, control)],
-        implied=[]
-    )
-
-    program = self.create_object(models.Program, {
-        'title': make_name('Program')
-    })
-    self.assert_mapping_implication(
-        to_create=[(control, program)],
-        implied=[(regulation, requirement)],
-        relevant=[regulation, requirement]
-    )
 
   def test_mapping_between_objectives(self):
     """Test mapping between objectives"""
@@ -245,99 +183,6 @@ class TestAutomappings(TestCase):
                    (control_p, control1),
                    (control_p, control2)],
         implied=[]
-    )
-
-  def test_automapping_permissions(self):
-    """Test automapping permissions"""
-    _, creator = self.gen.generate_person(user_role="Creator")
-    program = self.create_object(models.Program, {
-        'title': make_name('Program')
-    })
-    # Program doesn't have Admin, so create "Primary Contact" as it has
-    # the same rights.
-    self.create_ac_roles(program, creator.id, "Primary Contacts")
-    program = program.query.get(program.id)
-
-    regulation = self.create_object(models.Regulation, {
-        'title': make_name('Regulation'),
-    })
-    self.create_ac_roles(regulation, creator.id)
-    regulation = regulation.query.get(regulation.id)
-
-    with self.api.as_external():
-      requirement = self.create_object(models.Requirement, {
-          'title': make_name('Requirement'),
-      })
-
-    requirement = requirement.query.get(requirement.id)
-    self.create_ac_roles(requirement, creator.id)
-    requirement = requirement.query.get(requirement.id)
-
-    self.api.set_user(creator)
-    self.assert_mapping_implication(
-        to_create=[(program, regulation), (regulation, requirement)],
-        implied=[(program, requirement)]
-    )
-
-  def test_program_role_propagation(self):
-    """Test if automappings also propagate program roles"""
-    roles = {
-        "Program Managers",
-        "Program Editors",
-        "Program Readers"
-    }
-    users = {}
-    for role in roles:
-      _, users[role] = self.gen.generate_person(user_role="Creator")
-
-    db_roles = all_models.AccessControlRole.query.filter(
-        all_models.AccessControlRole.name.in_(roles)
-    ).options(
-        load_only("id", "name")
-    ).all()
-
-    role_map = {
-        role.name: role.id for role in db_roles
-    }
-
-    program = self.create_object(models.Program, {
-        'title': make_name('Program'),
-        'access_control_list': [{
-            "ac_role_id": role_map[role],
-            "person": {
-                "id": users[role].id,
-                "type": "Person"
-            }
-        } for role in roles]
-    })
-    regulation = self.create_object(models.Regulation, {
-        'title': make_name('Regulation'),
-    })
-    with self.api.as_external():
-      # Requirement is automapped to the program through destination
-      destination_obj = self.create_object(models.Requirement, {
-          'title': make_name('Requirement'),
-      })
-      # Objective is automapped to the program through source
-      source_obj = self.create_object(models.Objective, {
-          'title': make_name('Objective'),
-      })
-    self.assert_mapping_implication(
-        to_create=[
-            (program, regulation),
-            (source_obj, regulation),
-            (regulation, destination_obj)
-        ],
-        implied=[(program, destination_obj)]
-    )
-    acls = all_models.AccessControlList.query.filter(
-        all_models.AccessControlList.object_id == destination_obj.id,
-        all_models.AccessControlList.object_type == destination_obj.type,
-    ).all()
-    self.assertEqual(len(acls), 6)
-    self.assertItemsEqual(
-        roles,
-        [acl.parent.parent.ac_role.name for acl in acls if acl.parent]
     )
 
 
@@ -542,7 +387,8 @@ class TestMegaProgramAutomappings(TestCase):
       audit = factories.AuditFactory(program=program)
       standard = factories.StandardFactory()
       requirement = factories.RequirementFactory()
-      factories.RelationshipFactory(source=standard, destination=requirement)
+      factories.RelationshipFactory(source=standard, destination=requirement,
+                                    is_external=True)
     self.gen.generate_relationship(audit, standard)
     program = all_models.Program.query.get(program_id)
     program_related = program.related_objects()

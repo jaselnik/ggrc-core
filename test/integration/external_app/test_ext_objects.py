@@ -235,10 +235,10 @@ class TestExternalAppObjects(TestBaseExternalObjects):
         response.json,
     )
 
-  @ddt.data(*product(all_models.get_scope_models(),
+  @ddt.data(*product(TestBaseExternalObjects.OBJECTS,
                      (all_models.Control, all_models.Risk)))
   @ddt.unpack
-  def test_external_mapping_scoped(self, model_1, model_2):
+  def test_external_mapping(self, model_1, model_2):
     """
         Test map {0.__name__} and {1.__name__} from external service
     """
@@ -265,10 +265,10 @@ class TestExternalAppObjects(TestBaseExternalObjects):
     ).count()
     self.assertEqual(rels_count, 1)
 
-  @ddt.data(*product(all_models.get_scope_models(),
+  @ddt.data(*product(TestBaseExternalObjects.OBJECTS,
                      (all_models.Control, all_models.Risk)))
   @ddt.unpack
-  def test_external_unmap_scoped(self, model_1, model_2):
+  def test_external_unmap(self, model_1, model_2):
     """
         Test unmap {0.__name__} and {1.__name__} from external service
     """
@@ -390,19 +390,30 @@ class TestInternalAppObjects(TestBaseExternalObjects):
         response.json,
     )
 
-  @ddt.data(*product(all_models.get_scope_models(),
-                     all_models.get_scope_models()))
+  @ddt.data(*product(TestBaseExternalObjects.OBJECTS,
+                     TestBaseExternalObjects.OBJECTS))
   @ddt.unpack
-  def test_scoped_mapping_deprecation(self, model1, model2):
+  def test_objects_mapping_deprecation(self, model1, model2):
     """
         Test mapping between {0.__name__} and {1.__name__} is deprecated
     """
-
-    excepted_msg = ("You do not have the necessary permissions to map and "
-                    "unmap scoping objects to scoping objects, risks, "
-                    "controls, standards and regulations in this application."
-                    "Please contact your administrator if you have any "
-                    "questions.")
+    if (model1 not in all_models.get_scope_models() or
+       model2 not in all_models.get_scope_models()):
+      expected_msg = (
+          u"You do not have the necessary permissions to map and unmap "
+          u"Threat, Requirement, Policy, Objective or Contact to scoping "
+          u"objects, risks, controls, standards and regulations in this "
+          u"application."
+          u"Please contact your administrator if you have any questions."
+      )
+    else:
+      expected_msg = (
+          "You do not have the necessary permissions to map and "
+          "unmap scoping objects to scoping objects, risks, "
+          "controls, standards and regulations in this application."
+          "Please contact your administrator if you have any "
+          "questions."
+      )
 
     with factories.single_commit():
       scope_model_1 = factories.get_model_factory(model1.__name__)()
@@ -423,4 +434,4 @@ class TestInternalAppObjects(TestBaseExternalObjects):
     })
 
     self.assertStatus(response, 400)
-    self.assertIn(excepted_msg, response.data)
+    self.assertIn(expected_msg, response.data)

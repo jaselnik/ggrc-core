@@ -181,16 +181,16 @@ class TestCollectionPost(TestCase):
     Posting duplicate relationships should have a mechanism for removing
     duplicates from the post request and fixing unique integrity errors.
     """
-    db.session.add(models.Policy(id=144, title="hello"))
-    db.session.add(models.Policy(id=233, title="world"))
-    db.session.add(models.Policy(id=377, title="bye"))
+    db.session.add(models.Issue(id=144, title="hello"))
+    db.session.add(models.Issue(id=233, title="world"))
+    db.session.add(models.Issue(id=377, title="bye"))
     db.session.commit()
 
     self.client.get("/login")
     data = json.dumps([{
         "relationship": {
-            "source": {"id": 144, "type": "Policy"},
-            "destination": {"id": 233, "type": "Policy"},
+            "source": {"id": 144, "type": "Issue"},
+            "destination": {"id": 233, "type": "Issue"},
             "context": None,
         },
     }])
@@ -209,20 +209,20 @@ class TestCollectionPost(TestCase):
 
     data = json.dumps([{
         "relationship": {  # this should be ignored
-            "source": {"id": 144, "type": "Policy"},
-            "destination": {"id": 233, "type": "Policy"},
+            "source": {"id": 144, "type": "Issue"},
+            "destination": {"id": 233, "type": "Issue"},
             "context": None,
         },
     }, {
         "relationship": {
-            "source": {"id": 377, "type": "Policy"},
-            "destination": {"id": 144, "type": "Policy"},
+            "source": {"id": 377, "type": "Issue"},
+            "destination": {"id": 144, "type": "Issue"},
             "context": None,
         },
     }, {
         "relationship": {  # Refactored api will ignore this
-            "source": {"id": 144, "type": "Policy"},
-            "destination": {"id": 377, "type": "Policy"},
+            "source": {"id": 144, "type": "Issue"},
+            "destination": {"id": 377, "type": "Issue"},
             "context": None,
         },
     }])

@@ -191,7 +191,9 @@ class TestSnapshoting(SnapshotterBaseTestCase):
         "title": "Test Objective Snapshot UNEDITED"
     })
     self.create_mapping(program, objective)
-    self.create_mapping(objective, control)
+    with mock.patch('ggrc.models.relationship.is_external_app_user',
+                    return_value=True):
+      self.create_mapping(objective, control)
 
     control = self.refresh_object(control)
     with self.api.as_external():

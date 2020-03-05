@@ -45,6 +45,7 @@ class TestResource(TestCase):
         factories.RelationshipFactory(
             source=self.objects[src],
             destination=self.objects[dst],
+            is_external=True
         )
 
     self.objects = all_models.Requirement.eager_query().filter(

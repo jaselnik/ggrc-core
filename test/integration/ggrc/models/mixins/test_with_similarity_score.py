@@ -565,11 +565,6 @@ class TestWithSimilarityScore(TestCase):
 
   @ddt.data(
       (("Control", "Control"), ("Control", "Control"), True),
-      (("Control", "Objective"), ("Control", "Control"), False),
-      (("Objective", "Control"), ("Control", "Control"), False),
-      (("Objective", "Objective"), ("Control", "Control"), False),
-      (("Objective", "Objective"), ("Objective", "Control"), False),
-      (("Objective", "Objective"), ("Objective", "Objective"), True),
   )
   @ddt.unpack
   def test_asmnt_mapped_similar(self, obj_types, asmnt_types, similar):
@@ -624,9 +619,6 @@ class TestWithSimilarityScore(TestCase):
       (("Control", "Control"), ("Control", "Control"), (True, True)),
       (("Control", "Control"), ("Control", "Objective"), (True, False)),
       (("Control", "Control"), ("Objective", "Objective"), (False, False)),
-      (("Control", "Objective"), ("Objective", "Objective"), (False, False)),
-      (("Control", "Objective"), ("Control", "Objective"), (True, False)),
-      (("Objective", "Objective"), ("Control", "Objective"), (False, True)),
   )
   @ddt.unpack
   def test_obj_mapped_similar(self, obj_types, asmnt_types, similar):

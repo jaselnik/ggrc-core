@@ -710,14 +710,17 @@ class TestExportSingleObject(TestCase):
       factories.RelationshipFactory(
           source=policies[0],
           destination=requirements[0],
+          is_external=True
       )
       factories.RelationshipFactory(
           source=standards[0],
           destination=requirements[1],
+          is_external=True
       )
       factories.RelationshipFactory(
           source=regulations[0],
           destination=requirements[2],
+          is_external=True
       )
 
     policy_slugs = [policy.slug for policy in policies]
@@ -952,18 +955,22 @@ class TestExportMultipleObjects(TestCase):
       factories.RelationshipFactory(
           source=policies[0],
           destination=products[0],
+          is_external=True
       )
       factories.RelationshipFactory(
           source=policies[1],
           destination=products[0],
+          is_external=True
       )
       factories.RelationshipFactory(
           source=policies[1],
           destination=products[1],
+          is_external=True
       )
       factories.RelationshipFactory(
           source=programs[0],
           destination=policies[0],
+          is_external=True
       )
       factories.RelationshipFactory(
           source=programs[0],
@@ -972,6 +979,7 @@ class TestExportMultipleObjects(TestCase):
       factories.RelationshipFactory(
           source=programs[1],
           destination=policies[1],
+          is_external=True
       )
       factories.RelationshipFactory(
           source=programs[1],

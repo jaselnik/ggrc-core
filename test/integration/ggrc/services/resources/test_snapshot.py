@@ -2,6 +2,7 @@
 # Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 
 """Tests for /api/snapshot endpoints."""
+import mock
 import sqlalchemy as sa
 
 from ggrc.models import all_models
@@ -136,10 +137,13 @@ class TestSnapshotResourceDelete(services.TestCase):
       snapshot_c_id = snapshot_c.id
       factories.RelationshipFactory(source=program, destination=control)
       factories.RelationshipFactory(source=program, destination=audit)
-      factories.RelationshipFactory(source=objective, destination=control)
+      with mock.patch('ggrc.models.relationship.is_external_app_user',
+                      return_value=True):
+        factories.RelationshipFactory(source=objective, destination=control)
+        factories.RelationshipFactory(source=snapshot_o, destination=audit)
+        factories.RelationshipFactory(source=snapshot_c,
+                                      destination=snapshot_o)
       factories.RelationshipFactory(source=snapshot_c, destination=audit)
-      factories.RelationshipFactory(source=snapshot_o, destination=audit)
-      factories.RelationshipFactory(source=snapshot_c, destination=snapshot_o)
 
     # Check related_objects endpoint
     related_objects = self._get_related_objects(snapshot_c_id)
@@ -155,7 +159,9 @@ class TestSnapshotResourceDelete(services.TestCase):
     control = all_models.Control.query.get(control_id)
     objective = all_models.Objective.query.get(objective_id)
     control_objective = rel.find_related(control, objective).id
-    self.api.delete(rel, control_objective)
+    with self.api.as_external():
+      resp = self.api.delete(rel, control_objective)
+      self.assert200(resp, resp)
 
     # Check successful deletion of control snapshot
     resp = self.api.delete(all_models.Snapshot, snapshot_c_id)
