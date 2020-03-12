@@ -1,9 +1,9 @@
 # Copyright (C) 2020 Google Inc.
 # Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 
-"""Tests for external ScopeObject models"""
+"""Tests for external objects models."""
 
-from collections import OrderedDict
+import collections
 from itertools import product
 
 import ddt
@@ -15,19 +15,27 @@ from ggrc.models.mixins import synchronizable
 from integration.external_app import external_api_helper
 from integration.ggrc import api_helper
 from integration.ggrc import factories
-from integration.ggrc import TestCase
+from integration import ggrc as integration_ggrc
 
 # pylint: disable=invalid-name
 
 
 @ddt.ddt
-class TestBaseExternalScopeObjects(TestCase):
-  """Base class for testing externalization for ScopeObjects"""
+class TestBaseExternalObjects(integration_ggrc.TestCase):
+  """Base class for testing externalization for all objects."""
+
+  OBJECTS = [
+      all_models.Contract,
+      all_models.Objective,
+      all_models.Policy,
+      all_models.Requirement,
+      all_models.Threat,
+  ] + all_models.get_scope_models()
 
   @staticmethod
   def _make_test_models_payload(model):
     """
-        Prepare payload for {0.__name__} model
+        Prepare payload for {0.__name__} model.
     """
     data = {
         model._inflector.table_singular: {
@@ -43,7 +51,7 @@ class TestBaseExternalScopeObjects(TestCase):
 
   def _create_test_model_instance(self, model):
     """
-        Create {0.__name__} instance for tests
+        Create {0.__name__} instance for tests.
     """
     model_factory = factories.get_model_factory(model.__name__)
     model_singular = model._inflector.table_singular
@@ -74,31 +82,34 @@ class TestBaseExternalScopeObjects(TestCase):
 
     self.assertEquals(acl_count, count)
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_scoped_have_external_attrs(self, model):
+  @ddt.data(*OBJECTS)
+  def test_objects_have_external_attrs(self, model):
     """
-        Test that '{0.__name__}' table has external_id/slug columns
+        Test that '{0.__name__}' table has external_id/slug columns.
     """
     self.assertTrue(issubclass(model, synchronizable.Synchronizable))
-    self.assertIn('external_id', model.__table__.columns._data)
-    self.assertIn('external_slug', model.__table__.columns._data)
+    table_columns_data = model.__table__.columns._data  # noqa pylint: disable=protected-access
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_scoped_are_ext_commentable(self, model):
-    """Test that '{0.__name__}' model are external Commentable"""
+    self.assertIn('external_id', table_columns_data)
+    self.assertIn('external_slug', table_columns_data)
+    self.assertIn('created_by_id', table_columns_data)
+
+  @ddt.data(*OBJECTS)
+  def test_objects_are_ext_commentable(self, model):
+    """Test that '{0.__name__}' model are external Commentable."""
     self.assertTrue(issubclass(model, comment.ExternalCommentable))
 
 
 @ddt.ddt
-class TestExternalAppScopeObjects(TestBaseExternalScopeObjects):
-  """Class for tests ScopeObjects with external client"""
+class TestExternalAppObjects(TestBaseExternalObjects):
+  """Class for tests objects with external client."""
 
-  def setUp(self):
-    super(TestExternalAppScopeObjects, self).setUp()
+  def setUp(self):  # pylint: disable=missing-docstring
+    super(TestExternalAppObjects, self).setUp()
     self.api = external_api_helper.ExternalApiClient()
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_external_scoped_create_allowed(self, model):
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_external_object_create_allowed(self, model):
     """
         Test POST method for {0.__name__} are allowed for external API.
     """
@@ -128,35 +139,35 @@ class TestExternalAppScopeObjects(TestBaseExternalScopeObjects):
     object_id = response.json[model._inflector.table_singular]["id"]
     self._validate_acl_counts(model, object_id, 3)
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_external_scoped_get_allowed(self, model):
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_external_object_get_allowed(self, model):
     """
-         Test GET method for {0.__name__} are allowed for external API.
+        Test GET method for {0.__name__} are allowed for external API.
     """
-    scope_obj = self._create_test_model_instance(model)
+    ext_obj = self._create_test_model_instance(model)
 
-    response = self.api.get(model, obj_id=scope_obj.id)
+    response = self.api.get(model, obj_id=ext_obj.id)
 
     self.assert200(response)
     self.assertEqual(response.json[model._inflector.table_singular]["title"],
                      "new_{}".format(model.__name__))
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_external_scoped_put_allowed(self, model):
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_external_object_put_allowed(self, model):
     """
         Test PUT method for {0.__name__} are allowed for external API.
     """
 
-    scope_obj = self._create_test_model_instance(model)
+    ext_obj = self._create_test_model_instance(model)
     data = {
         "title": "TEST_{}".format(model.__name__)
     }
 
-    response = self.api.put(scope_obj, obj_id=scope_obj.id, data=data)
+    response = self.api.put(ext_obj, obj_id=ext_obj.id, data=data)
     self.assert200(response)
 
-    scope_obj = model.query.get(scope_obj.id)
-    self.assertEqual(scope_obj.title, data["title"])
+    ext_obj = model.query.get(ext_obj.id)
+    self.assertEqual(ext_obj.title, data["title"])
 
   @ddt.data(*all_models.get_scope_models())
   def test_scope_acl_put(self, model):
@@ -237,11 +248,11 @@ class TestExternalAppScopeObjects(TestBaseExternalScopeObjects):
 
 
 @ddt.ddt
-class TestInternalAppScopeObjects(TestBaseExternalScopeObjects):
-  """Class for tests ScopeObjects with internal client"""
+class TestInternalAppObjects(TestBaseExternalObjects):
+  """Class for tests objects with internal client"""
 
-  def setUp(self):
-    super(TestInternalAppScopeObjects, self).setUp()
+  def setUp(self):  # pylint: disable=missing-docstring
+    super(TestInternalAppObjects, self).setUp()
     self.api = api_helper.Api()
 
   @ddt.data(*all_models.get_scope_models())
@@ -258,53 +269,53 @@ class TestInternalAppScopeObjects(TestBaseExternalScopeObjects):
             },
         },
     }
-    response = self.import_data(OrderedDict([
+    response = self.import_data(collections.OrderedDict([
         ("object_type", model.__name__),
         ("Code*", ""),
         ("Title", "Test title")
     ]))
     self._check_csv_response(response, excepted_resp)
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_internal_scoped_post_deprecated(self, model):
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_post_deprecated(self, model):
     """
-        Test POST method  for {0.__name__} are deprecated for internal API.
+        Test POST method for {0.__name__} are deprecated for internal API.
     """
     response = self.api.post(model, {"title": "new-title"})
 
     self.assert403(response)
     self.assertEqual(0, model.query.count())
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_internal_scoped_put_deprecated(self, model):
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_put_deprecated(self, model):
     """
         Test PUT method  for {0.__name__} are deprecated for internal API.
     """
-    scope_obj = self._create_test_model_instance(model)
-    response = self.api.put(scope_obj, {"title": "new-title"})
+    ext_obj = self._create_test_model_instance(model)
+    response = self.api.put(ext_obj, {"title": "new-title"})
 
     self.assert403(response)
     self.assertEqual("new_{}".format(model.__name__),
                      model.query.first().title)
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_internal_scoped_delete_deprecated(self, model):
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_delete_deprecated(self, model):
     """
-        Test DELETE method  for {0.__name__} are deprecated for internal API.
+        Test DELETE method for {0.__name__} are deprecated for internal API.
     """
-    scope_obj = self._create_test_model_instance(model)
-    response = self.api.delete(scope_obj, id_=scope_obj.id)
+    ext_obj = self._create_test_model_instance(model)
+    response = self.api.delete(ext_obj, id_=ext_obj.id)
 
     self.assert403(response)
     self.assertEqual(1, model.query.count())
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_internal_scoped_get_allowed(self, model):
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_get_allowed(self, model):
     """
-        Test GET method  for {0.__name__} are allowed for internal API.
+        Test GET method for {0.__name__} are allowed for internal API.
     """
-    scope_obj = self._create_test_model_instance(model)
-    response = self.api.get(scope_obj, id_=scope_obj.id)
+    ext_obj = self._create_test_model_instance(model)
+    response = self.api.get(ext_obj, id_=ext_obj.id)
 
     self.assert200(response)
     self.assertEqual(response.json[model._inflector.table_singular]["title"],
