@@ -49,6 +49,37 @@ class TestBaseExternalObjects(integration_ggrc.TestCase):
         }}
     return data
 
+  @staticmethod
+  def _make_test_object_review_payload(obj, reviewer):
+    """
+        Prepare review payload for `object` with given `reviewer`.
+    """
+    review_model = all_models.Review
+    reviewer_role_id = all_models.AccessControlRole.query.filter(
+        all_models.AccessControlRole.name == "Reviewers",
+        all_models.AccessControlRole.object_type == "Review",
+    ).one().id
+
+    data = {
+        "review": {
+            "reviewable": {
+                "type": obj.type,
+                "id": obj.id,
+            },
+            "access_control_list": [{
+                "ac_role_id": reviewer_role_id,
+                "person": {
+                    "type": reviewer.type,
+                    "id": reviewer.id,
+                },
+            }],
+            "context": None,
+            "status": review_model.STATES.UNREVIEWED,
+            "notification_type": review_model.NotificationTypes.EMAIL_TYPE,
+            "email_message": "",
+        }}
+    return data
+
   def _create_test_model_instance(self, model):
     """
         Create {0.__name__} instance for tests.
@@ -96,7 +127,7 @@ class TestBaseExternalObjects(integration_ggrc.TestCase):
 
   @ddt.data(*OBJECTS)
   def test_objects_are_ext_commentable(self, model):
-    """Test that '{0.__name__}' model are external Commentable."""
+    """Test that '{0.__name__}' model is ExternalCommentable."""
     self.assertTrue(issubclass(model, comment.ExternalCommentable))
 
 
@@ -111,7 +142,7 @@ class TestExternalAppObjects(TestBaseExternalObjects):
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_external_object_create_allowed(self, model):
     """
-        Test POST method for {0.__name__} are allowed for external API.
+        Test POST method for {0.__name__} is allowed for external API.
     """
     data = self._make_test_models_payload(model)
 
@@ -142,7 +173,7 @@ class TestExternalAppObjects(TestBaseExternalObjects):
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_external_object_get_allowed(self, model):
     """
-        Test GET method for {0.__name__} are allowed for external API.
+        Test GET method for {0.__name__} is allowed for external API.
     """
     ext_obj = self._create_test_model_instance(model)
 
@@ -155,7 +186,7 @@ class TestExternalAppObjects(TestBaseExternalObjects):
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_external_object_put_allowed(self, model):
     """
-        Test PUT method for {0.__name__} are allowed for external API.
+        Test PUT method for {0.__name__} is allowed for external API.
     """
 
     ext_obj = self._create_test_model_instance(model)
@@ -184,6 +215,25 @@ class TestExternalAppObjects(TestBaseExternalObjects):
 
     self.assert200(response)
     self._validate_acl_counts(model, scope_obj.id, 3)
+
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_exernal_object_review_deprecated(self, model):
+    """
+        Test Review for {0.__name__} is deprecated for external API.
+    """
+    with factories.single_commit():
+      ext_obj = self._create_test_model_instance(model)
+      reviewer = factories.PersonFactory()
+
+    data = self._make_test_object_review_payload(ext_obj, reviewer)
+    expected_response = "Trying to create review for external model."
+
+    response = self.api.post(all_models.Review, data=data)
+    self.assert400(response)
+    self.assertEqual(
+        expected_response,
+        response.json,
+    )
 
   @ddt.data(*product(all_models.get_scope_models(),
                      (all_models.Control, all_models.Risk)))
@@ -279,7 +329,7 @@ class TestInternalAppObjects(TestBaseExternalObjects):
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_internal_object_post_deprecated(self, model):
     """
-        Test POST method for {0.__name__} are deprecated for internal API.
+        Test POST method for {0.__name__} is deprecated for internal API.
     """
     response = self.api.post(model, {"title": "new-title"})
 
@@ -289,7 +339,7 @@ class TestInternalAppObjects(TestBaseExternalObjects):
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_internal_object_put_deprecated(self, model):
     """
-        Test PUT method  for {0.__name__} are deprecated for internal API.
+        Test PUT method for {0.__name__} is deprecated for internal API.
     """
     ext_obj = self._create_test_model_instance(model)
     response = self.api.put(ext_obj, {"title": "new-title"})
@@ -301,7 +351,7 @@ class TestInternalAppObjects(TestBaseExternalObjects):
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_internal_object_delete_deprecated(self, model):
     """
-        Test DELETE method for {0.__name__} are deprecated for internal API.
+        Test DELETE method for {0.__name__} is deprecated for internal API.
     """
     ext_obj = self._create_test_model_instance(model)
     response = self.api.delete(ext_obj, id_=ext_obj.id)
@@ -312,7 +362,7 @@ class TestInternalAppObjects(TestBaseExternalObjects):
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_internal_object_get_allowed(self, model):
     """
-        Test GET method for {0.__name__} are allowed for internal API.
+        Test GET method for {0.__name__} is allowed for internal API.
     """
     ext_obj = self._create_test_model_instance(model)
     response = self.api.get(ext_obj, id_=ext_obj.id)
@@ -320,6 +370,25 @@ class TestInternalAppObjects(TestBaseExternalObjects):
     self.assert200(response)
     self.assertEqual(response.json[model._inflector.table_singular]["title"],
                      "new_{}".format(model.__name__))
+
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_review_deprecated(self, model):
+    """
+        Test Review for {0.__name__} is deprecated for internal API.
+    """
+    with factories.single_commit():
+      ext_obj = self._create_test_model_instance(model)
+      reviewer = factories.PersonFactory()
+
+    data = self._make_test_object_review_payload(ext_obj, reviewer)
+    expected_response = "Trying to create review for external model."
+
+    response = self.api.post(all_models.Review, data=data)
+    self.assert400(response)
+    self.assertEqual(
+        expected_response,
+        response.json,
+    )
 
   @ddt.data(*product(all_models.get_scope_models(),
                      all_models.get_scope_models()))
