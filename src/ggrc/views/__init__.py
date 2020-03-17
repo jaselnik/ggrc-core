@@ -35,9 +35,9 @@ from ggrc.utils import empty_revisions
 from ggrc.utils.contributed_objects import CONTRIBUTED_OBJECTS
 from ggrc.views import external_mappings  # noqa: F401
 from ggrc.views import saved_searches  # noqa: F401
-from ggrc.views import bulk_operations  # noqa: F401
 from ggrc.views import converters, cron, filters, notifications, registry, \
     utils, serializers, folder
+from ggrc.views.bulk_operations import bulk_operations   # noqa: F401
 
 logger = logging.getLogger(__name__)
 REINDEX_CHUNK_SIZE = 100
