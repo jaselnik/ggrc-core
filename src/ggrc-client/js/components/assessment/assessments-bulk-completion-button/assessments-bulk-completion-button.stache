@@ -3,20 +3,14 @@
     Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 }}
 
-{{#if isButtonView}}
     <button
       type="button"
       class="btn btn-small btn-darkBlue"
       on:el:click="openBulkCompleteModal(scope.element)"
+      rel="tooltip"
+      data-placement="bottom"
+      {{#unless enabled}}disabled{{/unless}}
+      data-original-title="Open Bulk completion mode to easily complete your SOX 302 certifications"
     >
-      Bulk Complete
+      Bulk completion
     </button>
-  {{else}}
-    <a
-      href="javascript://"
-      on:el:click="openBulkCompleteModal(scope.element)"
-    >
-      <i class="fa fa-fw fa-refresh"></i>
-      Bulk Complete
-    </a>
-{{/if}}

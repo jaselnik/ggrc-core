@@ -7,8 +7,9 @@ import canStache from 'can-stache';
 import canDefineMap from 'can-define/map/map';
 import canComponent from 'can-component';
 import {isMyAssessments} from '../../../plugins/utils/current-page-utils';
-import {getAsmtCountForVerify} from '../../../plugins/utils/bulk-update-service';
+import {getAsmtCountForVerify, getAsmtCountForCompletion} from '../../../plugins/utils/bulk-update-service';
 import template from './assessment-tree-actions.stache';
+import pubSub from '../../../pub-sub';
 
 const ViewModel = canDefineMap.extend({
   instance: {
@@ -17,10 +18,13 @@ const ViewModel = canDefineMap.extend({
   parentInstance: {
     value: null,
   },
+  pubSub: {
+    value: () => pubSub,
+  },
   model: {
     value: null,
   },
-  showBulkComplete: {
+  showBulkCompletion: {
     value: false,
   },
   showBulkVerify: {
@@ -36,6 +40,20 @@ const ViewModel = canDefineMap.extend({
       this.showBulkVerify = count > 0;
     });
   },
+  setShowBulkCompletion() {
+    let relevant = null;
+    if (!isMyAssessments()) {
+      const parentInstance = this.parentInstance;
+      relevant = {
+        type: parentInstance.type,
+        id: parentInstance.id,
+        operation: 'relevant',
+      };
+    }
+    getAsmtCountForCompletion(relevant).then((count) => {
+      this.showBulkCompletion = count > 0;
+    });
+  },
 });
 
 export default canComponent.extend({
@@ -45,6 +63,9 @@ export default canComponent.extend({
   events: {
     inserted() {
       this.viewModel.setShowBulkVerify();
+    },
+    '{pubSub} refreshItemsList'() {
+      this.viewModel.setShowBulkCompletion();
     },
   },
 });

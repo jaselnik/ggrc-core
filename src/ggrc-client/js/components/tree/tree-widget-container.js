@@ -215,6 +215,7 @@ const ViewModel = canDefineMap.extend({
         this.pageInfo.attr('total', total);
         this.pageInfo.attr('disabled', false);
         this.loading = false;
+        this.pubSub.dispatch('refreshItemsList');
       })
       .then(stopFn, stopFn.bind(null, true));
   },

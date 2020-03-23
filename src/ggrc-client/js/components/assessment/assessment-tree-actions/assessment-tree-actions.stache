@@ -3,10 +3,9 @@
   Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 }}
 
+<assessments-bulk-completion-button enabled:from="showBulkCompletion"/>
 {{#if showBulkSection}}
-  {{#if showBulkComplete}}
-    <assessments-bulk-complete-button isButtonView:from="true" />
-  {{/if}}
+
   {{#if showBulkVerify}}
     <assessments-bulk-verify-button
       class="bulk-verify__button"
@@ -17,7 +16,7 @@
     {{^if instance.archived}}
     {{#is_allowed 'update' parentInstance}}
       <a href="javascript://"
-        class="btn btn-small btn-darkBlue"
+        class="btn btn-small btn-darkBlue tree-action__create-button"
         rel="tooltip"
         data-placement="left"
         data-original-title="Create {{model.model_singular}}"

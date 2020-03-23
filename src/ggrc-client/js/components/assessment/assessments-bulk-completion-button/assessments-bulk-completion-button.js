@@ -5,7 +5,7 @@
 
 import canComponent from 'can-component';
 import canStache from 'can-stache';
-import template from './assessments-bulk-complete-button.stache';
+import template from './assessments-bulk-completion-button.stache';
 import BulkUpdatableButton from '../view-models/bulk-updatable-button-vm';
 
 const ViewModel = BulkUpdatableButton.extend({
@@ -20,7 +20,7 @@ const ViewModel = BulkUpdatableButton.extend({
 });
 
 export default canComponent.extend({
-  tag: 'assessments-bulk-complete-button',
+  tag: 'assessments-bulk-completion-button',
   view: canStache(template),
   ViewModel,
 });

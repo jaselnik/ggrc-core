@@ -54,17 +54,15 @@ const requestAssessmentsCount = (
   return batchRequests(param).then(({Assessment: {count}}) => count);
 };
 
-export const getAsmtCountForComplete = (relevant) => {
+export const getAsmtCountForCompletion = (relevant) => {
   const filters = {
     expression: {
       left: {
-        object_name: 'Person',
+        left: 'assignees',
         op: {
-          name: 'relevant',
+          name: '~',
         },
-        ids: [
-          GGRC.current_user.id,
-        ],
+        right: GGRC.current_user.email,
       },
       op: {
         name: 'AND',
@@ -85,11 +83,23 @@ export const getAsmtCountForComplete = (relevant) => {
           name: 'AND',
         },
         right: {
-          left: 'archived',
-          op: {
-            name: '=',
+          left: {
+            left: 'sox_302_enabled',
+            op: {
+              name: '=',
+            },
+            right: 'yes',
           },
-          right: 'No',
+          op: {
+            name: 'AND',
+          },
+          right: {
+            left: 'archived',
+            op: {
+              name: '=',
+            },
+            right: 'No',
+          },
         },
       },
     },
