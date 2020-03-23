@@ -11,49 +11,70 @@ from integration.ggrc import TestCase
 from integration.ggrc.models import factories
 
 from ggrc.bulk_operations import csvbuilder
+from ggrc.bulk_operations import csvbuilder_disabled
 
 
 CAVS_STUB = {
-    "assessments_ids": [1, 2],
+    "assessments_ids": [],
     "attributes": [{
-        "attribute_value": "cav_value",
-        "attribute_title": "cav_title",
-        "attribute_type": "Text",
-        "extra": {
-            "comment": {},
-            "urls": [],
-            "files": [],
+        "assessment": {
+            "id": 1,
+            "slug": "slug1",
         },
-        "bulk_update": [{"assessment_id": 1,
-                         "attribute_definition_id": 1,
-                         "slug": "slug1"},
-                        {"assessment_id": 2,
-                         "attribute_definition_id": 2,
-                         "slug": "slug2"}]}, {
-        "attribute_value": "cav_value1",
-        "attribute_title": "cav_title1",
-        "attribute_type": "Text",
-        "extra": {
-            "comment": {},
-            "urls": [],
-            "files": [],
+        "values": [{
+            "value": "cav_value",
+            "title": "cav_title",
+            "type": "Text",
+            "definition_id": 1,
+            "id": 1,
+            "extra": {
+                "comment": {},
+                "urls": [],
+                "files": []
+            },
+        }, {
+            "value": "cav_value1",
+            "title": "cav_title1",
+            "type": "Text",
+            "definition_id": 1,
+            "id": 3,
+            "extra": {
+                "comment": {},
+                "urls": [],
+                "files": []
+            },
+        }]
+    }, {
+        "assessment": {
+            "id": 2,
+            "slug": "slug2",
         },
-        "bulk_update": [{"assessment_id": 1,
-                         "attribute_definition_id": 3,
-                         "slug": "slug1"}]}]
+        "values": [{
+            "value": "cav_value",
+            "title": "cav_title",
+            "type": "Text",
+            "definition_id": 2,
+            "id": 2,
+            "extra": {
+                "comment": {},
+                "urls": [],
+                "files": []
+            },
+        }],
+    }]
 }
 
 EXPECTED_STUB = {1: {"files": [],
                      "urls": [],
                      "cavs": {'cav_title1': 'cav_value1',
                               'cav_title': 'cav_value'},
-                     "slug": "",
+                     "slug": "slug1",
                      "verification": False,
                      "comments": []},
                  2: {"files": [],
                      "urls": [],
                      "cavs": {'cav_title': 'cav_value'},
-                     "slug": "",
+                     "slug": "slug2",
                      "verification": False,
                      "comments": []}}
 
@@ -62,19 +83,22 @@ def create_input_data(cavs_data):
   """Update input CAVS_STUB-like structure with appropriate data
 
     Args:
-      cavs_data: {ind: {key:value, }, }.
+      cavs_data: {asmt_ind: {cad_id: {{key:value, }, }, }.
         ind - indexes of CAVS_STUB["attributes"] list (0,1) to update,
         key - fields to be updated in stub,
         value - values for appropriate fields.
   """
   input_data = copy.deepcopy(CAVS_STUB)
-  for cav_data in cavs_data:
-    for key in cavs_data[cav_data]:
-      if key in input_data["attributes"][cav_data]:
-        input_data["attributes"][cav_data][key] = cavs_data[cav_data][key]
-      else:
-        input_data["attributes"][cav_data]["extra"][key] = \
-            cavs_data[cav_data][key]
+  for asmt_ind in cavs_data:
+    for value_ind in cavs_data[asmt_ind]:
+      for key in cavs_data[asmt_ind][value_ind]:
+        if key in input_data["attributes"][asmt_ind]["values"][value_ind]:
+          input_data["attributes"][asmt_ind]["values"][value_ind][key] = \
+              cavs_data[asmt_ind][value_ind][key]
+        else:
+          input_data["attributes"][asmt_ind]["values"][
+              value_ind
+          ]["extra"][key] = cavs_data[asmt_ind][value_ind][key]
   return input_data
 
 
@@ -95,8 +119,8 @@ def create_assert_data(expected_data):
 
 
 @ddt.ddt
-class TestCsvBuilder(TestCase):
-  """Class for testing CsvBuilder methods"""
+class TestMatrixCsvBuilder(TestCase):
+  """Class for testing MatrixCsvBuilder methods"""
   # pylint: disable=invalid-name
 
   def assert_assessments(self, builder, assert_data):
@@ -120,38 +144,79 @@ class TestCsvBuilder(TestCase):
   @ddt.data(
       [{}, {}],
 
-      [{0: {"urls": ["1", "2"]}, 1: {"urls": ["3"]}},
-       {1: {"urls": ["1", "2", "3"]}, 2: {"urls": ["1", "2"]}}],
+      [
+          {
+              0: {0: {"urls": ["1", "2"]}, 1: {"urls": ["3"]}},
+              1: {0: {"urls": ["1", "2"]}}
+          },
+          {1: {"urls": ["1", "2", "3"]}, 2: {"urls": ["1", "2"]}}
+      ],
 
-      [{1: {"urls": ["3"]}},
-       {1: {"urls": ["3"]}, 2: {"urls": []}}],
+      [{0: {1: {"urls": ["3"]}}}, {1: {"urls": ["3"]}, 2: {"urls": []}}],
 
-      [{0: {"files": [{"source_gdrive_id": "1"}, {"source_gdrive_id": "2"}]},
-        1: {"files": [{"source_gdrive_id": "3"}]}},
-       {1: {"files": ["1", "2", "3"]}, 2: {"files": ["1", "2"]}}],
+      [
+          {
+              0: {
+                  0: {"files": [
+                      {"source_gdrive_id": "1"},
+                      {"source_gdrive_id": "2"}
+                  ]},
+                  1: {"files": [{"source_gdrive_id": "3"}]},
+              },
+              1: {0: {"files": [
+                  {"source_gdrive_id": "1"},
+                  {"source_gdrive_id": "2"}
+              ]}},
+          },
+          {1: {"files": ["1", "2", "3"]}, 2: {"files": ["1", "2"]}}
+      ],
 
-      [{1: {"files": [{"source_gdrive_id": "3"}]}},
-       {1: {"files": ["3"]}, 2: {"files": []}}],
+      [
+          {0: {1: {"files": [{"source_gdrive_id": "3"}]}}},
+          {1: {"files": ["3"]}, 2: {"files": []}},
+      ],
 
-      [{0: {"comment": {"description": "comment descr1"}},
-        1: {"comment": {"description": "comment descr2"}}},
-       {1: {"comments": [{'cad_id': 1, 'description': 'comment descr1'},
-                         {'cad_id': 3, 'description': 'comment descr2'}]},
-        2: {"comments": [{'cad_id': 2, 'description': 'comment descr1'}]}}],
+      [
+          {
+              0: {
+                  0: {"comment": {"description": "comment descr1"}},
+                  1: {"comment": {"description": "comment descr2"}},
+              },
+              1: {0: {"comment": {"description": "comment descr1"}}}
+          },
+          {1: {"comments": [{'cad_id': 1, 'description': 'comment descr1'},
+                            {'cad_id': 3, 'description': 'comment descr2'}]},
+           2: {"comments": [{'cad_id': 2, 'description': 'comment descr1'}]}}
+      ],
 
-      [{1: {"comment": {"description": "comment descr2"}}},
-       {1: {"comments": [{'cad_id': 3, 'description': 'comment descr2'}]},
-        2: {"comments": []}}],
+      [
+          {0: {1: {"comment": {"description": "comment descr2"}}}},
+          {
+              1: {"comments": [
+                  {'cad_id': 3, 'description': 'comment descr2'}
+              ]},
+              2: {"comments": []},
+          }
+      ],
 
-      [{0: {"attribute_value": "cv", "attribute_title": "ct"},
-        1: {"attribute_value": "cv1", "attribute_title": "ct1"}},
-       {1: {"cavs": {'ct': 'cv', 'ct1': 'cv1'}},
-        2: {"cavs": {'ct': 'cv'}}}]
+      [
+          {
+              0: {
+                  0: {"value": "cv", "title": "ct"},
+                  1: {"value": "cv1", "title": "ct1"}
+              },
+              1: {0: {"value": "cv", "title": "ct"}}
+          },
+          {
+              1: {"cavs": {'ct': 'cv', 'ct1': 'cv1'}},
+              2: {"cavs": {'ct': 'cv'}}
+          }
+      ]
   )
   @ddt.unpack
   def test_convert_data(self, data, expected_result):
     """Test convert_data method"""
-    builder = csvbuilder.CsvBuilder(create_input_data(data))
+    builder = csvbuilder.MatrixCsvBuilder(create_input_data(data))
     self.assert_assessments(builder, create_assert_data(expected_result))
 
   def _set_assessments_values(self, builder, data):
@@ -217,7 +282,7 @@ class TestCsvBuilder(TestCase):
             }
         ]
     }
-    builder = csvbuilder.CsvBuilder(data)
+    builder = csvbuilder_disabled.CsvBuilder(data)
     expected_data = {
         asmt.id: {
             "files": [],
@@ -280,7 +345,7 @@ class TestCsvBuilder(TestCase):
             },
         ]
     }
-    builder = csvbuilder.CsvBuilder(data)
+    builder = csvbuilder_disabled.CsvBuilder(data)
     expected_data = {
         asmt1.id: {
             "files": [],
@@ -363,7 +428,7 @@ class TestCsvBuilder(TestCase):
             }
         ]
     }
-    builder = csvbuilder.CsvBuilder(data)
+    builder = csvbuilder_disabled.CsvBuilder(data)
 
     expected_data = {
         asmt1.id: {
@@ -398,24 +463,23 @@ class TestCsvBuilder(TestCase):
           attribute_type="Text",
       )
     data = {
-        "assessments_ids": [asmt.id],
-        "attributes": [
-            {
-                "attribute_value": "cav_value",
-                "attribute_title": cad.title,
-                "attribute_type": "Text",
+        "assessments_ids": [],
+        "attributes": [{
+            "assessment": {
+                "id": asmt.id,
+                "slug": asmt.slug,
+            },
+            "values": [{
+                "value": "cav_value",
+                "title": cad.title,
+                "type": "Text",
+                "definition_id": asmt.id,
+                "id": cad.id,
                 "extra": extra_data,
-                "bulk_update": [
-                    {
-                        "assessment_id": asmt.id,
-                        "attribute_definition_id": cad.id,
-                        "slug": asmt.slug,
-                    },
-                ]
-            }
-        ]
+            }]
+        }]
     }
-    builder = csvbuilder.CsvBuilder(data)
+    builder = csvbuilder.MatrixCsvBuilder(data)
     expected_data = {
         asmt.id: {
             "files": [],
@@ -427,12 +491,15 @@ class TestCsvBuilder(TestCase):
         }
     }
     self.assert_assessments(builder, expected_data)
-    self.assertEqual(builder.assessment_ids, [asmt.id])
+    self.assertEqual(list(builder.assessments.keys()), [asmt.id])
 
+
+class TestVerifyCsvBuilder(TestCase):
+  """Class for testing VerifyCsvBuilder methods"""
   @freezegun.freeze_time("2019-10-21 10:28:34")
   def test_bulk_verify_csv(self):
     """Test building csv for bulk verify"""
-    builder = csvbuilder.CsvBuilder({})
+    builder = csvbuilder.VerifyCsvBuilder({})
     builder.assessments[1].slug = "slug-1"
     builder.assessments[2].slug = "slug-2"
     builded_list = builder.assessments_verify_to_csv()

@@ -401,3 +401,140 @@ class TestBulkOperations(ggrc.TestCase):
       self.assertEqual(asmt.status, "Completed")
     for cav in cavs:
       self.assertEqual(cav.attribute_value, expected_value)
+
+  def test_bulk_cavs_save(self):
+    """Test save assessment's CAD in bulk with new value"""
+    with factories.single_commit():
+      assmt = factories.AssessmentFactory(status="Not Started")
+      cad_id = factories.CustomAttributeDefinitionFactory(
+          definition_id=assmt.id,
+          title="text_lca",
+          definition_type="assessment",
+          attribute_type="Text",
+      ).id
+
+    data = {
+        "assessments_ids": [],
+        "attributes": [{
+            "assessment": {
+                "id": assmt.id,
+                "slug": assmt.slug,
+            },
+            "values": [{
+                "value": "test value",
+                "title": "text_lca",
+                "type": "Text",
+                "definition_id": assmt.id,
+                "extra": {},
+            }]
+        }]
+    }
+    response = self.client.post("/api/bulk_operations/cavs/save",
+                                data=json.dumps(data),
+                                headers=self.headers)
+    self.assert200(response)
+    cav = models.CustomAttributeValue.query.filter_by(
+        custom_attribute_id=cad_id
+    ).one()
+    self.assertEqual(
+        cav.attribute_value,
+        "test value",
+    )
+
+  @mock.patch('ggrc.gdrive.file_actions.process_gdrive_file')
+  @mock.patch('ggrc.gdrive.file_actions.get_gdrive_file_link')
+  @mock.patch('ggrc.gdrive.get_http_auth')
+  def test_bulk_save_files(self, _, get_gdrive_link, process_gdrive_mock):
+    """Test files were mapped to assessments successfully"""
+    process_gdrive_mock.return_value = {
+        "id": "mock_id",
+        "webViewLink": "test_mock_link",
+        "name": "mock_name",
+    }
+    get_gdrive_link.return_value = "mock_id"
+    with factories.single_commit():
+      assmt = factories.AssessmentFactory(status="Not Started")
+      factories.CustomAttributeDefinitionFactory(
+          definition_id=assmt.id,
+          title="lca_title",
+          definition_type="assessment",
+          attribute_type="Dropdown",
+          multi_choice_options="one,two",
+          multi_choice_mandatory="2,2",
+      )
+
+    data = {
+        "assessments_ids": [],
+        "attributes": [{
+            "assessment": {
+                "id": assmt.id,
+                "slug": assmt.slug,
+            },
+            "values": [{
+                "value": "one",
+                "title": "lca_title",
+                "type": "Dropdown",
+                "definition_id": assmt.id,
+                "extra": {
+                    "comment": None,
+                    "urls": [],
+                    "files": [{"source_gdrive_id": "mock_id"}]
+                },
+            }]
+        }]
+    }
+
+    response = self.client.post(
+        "/api/bulk_operations/cavs/save",
+        data=json.dumps(data),
+        headers=self.headers,
+    )
+    self.assert200(response)
+    assmt = models.Assessment.query.first()
+    urls = {ev_file.gdrive_id for ev_file in assmt.evidences_file}
+    self.assertEqual(urls, {u"mock_id"})
+
+  def test_bulk_save_comment(self):
+    """Test assessment successfully LCA comment mapping"""
+    with factories.single_commit():
+      assmt = factories.AssessmentFactory(status="Not Started")
+      cad_id = factories.CustomAttributeDefinitionFactory(
+          definition_id=assmt.id,
+          title="lca_title",
+          definition_type="assessment",
+          attribute_type="Dropdown",
+          multi_choice_options="one,two",
+          multi_choice_mandatory="1,1",
+      ).id
+
+    data = {
+        "assessments_ids": [],
+        "attributes": [{
+            "assessment": {
+                "id": assmt.id,
+                "slug": assmt.slug,
+            },
+            "values": [{
+                "value": "one",
+                "title": "lca_title",
+                "type": "Dropdown",
+                "definition_id": assmt.id,
+                "id": cad_id,
+                "extra": {
+                    "comment": {"description": "comment descr1"},
+                    "urls": [],
+                    "files": []
+                },
+            }]
+        }]
+    }
+    self.client.post(
+        "/api/bulk_operations/cavs/save",
+        data=json.dumps(data),
+        headers=self.headers,
+    )
+
+    comment = models.Comment.query.filter_by(
+        custom_attribute_definition_id=cad_id,
+    ).one()
+    self.assertIn("comment descr1", comment.description)
