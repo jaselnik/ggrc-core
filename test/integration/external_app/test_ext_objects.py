@@ -90,18 +90,21 @@ class TestBaseExternalObjects(integration_ggrc.TestCase):
     model_inst = model_factory(**data)
     return model_inst
 
-  def _validate_acl_counts(self, model, object_id, count):
-    """Checks acl counts for certain object.
+  def _validate_acl_counts(self, model, object_id, expected_count):
+    """Checks ACL counts for certain object.
 
     Args:
-      model: An instance of model object.
-      object_id: An integer value of object id
-      count: An integer value for acl count.
+      model (db.Model): An instance of model object.
+      object_id (int): An integer value of object ID.
+      expected_count (int): An integer value of expected ACL count.
+
+    Raises:
+      AssertionError: expected ACL count does not match actual one.
     """
     acrs = all_models.AccessControlRole.query.filter(
         all_models.AccessControlRole.object_type == model.__name__,
         all_models.AccessControlRole.name.in_(
-            ["Verifier", "Assignee", "Admin"])
+            ["Secondary Contacts", "Primary Contacts", "Admin"])
     ).all()
     acrs = [acr.id for acr in acrs]
 
@@ -111,7 +114,7 @@ class TestBaseExternalObjects(integration_ggrc.TestCase):
         all_models.AccessControlList.ac_role_id.in_(acrs)
     ).count()
 
-    self.assertEquals(acl_count, count)
+    self.assertEquals(expected_count, acl_count)
 
   @ddt.data(*OBJECTS)
   def test_objects_have_external_attrs(self, model):
@@ -147,20 +150,28 @@ class TestExternalAppObjects(TestBaseExternalObjects):
     data = self._make_test_models_payload(model)
 
     response = self.api.post(model, data=data)
-    self.assert201(response)
 
+    self.assert201(response)
     obj_count = model.query.count()
     self.assertEqual(1, obj_count)
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_scope_acl_create(self, model):
-    """Test scope object create with acl."""
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_external_object_create_with_acl(self, model):
+    """
+        Test POST external {0.__name__} with ACL for external API.
+    """
     data = self._make_test_models_payload(model)
     acl = {
         "access_control_list": {
-            "Verifier": [{"email": "test1@exp.com", "name": "Test 1"}],
-            "Assignee": [{"email": "test2@exp.com", "name": "Test 2"}],
-            "Admin": [{"email": "test3@exp.com", "name": "Test 3"}]}
+            "Primary Contacts": [
+                {"email": "test1@exp.com", "name": "Test 1"},
+            ],
+            "Secondary Contacts": [
+                {"email": "test2@exp.com", "name": "Test 2"},
+            ],
+            "Admin": [
+                {"email": "test3@exp.com", "name": "Test 3"},
+            ]}
     }
     data.update(acl)
 
@@ -168,7 +179,7 @@ class TestExternalAppObjects(TestBaseExternalObjects):
 
     self.assert201(response)
     object_id = response.json[model._inflector.table_singular]["id"]
-    self._validate_acl_counts(model, object_id, 3)
+    self._validate_acl_counts(model, object_id, expected_count=3)
 
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_external_object_get_allowed(self, model):
@@ -195,26 +206,34 @@ class TestExternalAppObjects(TestBaseExternalObjects):
     }
 
     response = self.api.put(ext_obj, obj_id=ext_obj.id, data=data)
-    self.assert200(response)
 
+    self.assert200(response)
     ext_obj = model.query.get(ext_obj.id)
     self.assertEqual(ext_obj.title, data["title"])
 
-  @ddt.data(*all_models.get_scope_models())
-  def test_scope_acl_put(self, model):
-    """Test scope object put with acl."""
-    scope_obj = self._create_test_model_instance(model)
-    acl = {
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_external_object_put_with_acl(self, model):
+    """
+        Test PUT external {0.__name__} with ACL for external API.
+    """
+    ext_obj = self._create_test_model_instance(model)
+    data = {
         "access_control_list": {
-            "Verifier": [{"email": "test1@exp.com", "name": "Test 1"}],
-            "Assignee": [{"email": "test2@exp.com", "name": "Test 2"}],
-            "Admin": [{"email": "test3@exp.com", "name": "Test 3"}]}
+            "Primary Contacts": [
+                {"email": "test1@exp.com", "name": "Test 1"},
+            ],
+            "Secondary Contacts": [
+                {"email": "test2@exp.com", "name": "Test 2"},
+            ],
+            "Admin": [
+                {"email": "test3@exp.com", "name": "Test 3"},
+            ]}
     }
 
-    response = self.api.put(scope_obj, obj_id=scope_obj.id, data=acl)
+    response = self.api.put(ext_obj, obj_id=ext_obj.id, data=data)
 
     self.assert200(response)
-    self._validate_acl_counts(model, scope_obj.id, 3)
+    self._validate_acl_counts(model, ext_obj.id, expected_count=3)
 
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_exernal_object_review_deprecated(self, model):
@@ -229,6 +248,7 @@ class TestExternalAppObjects(TestBaseExternalObjects):
     expected_response = "Trying to create review for external model."
 
     response = self.api.post(all_models.Review, data=data)
+
     self.assert400(response)
     self.assertEqual(
         expected_response,

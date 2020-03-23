@@ -4,7 +4,6 @@
 """Module for threat model."""
 
 from ggrc import db
-from ggrc.access_control import roleable
 from ggrc.fulltext import mixin as ft_mixins
 from ggrc.models import comment
 from ggrc.models import mixins
@@ -14,9 +13,9 @@ from ggrc.models import relationship
 
 
 class Threat(mixins.synchronizable.Synchronizable,
+             mixins.synchronizable.RoleableSynchronizable,
              mixins.WithExternalCreatedBy,
              comment.ExternalCommentable,
-             roleable.Roleable,
              mixins.CustomAttributable,
              object_person.Personable,
              relationship.Relatable,

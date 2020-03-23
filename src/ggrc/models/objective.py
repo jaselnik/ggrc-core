@@ -4,7 +4,6 @@
 """Module for Objective model."""
 
 from ggrc import db
-from ggrc.access_control import roleable
 from ggrc.fulltext import mixin as ft_mixins
 from ggrc.models import comment
 from ggrc.models import mixins
@@ -14,10 +13,10 @@ from ggrc.models import relationship
 
 
 class Objective(mixins.synchronizable.Synchronizable,
+                mixins.synchronizable.RoleableSynchronizable,
                 mixins.WithExternalCreatedBy,
                 comment.ExternalCommentable,
                 mixins.with_last_assessment_date.WithLastAssessmentDate,
-                roleable.Roleable,
                 mixins.CustomAttributable,
                 mixins.WithStartDate,
                 mixins.WithLastDeprecatedDate,

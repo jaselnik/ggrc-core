@@ -6,7 +6,6 @@
 import sqlalchemy as sa
 
 from ggrc import db
-from ggrc.access_control import roleable
 from ggrc.fulltext import mixin as ft_mixins
 from ggrc.models import comment
 from ggrc.models import mixins
@@ -17,6 +16,7 @@ from ggrc.models import relationship
 
 
 class Contract(mixins.synchronizable.Synchronizable,
+               mixins.synchronizable.RoleableSynchronizable,
                mixins.WithExternalCreatedBy,
                comment.ExternalCommentable,
                mixins.BusinessObject,
@@ -29,7 +29,6 @@ class Contract(mixins.synchronizable.Synchronizable,
                object_document.PublicDocumentable,
                object_person.Personable,
                relationship.Relatable,
-               roleable.Roleable,
                mixins.Base,
                ft_mixins.Indexed,
                db.Model):

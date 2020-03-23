@@ -6,7 +6,6 @@
 import sqlalchemy as sa
 
 from ggrc import db
-from ggrc.access_control import roleable
 from ggrc.fulltext import mixin as ft_mixins
 from ggrc.models.deferred import deferred
 from ggrc.models import comment
@@ -19,9 +18,9 @@ from ggrc.models import relationship
 
 
 class Requirement(mixins.synchronizable.Synchronizable,
+                  mixins.synchronizable.RoleableSynchronizable,
                   mixins.WithExternalCreatedBy,
                   comment.ExternalCommentable,
-                  roleable.Roleable,
                   mixins.CustomAttributable,
                   mixins.WithStartDate,
                   mixins.WithLastDeprecatedDate,
