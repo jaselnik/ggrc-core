@@ -3,6 +3,9 @@
     Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 }}
 
+{{#if bulkCompleteModeEnabled}}
+  <assessments-bulk-complete-container/>
+{{else}}
 <div class="flex-box flex-col {{cssClasses}}">
   <div class="flex-box flex-col header tree-header-content">
     <div class="flex-box tree-filter">
@@ -57,3 +60,4 @@
     {{/if}}
   </div>
 </div>
+{{/if}}

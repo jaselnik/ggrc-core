@@ -5,17 +5,22 @@
 
 import canComponent from 'can-component';
 import canStache from 'can-stache';
+import canDefineMap from 'can-define/map/map';
 import template from './assessments-bulk-completion-button.stache';
-import BulkUpdatableButton from '../view-models/bulk-updatable-button-vm';
+import pubSub from '../../../pub-sub';
 
-const ViewModel = BulkUpdatableButton.extend({
-  async openBulkCompleteModal(el) {
-    const {AssessmentsBulkComplete} = await import(
-      /* webpackChunkName: "mapper" */
-      '../../../controllers/mapper/mapper'
-    );
-
-    AssessmentsBulkComplete.launch($(el), this.getModalConfig());
+const ViewModel = canDefineMap.extend({
+  enabled: {
+    value: false,
+  },
+  parentInstance: {
+    value: null,
+  },
+  pubSub: {
+    value: () => pubSub,
+  },
+  openBulkCompleteModal() {
+    this.pubSub.dispatch('enableBulkCompleteMode');
   },
 });
 

@@ -1,0 +1,25 @@
+{{!
+    Copyright (C) 2020 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<div class="flex-box flex-col">
+  <div class="flex-box flex-row bulk-complete-header">
+        <div class="alert alert-nomargin bulk-complete-header__alert">
+            Below are listed SOX 302 certifications in statuses "Not Started", "In Progress", "Rework Needed" that are assigned on you.
+        </div>
+        <div class="bulk-complete-header__action">
+            <button type="button" class="btn btn-white">
+              Exit bulk completion
+            </button>
+
+            <button type="button" disabled class="btn btn-white">
+              Save answers
+            </button>
+
+            <button type="button" disabled class="btn btn-darkBlue">
+              Complete
+            </button>
+        </div>
+  </div>
+</div>

@@ -306,6 +306,7 @@ const DEFERRED_MAPPED_UNMAPPED = {
 const REFRESH_ITEMS_LIST = {
   type: 'refreshItemsList',
 };
+
 /**
  * Notifies that an items list will be updated.
  * @event beforeLoadItems
