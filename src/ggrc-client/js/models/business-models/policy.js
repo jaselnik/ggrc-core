@@ -19,6 +19,7 @@ export default Cacheable.extend({
   category: 'governance',
   findAll: 'GET /api/policies',
   findOne: 'GET /api/policies/{id}',
+  migrationDate: '04/06/2020',
   is_custom_attributable: true,
   isRoleable: true,
   mixins: [

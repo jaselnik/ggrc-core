@@ -16,6 +16,7 @@ export default Cacheable.extend({
   title_plural: 'Objectives',
   findAll: 'GET /api/objectives',
   findOne: 'GET /api/objectives/{id}',
+  migrationDate: '04/06/2020',
   mixins: [
     RelatedAssessmentsLoader,
     ChangeableExternally,

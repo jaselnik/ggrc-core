@@ -13,6 +13,7 @@ export default Cacheable.extend({
   category: 'risk',
   findAll: 'GET /api/threats',
   findOne: 'GET /api/threats/{id}',
+  migrationDate: '04/06/2020',
   mixins: [
     ChangeableExternally,
     Proposable,

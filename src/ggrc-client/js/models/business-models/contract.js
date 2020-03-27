@@ -19,6 +19,7 @@ export default Cacheable.extend({
   category: 'governance',
   findAll: 'GET /api/contracts',
   findOne: 'GET /api/contracts/{id}',
+  migrationDate: '04/06/2020',
   mixins: [
     ChangeableExternally,
     Proposable,

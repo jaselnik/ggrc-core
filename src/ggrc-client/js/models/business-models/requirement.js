@@ -20,6 +20,7 @@ export default Cacheable.extend({
   root_model: 'Requirement',
   findAll: 'GET /api/requirements',
   findOne: 'GET /api/requirements/{id}',
+  migrationDate: '04/06/2020',
   is_custom_attributable: true,
   isRoleable: true,
   mixins: [
