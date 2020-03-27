@@ -20,6 +20,10 @@ from integration import ggrc as integration_ggrc
 # pylint: disable=invalid-name
 
 
+CAD = all_models.CustomAttributeDefinition
+CR = all_models.AccessControlRole
+
+
 @ddt.ddt
 class TestBaseExternalObjects(integration_ggrc.TestCase):
   """Base class for testing externalization for all objects."""
@@ -78,6 +82,38 @@ class TestBaseExternalObjects(integration_ggrc.TestCase):
             "notification_type": review_model.NotificationTypes.EMAIL_TYPE,
             "email_message": "",
         }}
+    return data
+
+  @staticmethod
+  def _make_test_models_cad_payload(model):
+    """
+        Prepare payload for {0.__name__}'s CAD model.
+    """
+    data = {
+        "custom_attribute_definition": {
+            "title": "new_CAD_{}".format(model.__name__),
+            "attribute_type": "Text",
+            "definition_type": model._inflector.table_singular,
+            "mandatory": False,
+            "helptext": "GCA Text",
+            "placeholder": "",
+            "context": None,
+        },
+    }
+    return data
+
+  @staticmethod
+  def _make_test_models_acr_payload(model):
+    """
+        Prepare payload for {0.__name__}'s ACR model.
+    """
+    data = {
+        "access_control_role": {
+            "name": "new_Custom_Role_{}".format(model.__name__),
+            "object_type": model.__name__,
+            "context": None,
+        },
+    }
     return data
 
   def _create_test_model_instance(self, model):
@@ -255,6 +291,44 @@ class TestExternalAppObjects(TestBaseExternalObjects):
         response.json,
     )
 
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_external_object_cad_create_allowed(self, model):
+    """
+        Test POST CAD for {0.__name__} is allowed for external API.
+    """
+    data = self._make_test_models_cad_payload(model)
+    definition_type = model._inflector.table_singular
+    cads_count_before = CAD.query.filter_by(
+        definition_type=definition_type,
+    ).count()
+
+    response = self.api.post(CAD, data=data)
+
+    self.assert201(response)
+    self.assertEqual(
+        cads_count_before + 1,
+        CAD.query.filter_by(definition_type=definition_type).count(),
+    )
+
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_external_object_cad_update_allowed(self, model):
+    """
+        Test PUT CAD for {0.__name__} is allowed for external API.
+    """
+    definition_type = model._inflector.table_singular
+    cad = factories.CustomAttributeDefinitionFactory(
+        definition_type=definition_type,
+    )
+    data = {
+        "title": "NEW CAD TITLE",
+    }
+
+    response = self.api.put(cad, obj_id=cad.id, data=data)
+
+    self.assert200(response)
+    cad = CAD.query.get(cad.id)
+    self.assertEqual(data["title"], cad.title)
+
   @ddt.data(*product(TestBaseExternalObjects.OBJECTS,
                      (all_models.Control, all_models.Risk)))
   @ddt.unpack
@@ -328,7 +402,7 @@ class TestInternalAppObjects(TestBaseExternalObjects):
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_internal_object_import_deprecated(self, model):
     """
-        Test that import of'{0.__name__}' model is deprecated
+        Test that import of {0.__name__} model is deprecated.
     """
     excepted_resp = {
         model._inflector.title_singular: {
@@ -344,7 +418,45 @@ class TestInternalAppObjects(TestBaseExternalObjects):
         ("Code*", ""),
         ("Title", "Test title")
     ]))
+
     self._check_csv_response(response, excepted_resp)
+
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_download_import_template(self, model):
+    """
+        Test that download import template of {0.__name__} is deprecated.
+    """
+    objects = [{
+        "object_name": model.__name__,
+    }]
+
+    self.client.get("/login")
+    response = self.export_csv_template(objects)
+
+    self.assert403(response)
+
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_export_allowed(self, model):
+    """
+        Test that export of {0.__name__} model is allowed for internal API.
+    """
+    ext_obj = self._create_test_model_instance(model)
+    ext_obj_slug = ext_obj.slug
+
+    self.client.get("/login")
+    response = self.export_csv([{
+        "object_name": ext_obj.type,
+        "filters": {
+            "expression": {
+                "left": "id",
+                "op": {"name": "="},
+                "right": ext_obj.id,
+            },
+        },
+    }])
+
+    self.assert200(response)
+    self.assertIn(ext_obj_slug, response.data)
 
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_internal_object_post_deprecated(self, model):
@@ -408,6 +520,122 @@ class TestInternalAppObjects(TestBaseExternalObjects):
     self.assertEqual(
         expected_response,
         response.json,
+    )
+
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_cad_create_deprecated(self, model):
+    """
+        Test POST CAD for {0.__name__} is deprecated for internal API.
+    """
+    data = self._make_test_models_cad_payload(model)
+    definition_type = model._inflector.table_singular
+    cads_count_before = CAD.query.filter_by(
+        definition_type=definition_type,
+    ).count()
+
+    response = self.api.post(CAD, data=data)
+
+    self.assert403(response)
+    self.assertEqual(
+        cads_count_before,
+        CAD.query.filter_by(definition_type=definition_type).count(),
+    )
+
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_cad_update_deprecated(self, model):
+    """
+        Test PUT CAD for {0.__name__} is deprecated for internal API.
+    """
+    definition_type = model._inflector.table_singular
+    cad = factories.CustomAttributeDefinitionFactory(
+        definition_type=definition_type,
+    )
+    cad_initial_title = cad.title
+    cad_id = cad.id
+
+    response = self.api.put(cad, {"title": "NEW CAD TITLE"})
+
+    self.assert403(response)
+    self.assertEqual(
+        cad_initial_title,
+        CAD.query.get(cad_id).title,
+    )
+
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_cad_delete_deprecated(self, model):
+    """
+        Test DELETE CAD for {0.__name__} is deprecated for internal API.
+    """
+    definition_type = model._inflector.table_singular
+    cad = factories.CustomAttributeDefinitionFactory(
+        definition_type=definition_type,
+    )
+    cad_id = cad.id
+
+    response = self.api.delete(cad, id_=cad.id)
+
+    self.assert403(response)
+    self.assertIsNotNone(
+        CAD.query.filter_by(id=cad_id).first(),
+    )
+
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_cr_create_deprecated(self, model):
+    """
+      Test POST Custom Role for {0.__name__} is deprecated for internal API.
+    """
+    data = self._make_test_models_acr_payload(model)
+    object_type = model.__name__
+    crs_count_before = CR.query.filter_by(
+        object_type=object_type,
+    ).count()
+
+    response = self.api.post(CR, data=data)
+
+    self.assert403(response)
+    self.assertEqual(
+        crs_count_before,
+        CR.query.filter_by(object_type=object_type).count(),
+    )
+
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_cr_update_deprecated(self, model):
+    """
+      Test PUT Custom Role for {0.__name__} is deprecated for internal API.
+    """
+    object_type = model.__name__
+    cr = factories.AccessControlRoleFactory(
+        object_type=object_type,
+        non_editable=False,
+    )
+    cr_initial_name = cr.name
+    cr_id = cr.id
+
+    response = self.api.put(cr, {"name": "NEW CR TITLE"})
+
+    self.assert403(response)
+    self.assertEqual(
+        cr_initial_name,
+        CR.query.get(cr_id).name,
+    )
+
+  @ddt.data(*TestBaseExternalObjects.OBJECTS)
+  def test_internal_object_cr_delete_deprecated(self, model):
+    """
+      Test DELETE Custom Role for {0.__name__} is deprecated for internal API.
+    """
+    object_type = model.__name__
+    cr = factories.AccessControlRoleFactory(
+        object_type=object_type,
+        non_editable=False,
+    )
+    cr_id = cr.id
+
+    response = self.api.delete(cr, id_=cr.id)
+
+    self.assert403(response)
+    self.assertIsNotNone(
+        CR.query.filter_by(id=cr_id).first(),
     )
 
   @ddt.data(*product(TestBaseExternalObjects.OBJECTS,

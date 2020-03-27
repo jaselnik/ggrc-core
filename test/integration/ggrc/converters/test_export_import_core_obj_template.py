@@ -22,12 +22,6 @@ class TestExportImportCoreObjectTemplate(TestCase):
                     'map:policy'), ('map:standard', )),
       ('Regulation', ('map:standard', 'map:requirement', 'map:contract',
                       'map:policy'), ('map:regulation',)),
-      ('Requirement', ('map:standard', 'map:regulation', 'map:contract',
-                       'map:policy', 'map:requirement'), ()),
-      ('Policy', ('map:standard', 'map:requirement', 'map:contract',
-                  'map:regulation'), ('map:policy',)),
-      ('Contract', ('map:standard', 'map:requirement', 'map:policy',
-                    'map:regulation'), ('map:contract',)),
       ('Assessment', [], ('Last Deprecated Date',))
   )
   @ddt.unpack

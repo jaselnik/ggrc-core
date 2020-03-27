@@ -45,7 +45,7 @@ def validate_object_type_ggrcq(mapper, content, target):
   ])
 
   if should_prevent:
-    raise exceptions.MethodNotAllowed()
+    raise exceptions.Forbidden()
 
 
 def validate_definition_type_ecad(mapper, content, target):
@@ -67,7 +67,7 @@ def validate_definition_type_ecad(mapper, content, target):
   ])
 
   if should_prevent:
-    raise exceptions.MethodNotAllowed()
+    raise exceptions.Forbidden()
 
 
 def validate_name_correctness(name):
