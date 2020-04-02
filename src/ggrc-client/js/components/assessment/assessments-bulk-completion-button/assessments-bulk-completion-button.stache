@@ -6,7 +6,7 @@
     <button
       type="button"
       class="btn btn-small btn-darkBlue"
-      on:el:click="openBulkCompleteModal(scope.element)"
+      on:el:click="openBulkCompleteMode(scope.element)"
       rel="tooltip"
       data-placement="bottom"
       {{#unless enabled}}disabled{{/unless}}
