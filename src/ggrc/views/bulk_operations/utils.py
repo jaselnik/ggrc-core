@@ -123,7 +123,7 @@ def _prepare_attributes_and_assessments(all_cads):
     response of attributes in OrderedDict form and list of assessments stubs
   """
   attributes = collections.OrderedDict()
-  assessments = []
+  assessments = collections.OrderedDict()
   for (asmt_id, asmt_title, asmt_type,
        asmt_status, cad, cav_value, cav_person_id) in all_cads:
     if cad:
@@ -136,14 +136,13 @@ def _prepare_attributes_and_assessments(all_cads):
           attributes,
           unique_key,
       )
-
-    assessments.append({
+    assessments[asmt_id] = {
         "assessment_type": asmt_type,
         "id": asmt_id,
         "title": asmt_title,
         "status": asmt_status,
-    })
-  return attributes.values(), assessments
+    }
+  return attributes.values(), assessments.values()
 
 
 def get_data(asmt_ids):

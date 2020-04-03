@@ -446,3 +446,50 @@ class TestMatrix(ggrc.TestCase):
         "assessments": self._generate_assessment_response(self.asmt1, asmt2),
     }
     self.assert_request(expected_response)
+
+  def test_one_assessments_many_cads(self):
+    """Test one assessment with many cads"""
+    with factories.single_commit():
+      cad1 = factories.CustomAttributeDefinitionFactory(
+          definition_id=self.asmt1.id,
+          **self._get_payload("Text")
+      )
+      cad2 = factories.CustomAttributeDefinitionFactory(
+          definition_id=self.asmt1.id,
+          **self._get_payload("Dropdown")
+      )
+    expected_response = {
+        "attributes": [{
+            "title": cad1.title,
+            "mandatory": cad1.mandatory,
+            "attribute_type": cad1.attribute_type,
+            "default_value": cad1.default_value,
+            "values": {
+                str(self.asmt1.id): {
+                    "value": None,
+                    "attribute_person_id": None,
+                    "definition_id": self.asmt1.id,
+                    "attribute_definition_id": cad1.id,
+                    "multi_choice_options": cad1.multi_choice_options,
+                    "multi_choice_mandatory": cad1.multi_choice_mandatory,
+                }
+            },
+        }, {
+            "title": cad2.title,
+            "mandatory": cad2.mandatory,
+            "attribute_type": cad2.attribute_type,
+            "default_value": cad2.default_value,
+            "values": {
+                str(self.asmt1.id): {
+                    "value": None,
+                    "attribute_person_id": None,
+                    "definition_id": self.asmt1.id,
+                    "attribute_definition_id": cad2.id,
+                    "multi_choice_options": cad2.multi_choice_options,
+                    "multi_choice_mandatory": cad2.multi_choice_mandatory,
+                }
+            }
+        }],
+        "assessments": self._generate_assessment_response(self.asmt1),
+    }
+    self.assert_request(expected_response)
