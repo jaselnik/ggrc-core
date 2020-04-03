@@ -101,18 +101,19 @@ class TestBulkCompleteNotification(TestCase):
       assessments_ids = [assmt.id for assmt in assessments]
       assessments_titles = [assmt.title for assmt in assessments]
 
-    bulk_update = [{"assessment_id": assmt.id,
-                    "attribute_definition_id": None,
-                    "slug": assmt.slug} for assmt in assessments]
     data = {
         "assessments_ids": assessments_ids,
         "attributes": [{
-            "attribute_value": "lcavalue",
-            "attribute_title": "lca_title",
-            "attribute_type": "Dropdown",
-            "extra": None,
-            "bulk_update": bulk_update
-        }],
+            "assessment": {"id": assmt.id, "slug": assmt.slug},
+            "values": [{
+                "value": "1",
+                "title": "lca_title",
+                "type": "Dropdown",
+                "definition_id": assmt.id,
+                "id": None,
+                "extra": None,
+            }]
+        } for assmt in assessments]
     }
     with mock.patch("ggrc.notifications.common.send_email") as send_mock:
       response = self.client.post("/api/bulk_operations/complete",

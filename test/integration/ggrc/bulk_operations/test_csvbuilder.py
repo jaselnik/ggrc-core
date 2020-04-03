@@ -11,7 +11,6 @@ from integration.ggrc import TestCase
 from integration.ggrc.models import factories
 
 from ggrc.bulk_operations import csvbuilder
-from ggrc.bulk_operations import csvbuilder_disabled
 
 
 CAVS_STUB = {
@@ -262,27 +261,23 @@ class TestMatrixCsvBuilder(TestCase):
       )
     data = {
         "assessments_ids": [asmt.id],
-        "attributes": [
-            {
-                "attribute_value": "cav_value",
-                "attribute_title": cad_text.title,
-                "attribute_type": "Text",
+        "attributes": [{
+            "assessment": {"id": asmt.id, "slug": asmt.slug},
+            "values": [{
+                "value": "cav_value",
+                "title": cad_text.title,
+                "type": "Text",
+                "definition_id": asmt.id,
+                "id": cad_text.id,
                 "extra": {
                     "comment": {},
                     "urls": [],
-                    "files": [],
+                    "files": []
                 },
-                "bulk_update": [
-                    {
-                        "assessment_id": asmt.id,
-                        "attribute_definition_id": cad_text.id,
-                        "slug": asmt.slug,
-                    },
-                ]
-            }
-        ]
+            }]
+        }]
     }
-    builder = csvbuilder_disabled.CsvBuilder(data)
+    builder = csvbuilder.MatrixCsvBuilder(data)
     expected_data = {
         asmt.id: {
             "files": [],
@@ -320,32 +315,35 @@ class TestMatrixCsvBuilder(TestCase):
     asmt_ids = [asmt1.id, asmt2.id]
     data = {
         "assessments_ids": asmt_ids,
-        "attributes": [
-            {
-                "attribute_value": "cav_value",
-                "attribute_title": cad1.title,
-                "attribute_type": "Text",
-                "extra": {
-                    "comment": {},
-                    "urls": [],
-                    "files": [],
-                },
-                "bulk_update": [
-                    {
-                        "assessment_id": asmt1.id,
-                        "attribute_definition_id": cad1.id,
-                        "slug": asmt1.slug,
-                    },
-                    {
-                        "assessment_id": asmt2.id,
-                        "attribute_definition_id": cad2.id,
-                        "slug": asmt2.slug,
-                    },
-                ]
+        "attributes": [{
+            "assessment": {
+                "id": asmt1.id,
+                "slug": asmt1.slug,
             },
-        ]
+            "values": [{
+                "value": "cav_value",
+                "title": cad1.title,
+                "type": "Text",
+                "definition_id": asmt1.id,
+                "id": cad1.id,
+                "extra": {},
+            }]
+        }, {
+            "assessment": {
+                "id": asmt2.id,
+                "slug": asmt2.slug,
+            },
+            "values": [{
+                "value": "cav_value",
+                "title": cad2.title,
+                "type": "Text",
+                "definition_id": asmt2.id,
+                "id": cad2.id,
+                "extra": {},
+            }]
+        }]
     }
-    builder = csvbuilder_disabled.CsvBuilder(data)
+    builder = csvbuilder.MatrixCsvBuilder(data)
     expected_data = {
         asmt1.id: {
             "files": [],
@@ -391,44 +389,35 @@ class TestMatrixCsvBuilder(TestCase):
     asmt_ids = [asmt1.id, asmt2.id]
     data = {
         "assessments_ids": asmt_ids,
-        "attributes": [
-            {
-                "attribute_value": "cav_value_1",
-                "attribute_title": cad1.title,
-                "attribute_type": "Text",
-                "extra": {
-                    "comment": {},
-                    "urls": [],
-                    "files": [],
-                },
-                "bulk_update": [
-                    {
-                        "assessment_id": asmt1.id,
-                        "attribute_definition_id": cad1.id,
-                        "slug": asmt1.slug,
-                    },
-                ]
+        "attributes": [{
+            "assessment": {
+                "id": asmt1.id,
+                "slug": asmt1.slug,
             },
-            {
-                "attribute_value": "cav_value_2",
-                "attribute_title": cad2.title,
-                "attribute_type": "Text",
-                "extra": {
-                    "comment": {},
-                    "urls": [],
-                    "files": [],
-                },
-                "bulk_update": [
-                    {
-                        "assessment_id": asmt2.id,
-                        "attribute_definition_id": cad2.id,
-                        "slug": asmt2.slug,
-                    },
-                ]
-            }
-        ]
+            "values": [{
+                "value": "cav_value_1",
+                "title": cad1.title,
+                "type": "Text",
+                "definition_id": asmt1.id,
+                "id": cad1.id,
+                "extra": {},
+            }]
+        }, {
+            "assessment": {
+                "id": asmt2.id,
+                "slug": asmt2.slug,
+            },
+            "values": [{
+                "value": "cav_value_2",
+                "title": cad2.title,
+                "type": "Text",
+                "definition_id": asmt2.id,
+                "id": cad2.id,
+                "extra": {},
+            }]
+        }]
     }
-    builder = csvbuilder_disabled.CsvBuilder(data)
+    builder = csvbuilder.MatrixCsvBuilder(data)
 
     expected_data = {
         asmt1.id: {
@@ -465,10 +454,7 @@ class TestMatrixCsvBuilder(TestCase):
     data = {
         "assessments_ids": [],
         "attributes": [{
-            "assessment": {
-                "id": asmt.id,
-                "slug": asmt.slug,
-            },
+            "assessment": {"id": asmt.id, "slug": asmt.slug},
             "values": [{
                 "value": "cav_value",
                 "title": cad.title,

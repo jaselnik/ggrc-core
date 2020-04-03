@@ -48,12 +48,6 @@ class AbstractCsvBuilder(object):
     self.convert_data()
 
   def convert_data(self):
-    """Convert request data to appropriate format."""
-
-
-class VerifyCsvBuilder(AbstractCsvBuilder):
-  """Handle data and build csv for assessments bulk verify."""
-  def convert_data(self):
     """Convert request data to appropriate format.
 
       expected output format:
@@ -76,6 +70,10 @@ class VerifyCsvBuilder(AbstractCsvBuilder):
       needs_verification = True if verifiers else False
       self.assessments[assessment.id].needs_verification = needs_verification
       self.assessments[assessment.id].slug = assessment.slug
+
+
+class VerifyCsvBuilder(AbstractCsvBuilder):
+  """Handle data and build csv for assessments bulk verify."""
 
   @staticmethod
   def _prepare_assmt_verify_row(assessment, verify_date):
@@ -156,6 +154,7 @@ class MatrixCsvBuilder(AbstractCsvBuilder):
     self._collect_attributes()
 
     self._collect_required_data()
+    super(MatrixCsvBuilder, self).convert_data()
 
   def _collect_required_data(self):
     """Collect all CAD titles, verification and slugs"""
@@ -264,3 +263,26 @@ class MatrixCsvBuilder(AbstractCsvBuilder):
     self._build_assessment_block(prepared_csv)
     self._build_lca_block(prepared_csv)
     return prepared_csv
+
+  @staticmethod
+  def _prepare_assmt_complete_row(assessment):
+    """Prepare row for assessment complete via import"""
+    status = u"In Review" if assessment.needs_verification else u"Completed"
+    row = [u"", assessment.slug, status]
+    return row
+
+  def assessments_complete_to_csv(self, errors):
+    """Prepare csv to complete assessments in bulk via import"""
+
+    assessments_list = []
+    for assessment in self.assessments.values():
+      if assessment.slug not in errors:
+        assessments_list.append(self._prepare_assmt_complete_row(assessment))
+
+    result_csv = []
+    if assessments_list:
+      result_csv.append([u"Object type"])
+      result_csv.append([u"Assessment", u"Code", u"State"])
+      result_csv.extend(assessments_list)
+
+    return result_csv
