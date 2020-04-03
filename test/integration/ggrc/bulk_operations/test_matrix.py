@@ -405,3 +405,44 @@ class TestMatrix(ggrc.TestCase):
         "assessments": self._generate_assessment_response(self.asmt1),
     }
     self.assert_request(expected_response)
+
+  def test_assessment_no_cads(self):
+    """Test query assessment without local custom attributes"""
+    expected_response = {
+        "attributes": [],
+        "assessments": self._generate_assessment_response(self.asmt1),
+    }
+    self.assert_request(expected_response)
+
+  def test_two_assessments_one_no_cads(self):
+    # pylint: disable=invalid-name
+    """Test query two assessments where one has no any lca"""
+    with factories.single_commit():
+      cad = factories.CustomAttributeDefinitionFactory(
+          definition_id=self.asmt1.id,
+          **self._get_payload("Text")
+      )
+      asmt2 = factories.AssessmentFactory(
+          assessment_type="Control",
+          sox_302_enabled=True,
+      )
+    expected_response = {
+        "attributes": [{
+            "title": cad.title,
+            "mandatory": cad.mandatory,
+            "attribute_type": cad.attribute_type,
+            "default_value": cad.default_value,
+            "values": {
+                str(self.asmt1.id): {
+                    "value": None,
+                    "attribute_person_id": None,
+                    "definition_id": self.asmt1.id,
+                    "attribute_definition_id": cad.id,
+                    "multi_choice_options": cad.multi_choice_options,
+                    "multi_choice_mandatory": cad.multi_choice_mandatory,
+                }
+            },
+        }],
+        "assessments": self._generate_assessment_response(self.asmt1, asmt2),
+    }
+    self.assert_request(expected_response)
