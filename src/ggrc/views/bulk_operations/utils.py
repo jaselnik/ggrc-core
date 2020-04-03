@@ -5,6 +5,8 @@
 
 import collections
 
+import sqlalchemy as sa
+
 from ggrc import db
 from ggrc.models import all_models
 
@@ -27,20 +29,23 @@ def _query_all_cads_asmt_matches(asmt_ids):
   if not asmt_ids:
     return []
   all_cads = db.session.query(
-      CAD,
       all_models.Assessment.id,
       all_models.Assessment.title,
       all_models.Assessment.assessment_type,
       all_models.Assessment.status,
+      CAD,
       CAV.attribute_value,
       CAV.attribute_object_id,
-  ).join(
-      all_models.Assessment, CAD.definition_id == all_models.Assessment.id
+  ).outerjoin(
+      CAD, CAD.definition_id == all_models.Assessment.id
   ).outerjoin(
       CAV, CAD.id == CAV.custom_attribute_id,
   ).filter(
       all_models.Assessment.id.in_(asmt_ids),
-      CAD.definition_type == 'assessment',
+      sa.or_(
+          CAD.definition_type == 'assessment',
+          CAD.id.is_(None)
+      )
   )
   return all_cads
 
@@ -119,17 +124,18 @@ def _prepare_attributes_and_assessments(all_cads):
   """
   attributes = collections.OrderedDict()
   assessments = []
-  for (cad, asmt_id, asmt_title, asmt_type,
-       asmt_status, cav_value, cav_person_id) in all_cads:
-    unique_key = _generate_unique_cad_key(cad)
-    attributes[unique_key] = _get_or_generate_cad_stub(
-        cad,
-        cav_value,
-        cav_person_id,
-        asmt_id,
-        attributes,
-        unique_key,
-    )
+  for (asmt_id, asmt_title, asmt_type,
+       asmt_status, cad, cav_value, cav_person_id) in all_cads:
+    if cad:
+      unique_key = _generate_unique_cad_key(cad)
+      attributes[unique_key] = _get_or_generate_cad_stub(
+          cad,
+          cav_value,
+          cav_person_id,
+          asmt_id,
+          attributes,
+          unique_key,
+      )
 
     assessments.append({
         "assessment_type": asmt_type,
