@@ -1,0 +1,11 @@
+{{!
+    Copyright (C) 2020 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<popover-component
+  header:from="popovers.relObjectsHeader(scope.index)"
+  content:from="popovers.relObjectsContent(scope.index)"
+>
+  <i class="fa fa-exclamation-circle" data-popover-trigger></i>
+</popover-component>

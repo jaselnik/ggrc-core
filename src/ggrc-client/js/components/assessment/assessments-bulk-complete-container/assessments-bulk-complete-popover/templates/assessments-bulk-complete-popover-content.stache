@@ -1,0 +1,28 @@
+{{!
+    Copyright (C) 2020 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+{{#if isLoading}}
+  <spinner-component toggle:from="isLoading" />
+{{else}}
+  {{#if relatedObjects.length}}
+    {{#relatedObjects}}
+      <div class="mapped-objects__item mapped-snapshot-item">
+          <div class="mapped-objects__item-body">
+              <div class="title">
+                  <i class="fa fa-{{type}}"></i>
+              {{title}}
+              </div>
+              <read-more
+              class="description"
+              text:from="description"
+              handleMarkdown:from="true">
+              </read-more>
+          </div>
+      </div>
+    {{/relatedObjects}}
+  {{else}}
+    <span class="empty-message">No mapped {{assessmentType}}s</span>
+  {{/if}}
+{{/if}}
