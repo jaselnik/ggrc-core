@@ -27,9 +27,25 @@ Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
     <tr>
       <td>
         <div {{ bulk_style.succeeded_body() }}>
-          <h2 {{ bulk_style.main_title() }}>The following certifications are completed successfully:</h2>
+          <h2 {{ bulk_style.main_title() }}>Bulk Assessments update is finished successfully for the following Assessments.</h2>
           <ul {{ bulk_style.list() }}>
             {% for asmnt in sync_data.succeeded %}
+              <li {{ bulk_style.row() }}>
+                <a href="{{ asmnt.url }}" target="_blank" {{ bulk_style.row_content() }}>{{ asmnt.title|e }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </td>
+    </tr>
+    {% endif %}
+    {% if sync_data.partial_errors %}
+    <tr>
+      <td>
+        <div {{ bulk_style.error_body() }}>
+          <h2 {{ bulk_style.main_title() }}>Bulk Assessments update is finished partially for the following Assessments.</h2>
+          <ul {{ bulk_style.list() }}>
+            {% for asmnt in sync_data.partial_errors %}
               <li {{ bulk_style.row() }}>
                 <a href="{{ asmnt.url }}" target="_blank" {{ bulk_style.row_content() }}>{{ asmnt.title|e }}</a>
               </li>
@@ -43,7 +59,7 @@ Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
     <tr>
       <td>
         <div {{ bulk_style.error_body() }}>
-          <h2 {{ bulk_style.main_title() }}>Failed to complete the following certifications:</h2>
+          <h2 {{ bulk_style.main_title() }}>Bulk Assessments update has failed for the following Assessments.</h2>
           <ul {{ bulk_style.list() }}>
             {% for asmnt in sync_data.update_errors %}
               <li {{ bulk_style.row() }}>
@@ -51,6 +67,21 @@ Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
               </li>
             {% endfor %}
           </ul>
+        </div>
+      </td>
+    </tr>
+    {% endif %}
+    {% if sync_data.deleted %}
+    <tr>
+      <td>
+        <div {{ bulk_style.error_body() }}>
+          <h2 {{ bulk_style.main_title() }}>Assessments with following ids were deleted before or during Bulk Update:</h2>
+          <ul {{ bulk_style.list() }}>
+            {% for asmnt in sync_data.deleted %}
+              <li {{ bulk_style.row() }}>
+                <a>{{ asmnt.id }}</a>
+              </li>
+            {% endfor %}
         </div>
       </td>
     </tr>

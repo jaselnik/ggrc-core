@@ -120,22 +120,25 @@ def bulk_complete(task):
 
   builder, update_attrs = _bulk_save(task.parameters.get("data", {}))
 
-  upd_errors = set(update_attrs["failed_slugs"])
+  error_slugs = set(update_attrs["failed_slugs"])
 
   with benchmark("Prepare import data for attributes update"):
-    complete_data = builder.assessments_complete_to_csv(upd_errors)
+    complete_data, proceed_slugs = builder.assessments_complete_to_csv(
+        error_slugs,
+    )
 
-  complete_errors = []
   if complete_data:
     with benchmark("Update assessments attributes"):
       complete_assmts = converters.make_import(csv_data=complete_data,
                                                dry_run=False,
                                                bulk_import=True)
-    complete_errors = set(complete_assmts["failed_slugs"])
+    error_slugs |= set(complete_assmts["failed_slugs"])
 
-  bulk_notifications.send_notification(update_errors=upd_errors,
-                                       partial_errors=complete_errors,
-                                       asmnt_ids=builder.assessment_ids)
+  bulk_notifications.send_notification_complete(
+      update_errors=error_slugs,
+      partial_errors={},
+      asmnt_ids=builder.assessment_ids,
+  )
 
   return app.make_response(('success', 200, [("Content-Type", "text/json")]))
 
@@ -169,11 +172,11 @@ def bulk_verify(task):
 
     _log_import(verify_assmts["data"])
 
-  verify_errors = set(verify_assmts["failed_slugs"])
-
-  bulk_notifications.send_notification(update_errors=verify_errors,
-                                       partial_errors={},
-                                       asmnt_ids=builder.assessment_ids)
+  bulk_notifications.send_notification_verify(
+      update_errors=set(verify_assmts["failed_slugs"]),
+      partial_errors={},
+      asmnt_ids=builder.assessment_ids,
+  )
 
   return app.make_response(('success', 200, [("Content-Type", "text/json")]))
 
@@ -184,10 +187,10 @@ def bulk_cavs_save(task):
   """Process bulk cavs save"""
   builder, update_attrs = _bulk_save(task.parameters.get("data", {}))
 
-  bulk_notifications.send_notification(
+  bulk_notifications.send_notification_save(
       update_errors=set(update_attrs["failed_slugs"]),
-      partial_errors={},
-      asmnt_ids=list(builder.assessments.keys()),
+      partial_errors=set(update_attrs['warning_slugs']),
+      asmnt_ids=[asmt.id for asmt in builder.assessments],
   )
 
   return app.make_response(('success', 200, [("Content-Type", "text/json")]))

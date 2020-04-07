@@ -11,7 +11,9 @@ from ggrc.notifications import common
 from ggrc.notifications.data_handlers import get_object_url
 
 
-BULK_UPDATE_TITLE = "Bulk update of Assessments is finished"
+BULK_VERIFY_TITLE = "Bulk update of Assessments is finished"
+BULK_SAVE_TITLE = "Saving certifications in bulk is finished"
+BULK_COMPLETE_TITLE = "Completing certifications in bulk is finished"
 
 
 def _create_notif_data(assessments):
@@ -32,7 +34,7 @@ def _create_notif_data_was_deleted(assessments_ids):
   return result
 
 
-def send_notification(update_errors, partial_errors, asmnt_ids):
+def _prepare_notification_data(update_errors, partial_errors, asmnt_ids):
   """Send bulk complete job finished."""
 
   # pylint: disable=too-many-locals
@@ -66,11 +68,30 @@ def send_notification(update_errors, partial_errors, asmnt_ids):
     deleted_asmnts = [idx for idx in success_ids
                       if idx not in revisited_success_asmnts]
 
-  bulk_data = {
+  return {
       "update_errors": _create_notif_data(not_updated_asmnts),
       "partial_errors": _create_notif_data(partially_upd_asmnts),
       "succeeded": _create_notif_data(success_asmnts),
       "deleted": _create_notif_data_was_deleted(deleted_asmnts),
   }
+
+
+def send_notification_verify(*args, **kwargs):
+  """Send bulk verify job finished."""
+  bulk_data = _prepare_notification_data(*args, **kwargs)
+  body = settings.EMAIL_BULK_VERIFY.render(sync_data=bulk_data)
+  common.send_email(login.get_current_user().email, BULK_VERIFY_TITLE, body)
+
+
+def send_notification_save(*args, **kwargs):
+  """Send bulk save job finished."""
+  bulk_data = _prepare_notification_data(*args, **kwargs)
+  body = settings.EMAIL_BULK_SAVE.render(sync_data=bulk_data)
+  common.send_email(login.get_current_user().email, BULK_SAVE_TITLE, body)
+
+
+def send_notification_complete(*args, **kwargs):
+  """Send bulk complete job finished."""
+  bulk_data = _prepare_notification_data(*args, **kwargs)
   body = settings.EMAIL_BULK_COMPLETE.render(sync_data=bulk_data)
-  common.send_email(login.get_current_user().email, BULK_UPDATE_TITLE, body)
+  common.send_email(login.get_current_user().email, BULK_COMPLETE_TITLE, body)
