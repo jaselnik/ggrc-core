@@ -117,6 +117,7 @@ class ImportConverter(BaseConverter):
     self.exportable.update(get_importables())
     self.bulk_import = bulk_import
     self.failed_slugs = []
+    self.warning_slugs = []
 
   def get_info(self):
     return self.response_data

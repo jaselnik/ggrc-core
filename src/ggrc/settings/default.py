@@ -135,6 +135,12 @@ EMAIL_MENTIONED_PERSON = JINJA2.get_template(
     "notifications/email_mentioned.html"
 )
 
+EMAIL_BULK_VERIFY = JINJA2.get_template(
+    "notifications/bulk_verify.html"
+)
+EMAIL_BULK_SAVE = JINJA2.get_template(
+    "notifications/bulk_save.html"
+)
 EMAIL_BULK_COMPLETE = JINJA2.get_template(
     "notifications/bulk_complete.html"
 )
