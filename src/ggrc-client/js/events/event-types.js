@@ -297,6 +297,24 @@ const DEFERRED_MAPPED_UNMAPPED = {
   type: 'deferredMappedUnmapped',
 };
 
+/**
+ * Notifies that an items list was updated.
+ * @event refreshItemsList
+ * @type {object}
+ * @property {object} object - Current filter object.
+ */
+const REFRESH_ITEMS_LIST = {
+  type: 'refreshItemsList',
+};
+/**
+ * Notifies that an items list will be updated.
+ * @event beforeLoadItems
+ * @type {object}
+ */
+const BEFORE_LOAD_ITEMS = {
+  type: 'beforeLoadItems',
+};
+
 export {
   REFRESHED,
   REFRESH_SUB_TREE,
@@ -326,4 +344,6 @@ export {
   DEFERRED_MAPPED_UNMAPPED,
   OBJECT_DESTROYED,
   UNMAP_DESTROYED_OBJECT,
+  REFRESH_ITEMS_LIST,
+  BEFORE_LOAD_ITEMS,
 };

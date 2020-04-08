@@ -41,6 +41,8 @@ import * as StateUtils from '../../plugins/utils/state-utils';
 import {
   REFRESH_RELATED,
   REFRESH_MAPPING,
+  REFRESH_ITEMS_LIST,
+  BEFORE_LOAD_ITEMS,
 } from '../../events/event-types';
 import * as TreeViewUtils from '../../plugins/utils/tree-view-utils';
 import {
@@ -199,6 +201,8 @@ const ViewModel = canDefineMap.extend({
       ? getMegaObjectRelation(this.options.widgetId).relation
       : null;
 
+    this.pubSub.dispatch(BEFORE_LOAD_ITEMS);
+
     return TreeViewUtils
       .loadFirstTierItems(
         modelName,
@@ -215,7 +219,10 @@ const ViewModel = canDefineMap.extend({
         this.pageInfo.attr('total', total);
         this.pageInfo.attr('disabled', false);
         this.loading = false;
-        this.pubSub.dispatch('refreshItemsList');
+        this.pubSub.dispatch({
+          ...REFRESH_ITEMS_LIST,
+          currentFilter: this.currentFilter,
+        });
       })
       .then(stopFn, stopFn.bind(null, true));
   },

@@ -40,7 +40,7 @@ const ViewModel = canDefineMap.extend({
       this.showBulkVerify = count > 0;
     });
   },
-  setShowBulkCompletion() {
+  setShowBulkCompletion(currentFilter) {
     let relevant = null;
     if (!isMyAssessments()) {
       const parentInstance = this.parentInstance;
@@ -50,7 +50,7 @@ const ViewModel = canDefineMap.extend({
         operation: 'relevant',
       };
     }
-    getAsmtCountForCompletion(relevant).then((count) => {
+    getAsmtCountForCompletion(relevant, currentFilter).then((count) => {
       this.showBulkCompletion = count > 0;
     });
   },
@@ -64,8 +64,11 @@ export default canComponent.extend({
     inserted() {
       this.viewModel.setShowBulkVerify();
     },
-    '{pubSub} refreshItemsList'() {
-      this.viewModel.setShowBulkCompletion();
+    '{pubSub} refreshItemsList'(scope, {currentFilter}) {
+      this.viewModel.setShowBulkCompletion(currentFilter);
+    },
+    '{pubSub} beforeLoadItems'() {
+      this.viewModel.showBulkCompletion = false;
     },
   },
 });
