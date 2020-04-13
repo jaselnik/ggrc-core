@@ -96,12 +96,13 @@ class VerifyCsvBuilder(AbstractCsvBuilder):
         models.Assessment.id.in_(self.assessment_ids)
     ).all()
 
+    need_verification_ids = _have_verifiers(self.assessment_ids)
+
     for assessment in assessments:
-      verifiers = assessment.get_person_ids_for_rolename("Verifiers")
-      needs_verification = True if verifiers else False
       stub = AssessmentStub()
       stub.id = assessment.id
-      stub.needs_verification = needs_verification
+      if stub.id in need_verification_ids:
+        stub.needs_verification = True
       stub.slug = assessment.slug
       self.assessments.append(stub)
 
@@ -150,6 +151,26 @@ class MatrixCsvBuilder(AbstractCsvBuilder):
     self._build_lca_block(prepared_csv)
     return prepared_csv
 
+  def assessments_complete_to_csv(self, errors):
+    """Prepare csv to complete assessments in bulk via import"""
+
+    assessments_list = []
+    for assessment in self.assessments:
+      if assessment.slug not in errors:
+        assessments_list.append([
+            u"",
+            assessment.slug,
+            u"In Review" if assessment.needs_verification else u"Completed",
+        ])
+
+    result_csv = []
+    if assessments_list:
+      result_csv.append([u"Object type"])
+      result_csv.append([u"Assessment", u"Code", u"State"])
+      result_csv.extend(assessments_list)
+
+    return result_csv
+
   def _convert_data(self):
     """Convert request data to appropriate format.
 
@@ -176,10 +197,15 @@ class MatrixCsvBuilder(AbstractCsvBuilder):
 
   def _collect_attributes(self):
     """Collect attributes if any presented."""
+
+    need_verification_ids = _have_verifiers(self.assessment_ids)
+
     for asmt in self.attr_data:
       stub = AssessmentStub()
       stub.id = asmt["assessment"]["id"]
       stub.slug = asmt["assessment"]["slug"]
+      if stub.id in need_verification_ids:
+        stub.needs_verification = True
       for cav in asmt["values"]:
         cav_value = self._populate_value(
             cav["value"],
@@ -258,3 +284,25 @@ class MatrixCsvBuilder(AbstractCsvBuilder):
         prepared_csv.append(
             [u"", unicode(comment["description"]), unicode(comment["cad_id"])]
         )
+
+
+def _have_verifiers(assessment_ids):
+  """Returns subset of assessment_ids for assessments which have verifiers"""
+  ACL = models.AccessControlList
+  ACP = models.AccessControlPerson
+  ACR = models.AccessControlRole
+  ASMT = models.Assessment
+  return [rec[0] for rec in db.session.query(
+      ASMT.id,
+  ).join(
+      ACL, ACL.object_id == ASMT.id,
+  ).join(
+      ACR, ACL.ac_role_id == ACR.id,
+  ).join(
+      ACP, ACP.ac_list_id == ACL.id,
+  ).filter(
+      ACR.name == "Verifiers",
+      ACL.object_type == "Assessment",
+      ACR.object_type == "Assessment",
+      ASMT.id.in_(assessment_ids),
+  )]
