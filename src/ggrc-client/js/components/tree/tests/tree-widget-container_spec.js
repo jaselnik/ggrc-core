@@ -15,6 +15,7 @@ import * as WidgetsUtils from '../../../plugins/utils/widgets-utils';
 import * as NotifierUtils from '../../../plugins/utils/notifiers-utils';
 import * as MegaObjectUtils from '../../../plugins/utils/mega-object-utils';
 import tracker from '../../../tracker';
+import {REFRESH_ITEMS_LIST} from '../../../events/event-types';
 import {getComponentVM} from '../../../../js_specs/spec-helpers';
 import Component from '../tree-widget-container';
 import Relationship from '../../../models/service-models/relationship';
@@ -126,6 +127,30 @@ describe('tree-widget-container component', () => {
           modelName, parent, page, filter, request, loadSnapshots, null);
         expect(vm.pageInfo.attr('total')).toEqual(100);
         expect(makeArray(vm.showedItems)).toEqual([]);
+        done();
+      });
+    });
+
+    it('should dispatch REFRESH_ITEMS_LIST event', (done) => {
+      vm.options.megaRelated = false;
+      vm.model = {
+        model_singular: 'Assessment',
+      };
+      vm.pubSub = {};
+      vm.pubSub.dispatch = jasmine.createSpy('dispatch');
+      vm.currentFilter = {id: 1};
+
+      spyOn(TreeViewUtils, 'loadFirstTierItems')
+        .and.returnValue($.Deferred().resolve({
+          total: 100,
+          values: [],
+        }));
+      loadItems().then(() => {
+        expect(vm.pubSub.dispatch).toHaveBeenCalledWith({
+          ...REFRESH_ITEMS_LIST,
+          currentFilter: vm.currentFilter,
+          modelName: vm.modelName,
+        });
         done();
       });
     });
