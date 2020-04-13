@@ -6,7 +6,7 @@
 import canStache from 'can-stache';
 import canDefineMap from 'can-define/map/map';
 import canComponent from 'can-component';
-import {isMyAssessments} from '../../../plugins/utils/current-page-utils';
+import {isMyAssessments, isAuditPage} from '../../../plugins/utils/current-page-utils';
 import {getAsmtCountForVerify, getAsmtCountForCompletion} from '../../../plugins/utils/bulk-update-service';
 import template from './assessment-tree-actions.stache';
 import pubSub from '../../../pub-sub';
@@ -64,8 +64,11 @@ export default canComponent.extend({
     inserted() {
       this.viewModel.setShowBulkVerify();
     },
-    '{pubSub} refreshItemsList'(scope, {currentFilter}) {
-      this.viewModel.setShowBulkCompletion(currentFilter);
+    '{pubSub} refreshItemsList'(scope, {modelName, currentFilter}) {
+      if (modelName === 'Assessment' &&
+      (isMyAssessments() || isAuditPage())) {
+        this.viewModel.setShowBulkCompletion(currentFilter);
+      }
     },
     '{pubSub} beforeLoadItems'() {
       this.viewModel.showBulkCompletion = false;

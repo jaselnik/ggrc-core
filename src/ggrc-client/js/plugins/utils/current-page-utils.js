@@ -104,6 +104,9 @@ function isAdmin() {
   return getPageType() === 'ADMIN';
 }
 
+function isAuditPage() {
+  return getPageInstance().type === 'Audit';
+}
 /**
  *
  * @return {boolean} False for My Work, All Objects and My Assessments pages and True for the rest.
@@ -148,6 +151,7 @@ export {
   getPageType,
   isMyAssessments,
   isMyWork,
+  isAuditPage,
   isAllObjects,
   isAdmin,
   isObjectContextPage,

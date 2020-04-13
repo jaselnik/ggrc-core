@@ -8,9 +8,10 @@ import canComponent from 'can-component';
 import canStache from 'can-stache';
 import template from './assessments-bulk-complete-container.stache';
 import {request} from '../../../plugins/utils/request-utils';
-import {getFilterForCompletion} from '../../../plugins/utils/bulk-update-service';
+import {getFiltersForCompletion} from '../../../plugins/utils/bulk-update-service';
 import {buildParam} from '../../../plugins/utils/query-api-utils';
 import {isMyAssessments} from '../../../plugins/utils/current-page-utils';
+
 const ViewModel = canDefineMap.extend({
   currentFilter: {
     value: null,
@@ -41,7 +42,7 @@ const ViewModel = canDefineMap.extend({
       };
     }
     const filter =
-      getFilterForCompletion(this.currentFilter, relevant);
+      getFiltersForCompletion(this.currentFilter, relevant);
     const param = buildParam('Assessment', {}, relevant, [], filter);
     param.type = 'ids';
     this.asmtListRequest = param;
