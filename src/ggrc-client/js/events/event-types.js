@@ -301,7 +301,8 @@ const DEFERRED_MAPPED_UNMAPPED = {
  * Notifies that an items list was updated.
  * @event refreshItemsList
  * @type {object}
- * @property {object} object - Current filter object.
+ * @property {string} modelName - Current model name.
+ * @property {object} currentFilter - Current filter object.
  */
 const REFRESH_ITEMS_LIST = {
   type: 'refreshItemsList',

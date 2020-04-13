@@ -16,11 +16,8 @@ const ViewModel = canDefineMap.extend({
   parentInstance: {
     value: null,
   },
-  pubSub: {
-    value: () => pubSub,
-  },
   openBulkCompleteMode() {
-    this.pubSub.dispatch('enableBulkCompleteMode');
+    pubSub.dispatch('enableBulkCompleteMode');
   },
 });
 
