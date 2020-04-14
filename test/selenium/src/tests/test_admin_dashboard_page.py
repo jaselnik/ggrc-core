@@ -105,11 +105,11 @@ class TestEventLogTabDestructive(base.Test):
   def tested_events(self, selenium):
     """Create events to verify events functionality:
     0. Save event log count before test data creation,
-    1. Create objective editor role, create 2 users with global creator role
+    1. Create program editor role, create 2 users with global creator role
     under admin
-    2. Create objective#1 under global creator#1 and set global creator#2 to
-    newly created objective editor role
-    3. Create objective#2 under global objective#2 and map it objective#1
+    2. Create program#1 under global creator#1 and set global creator#2 to
+    newly created program editor role
+    3. Create program#2 under global program#2 and map it program#1
     """
     if not self.__class__._data:
       # generate enough data, so test can be executed independently
@@ -117,78 +117,79 @@ class TestEventLogTabDestructive(base.Test):
         rest_facade.create_user_with_role(roles.READER)
 
       initial_count = self.get_event_tab().tab_events.count
-      objctv1_creator = rest_facade.create_user_with_role(roles.CREATOR)
-      objctv2_creator = rest_facade.create_user_with_role(roles.CREATOR)
-      objctv_editor_role = rest_facade.create_access_control_role(
-          object_type="Objective", read=True, update=True, delete=True)
+      obj1_creator = rest_facade.create_user_with_role(roles.CREATOR)
+      obj2_creator = rest_facade.create_user_with_role(roles.CREATOR)
+      obj_editor_role = rest_facade.create_access_control_role(
+          object_type=objects.get_singular(objects.PROGRAMS, title=True),
+          read=True, update=True, delete=True)
       admin = users.current_user()
-      users.set_current_user(objctv1_creator)
-      objctv_custom_roles = [
-          (objctv_editor_role.name, objctv_editor_role.id, [objctv2_creator])
+      users.set_current_user(obj1_creator)
+      obj_custom_roles = [
+          (obj_editor_role.name, obj_editor_role.id, [obj2_creator])
       ]
-      objctv1 = rest_facade.create_objective(custom_roles=objctv_custom_roles)
+      obj1 = rest_facade.create_program(custom_roles=obj_custom_roles)
       # wait until notification and acl will assigned by background task
-      rest_facade.get_obj(objctv1_creator)
+      rest_facade.get_obj(obj1_creator)
 
-      users.set_current_user(objctv2_creator)
-      objctv2 = rest_facade.create_objective()
-      rest_facade.map_objs(objctv1, objctv2)
+      users.set_current_user(obj2_creator)
+      obj2 = rest_facade.create_program()
+      rest_facade.map_objs(obj1, obj2)
 
       users.set_current_user(admin)
       # generate expected event data
       from lib.constants.roles import ACLRolesIDs
       # 3 predefined program roles and 1 predefined reviewer role
-      acl_roles_len = len(ACLRolesIDs.object_roles(objctv1.type)) - 4
+      acl_roles_len = len(ACLRolesIDs.object_roles(obj1.type)) - 4
       exp_event_data = [
           {"actions": sorted(
-              [objctv1_creator.email + " created",
+              [obj1_creator.email + " created",
                u"AccessControlList created", u"AccessControlPerson created",
                u"PersonProfile created"]),
            "user_email": admin.email,
            "time": date_utils.iso8601_to_local_datetime(
-              objctv1_creator.updated_at)},
-          {"actions": ["Creator linked to " + objctv1_creator.email],
+              obj1_creator.updated_at)},
+          {"actions": ["Creator linked to " + obj1_creator.email],
            "user_email": admin.email,
            "time": date_utils.iso8601_to_local_datetime(
-              objctv1_creator.updated_at)},
+              obj1_creator.updated_at)},
           {"actions": sorted(
-              [objctv2_creator.email + " created",
+              [obj2_creator.email + " created",
                u"AccessControlList created", u"AccessControlPerson created",
                u"PersonProfile created"]),
            "user_email": admin.email,
            "time": date_utils.iso8601_to_local_datetime(
-              objctv2_creator.updated_at)},
-          {"actions": ["Creator linked to " + objctv2_creator.email],
+              obj2_creator.updated_at)},
+          {"actions": ["Creator linked to " + obj2_creator.email],
            "user_email": admin.email,
            "time": date_utils.iso8601_to_local_datetime(
-              objctv2_creator.updated_at)},
-          {"actions": [objctv_editor_role.name + " created"],
+              obj2_creator.updated_at)},
+          {"actions": [obj_editor_role.name + " created"],
            "user_email": admin.email,
            "time": date_utils.iso8601_to_local_datetime(
-              objctv_editor_role.updated_at)},
+              obj_editor_role.updated_at)},
           {"actions": [u"AccessControlList created"] * acl_roles_len +
                       [u"AccessControlPerson created"] * 2 +
-                      [objctv1.title + " created"],
-           "user_email": objctv1_creator.email,
-           "time": date_utils.iso8601_to_local_datetime(objctv1.updated_at)},
+                      [obj1.title + " created"],
+           "user_email": obj1_creator.email,
+           "time": date_utils.iso8601_to_local_datetime(obj1.updated_at)},
           {"actions": [u"AccessControlList created"] * acl_roles_len +
                       [u"AccessControlPerson created",
-                       objctv2.title + " created"],
-           "user_email": objctv2_creator.email,
-           "time": date_utils.iso8601_to_local_datetime(objctv2.updated_at)},
+                       obj2.title + " created"],
+           "user_email": obj2_creator.email,
+           "time": date_utils.iso8601_to_local_datetime(obj2.updated_at)},
           {"actions": [u"{type2}:{id2} linked to {type1}:{id1}".format(
-              id1=objctv1.id, id2=objctv2.id, type1=objctv1.type,
-              type2=objctv2.type)],
-           "user_email": objctv2_creator.email,
-           "time": date_utils.iso8601_to_local_datetime(objctv2.updated_at)}
+              id1=obj1.id, id2=obj2.id, type1=obj1.type,
+              type2=obj2.type)],
+           "user_email": obj2_creator.email,
+           "time": date_utils.iso8601_to_local_datetime(obj2.updated_at)}
       ]
       exp_event_data.reverse()
       self.__class__._data = {
-          "objctv1_creator": objctv1_creator,
-          "objctv2_creator": objctv2_creator,
-          "objctv_editor_role": objctv_editor_role,
-          "objctv1": objctv1,
-          "objctv2": objctv2,
+          "obj1_creator": obj1_creator,
+          "obj2_creator": obj2_creator,
+          "obj_editor_role": obj_editor_role,
+          "obj1": obj1,
+          "obj2": obj2,
           "exp_added_events": exp_event_data,
           "initial_count": initial_count
       }

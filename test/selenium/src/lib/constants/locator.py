@@ -211,14 +211,14 @@ class LhnMenu(object):
   MY_OBJECTS = (By.CSS_SELECTOR, '[data-test-id="my_objects_6fa95ae1"]')
   PIN = (By.CSS_SELECTOR, ".lhn-pin")
   # LHN items
-  TOGGLE_DIRECTIVES = (By.CSS_SELECTOR, '[data-test-id="directives_66116337"]')
-  TOGGLE_CONTROLS_OR_OBJECTIVES = (
+  DIRECTIVES = (By.CSS_SELECTOR, '[data-test-id="directives_66116337"]')
+  CONTROLS_OR_OBJECTIVES = (
       By.CSS_SELECTOR, '[data-test-id="controls/objectives_66116337"]')
-  TOGGLE_PEOPLE_OR_GROUPS = (
+  PEOPLE_OR_GROUPS = (
       By.CSS_SELECTOR, '[data-test-id="people/groups_66116337"]')
-  TOGGLE_SCOPE = (
+  SCOPE = (
       By.CSS_SELECTOR, '[data-test-id="scope_66116337"]')
-  TOGGLE_RISK_OR_THREATS = (
+  RISK_OR_THREATS = (
       By.CSS_SELECTOR, '[data-test-id="risk/threats_66116337"]')
   # workflows labels
   BUTTON_WORKFLOWS_ACTIVE = (

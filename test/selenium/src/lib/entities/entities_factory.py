@@ -440,7 +440,10 @@ class ObjectivesFactory(EntitiesFactory):
     'is_add_rest_attrs' then add attributes for REST."""
     objective_obj = self.obj_inst().update_attrs(
         title=self.obj_title,
-        status=unicode(object_states.DRAFT))
+        status=unicode(object_states.DRAFT),
+        external_slug=self.generate_slug(),
+        external_id=self.generate_external_id()
+    )
     if is_add_rest_attrs:
       objective_obj.update_attrs(
           recipients=",".join((
@@ -937,6 +940,14 @@ class RequirementsFactory(DirectivesFactory):
         ("admins", roles.ACLRolesIDs.REQUIREMENT_ADMINS,
          [users.current_user()])]
 
+  def _create_random_obj(self, is_add_rest_attrs):
+    """Creates Requirement object entity."""
+    return self.obj_inst().update_attrs(
+        title=self.obj_title,
+        status=unicode(object_states.DRAFT),
+        external_slug=self.generate_slug(),
+        external_id=self.generate_external_id())
+
 
 class PoliciesFactory(DirectivesFactory):
   """Factory class for policies."""
@@ -946,6 +957,14 @@ class PoliciesFactory(DirectivesFactory):
     self._acl_roles = [
         ("admins", roles.ACLRolesIDs.POLICY_ADMINS, [users.current_user()])]
 
+  def _create_random_obj(self, is_add_rest_attrs):
+    """Creates Policy object entity."""
+    return self.obj_inst().update_attrs(
+        title=self.obj_title,
+        status=unicode(object_states.DRAFT),
+        external_slug=self.generate_slug(),
+        external_id=self.generate_external_id())
+
 
 class ContractsFactory(DirectivesFactory):
   """Factory class for contracts."""
@@ -954,6 +973,14 @@ class ContractsFactory(DirectivesFactory):
     super(ContractsFactory, self).__init__(objects.CONTRACTS)
     self._acl_roles = [
         ("admins", roles.ACLRolesIDs.CONTRACT_ADMINS, [users.current_user()])]
+
+  def _create_random_obj(self, is_add_rest_attrs):
+    """Creates Contract object entity."""
+    return self.obj_inst().update_attrs(
+        title=self.obj_title,
+        status=unicode(object_states.DRAFT),
+        external_slug=self.generate_slug(),
+        external_id=self.generate_external_id())
 
 
 class EvidenceFactory(EntitiesFactory):
