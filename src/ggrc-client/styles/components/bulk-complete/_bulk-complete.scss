@@ -1,0 +1,32 @@
+/*
+ * Copyright (C) 2020 Google Inc.
+ * Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+ */
+
+ .bulk-complete-header {
+    padding: 0 40px;
+    position: sticky;
+    justify-content: space-between;
+
+    &__alert {
+        font-size: 12px;
+        padding: 12px;
+    }
+
+    &__action {
+        display: flex;
+        align-items: center;
+        
+        button {
+            @include btn-size(12px, 16px, 4px 10px);
+
+            &:not(:last-child) {
+                margin-right: 10px;
+                background-color: #fff;
+            }
+            &[disabled] {
+                opacity: 0.40;
+            }
+        }
+    }
+ }
