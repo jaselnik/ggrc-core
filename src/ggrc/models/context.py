@@ -58,16 +58,10 @@ class Context(base.ContextRBAC, Base, db.Model):
 
   _api_attrs = reflection.ApiAttributes('name',
                                         'related_object',
-                                        'description',
-                                        'user_roles')
+                                        'description')
 
   _sanitize_html = ['name', 'description']
   _include_links = []
-
-  @classmethod
-  def eager_query(cls, **kwargs):
-    return super(Context, cls).eager_query(**kwargs).options(
-        orm.subqueryload('user_roles'))
 
 
 class HasOwnContext(object):

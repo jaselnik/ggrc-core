@@ -29,10 +29,10 @@ class Requirement(Roleable,
                   Commentable,
                   mixins.TestPlanned,
                   PublicDocumentable,
-                  mixins.CycleTaskable,
                   mixins.base.ContextRBAC,
                   mixins.BusinessObject,
                   mixins.Folderable,
+                  mixins.WithWorkflowState,
                   Indexed,
                   db.Model):
   """Requirement model."""

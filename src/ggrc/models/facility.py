@@ -21,10 +21,10 @@ class Facility(synchronizable.RoleableSynchronizable,
                ScopedCommentable,
                mixins.TestPlanned,
                mixins.LastDeprecatedTimeboxed,
-               mixins.CycleTaskable,
                mixins.base.ContextRBAC,
                mixins.ScopeObject,
                mixins.Folderable,
+               mixins.WithWorkflowState,
                Indexed,
                db.Model):
   """Facility model"""

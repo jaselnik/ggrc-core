@@ -28,10 +28,10 @@ from ggrc.models.utils import validate_option
 class Directive(mixins.LastDeprecatedTimeboxed,
                 Commentable,
                 mixins.TestPlanned,
-                mixins.CycleTaskable,
                 mixins.base.ContextRBAC,
                 mixins.BusinessObject,
                 mixins.Folderable,
+                mixins.WithWorkflowState,
                 db.Model):
   """Directive model"""
 

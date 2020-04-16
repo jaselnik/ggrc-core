@@ -20,10 +20,10 @@ class Project(synchronizable.RoleableSynchronizable,
               PublicDocumentable,
               ScopedCommentable,
               mixins.TestPlanned,
-              mixins.CycleTaskable,
               mixins.base.ContextRBAC,
               mixins.ScopeObject,
               mixins.Folderable,
+              mixins.WithWorkflowState,
               Indexed,
               db.Model):
   """Representation for Project model."""

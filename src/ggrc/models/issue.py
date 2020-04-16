@@ -37,10 +37,10 @@ class Issue(Roleable,
             AuditRelationship,
             WithAction,
             issue_tracker.IssueTrackedWithUrl,
-            mixins.CycleTaskable,
             mixins.base.ContextRBAC,
             mixins.BusinessObject,
             mixins.Folderable,
+            mixins.WithWorkflowState,
             Indexed,
             db.Model):
   """Issue Model."""
