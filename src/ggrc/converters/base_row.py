@@ -224,8 +224,13 @@ class ImportRowConverter(RowConverter):
     self.ignore = True
 
   def add_warning(self, template, **kwargs):
+    """Add warning for current row."""
     message = template.format(line=self.line, **kwargs)
     self.block_converter.row_warnings.append(message)
+
+    key = self.get_value(self.id_key)
+    if key and self.block_converter.converter.bulk_import:
+      self.block_converter.converter.warning_slugs.append(key)
 
   def _check_mandatory_fields(self):
     """Check if the new object contains all mandatory columns."""

@@ -7,7 +7,6 @@
 """
 
 import json
-import unittest
 import mock
 
 from ggrc import models
@@ -27,9 +26,157 @@ class TestBulkCompleteNotification(TestCase):
     self.object_generator = ObjectGenerator()
     self.init_taskqueue()
 
-  @unittest.skip(
-      "Implementing transition to MatrixCsvBuilder for bulk operations"
-  )
+  def test_save_successfully(self):
+    """Test assessment save finished successfully"""
+    with factories.single_commit():
+      asmt = factories.AssessmentFactory(status="Not Started")
+      cad_id = factories.CustomAttributeDefinitionFactory(
+          definition_id=asmt.id,
+          title="test_text_lca",
+          definition_type="assessment",
+          attribute_type="Text"
+      ).id
+
+    data = {
+        "assessments_ids": [],
+        "attributes": [{
+            "assessment": {"id": asmt.id, "slug": asmt.slug},
+            "values": [{
+                "value": "test value",
+                "title": "test_text_lca",
+                "type": "Text",
+                "definition_id": asmt.id,
+                "id": cad_id,
+                "extra": {},
+            }]
+        }]
+    }
+    with mock.patch("ggrc.notifications.common.send_email") as send_mock:
+      response = self.client.post("/api/bulk_operations/cavs/save",
+                                  data=json.dumps(data),
+                                  headers=self.headers)
+    self.assert200(response)
+    send_mock.assert_called_once()
+    _, mail_title, body = send_mock.call_args[0]
+    self.assertEqual(
+        mail_title,
+        "Saving certifications in bulk is finished",
+    )
+    self.assertIn(
+        "Answers for the following certifications are saved successfully:",
+        body,
+    )
+    self.assertNotIn(
+        "Answers for the following certifications are partially saved:",
+        body,
+    )
+    self.assertNotIn(
+        "Failed to save answers for the following certifications:",
+        body,
+    )
+
+  def test_saved_partially(self):
+    """Test assessment save finished partially"""
+    with factories.single_commit():
+      asmt = factories.AssessmentFactory(status="Not Started")
+      cad_id = factories.CustomAttributeDefinitionFactory(
+          definition_id=asmt.id,
+          title="dropdown_lca",
+          definition_type="assessment",
+          attribute_type="Dropdown",
+          multi_choice_options="one,two",
+      ).id
+      data = {
+          "assessments_ids": [],
+          "attributes": [{
+              "assessment": {"id": asmt.id, "slug": asmt.slug},
+              "values": [{
+                  "value": "three",
+                  "title": "dropdown_lca",
+                  "type": "Dropdown",
+                  "definition_id": asmt.id,
+                  "id": cad_id,
+                  "extra": {},
+              }]
+          }]
+      }
+    with mock.patch("ggrc.notifications.common.send_email") as send_mock:
+      response = self.client.post(
+          "/api/bulk_operations/cavs/save",
+          data=json.dumps(data),
+          headers=self.headers
+      )
+    self.assert200(response)
+    send_mock.assert_called_once()
+    _, mail_title, body = send_mock.call_args[0]
+    self.assertEqual(
+        mail_title,
+        "Saving certifications in bulk is finished",
+    )
+    self.assertNotIn(
+        "Answers for the following certifications are saved successfully:",
+        body,
+    )
+    self.assertIn(
+        "Answers for the following certifications are partially saved:",
+        body,
+    )
+    self.assertNotIn(
+        "Failed to save answers for the following certifications:",
+        body,
+    )
+
+  def test_saved_failed(self):
+    """Test assessment save failed"""
+    with factories.single_commit():
+      asmt = factories.AssessmentFactory(status="Not Started")
+      cad_dropdown_id = factories.CustomAttributeDefinitionFactory(
+          definition_id=asmt.id,
+          title="dropdown_lca",
+          definition_type="assessment",
+          attribute_type="Dropdown",
+      ).id
+
+    data = {
+        "assessments_ids": [],
+        "attributes": [{
+            "assessment": {"id": asmt.id, "slug": asmt.slug},
+            "values": [{
+                "value": "one",
+                "title": "dropdown_lca",
+                "type": "Dropdown",
+                "definition_id": asmt.id,
+                "id": cad_dropdown_id,
+                "extra": {},
+            }]
+        }]
+    }
+    with mock.patch("ggrc.notifications.common.send_email") as send_mock:
+      response = self.client.post(
+          "/api/bulk_operations/cavs/save",
+          data=json.dumps(data),
+          headers=self.headers
+      )
+    self.assert200(response)
+    send_mock.assert_called_once()
+    _, mail_title, body = send_mock.call_args[0]
+    self.assertEqual(
+        mail_title,
+        "Saving certifications in bulk is finished",
+    )
+    self.assertNotIn(
+        "Answers for the following certifications are saved successfully:",
+        body,
+    )
+    self.assertNotIn(
+        "Answers for the following certifications are partially saved:",
+        body,
+    )
+    self.assertIn(
+        "Failed to save answers for the following certifications:",
+        body,
+    )
+
   def test_complete_successfully(self):
     """Test assessment complete finished successfully"""
     assessments = []
@@ -51,18 +198,23 @@ class TestBulkCompleteNotification(TestCase):
     self.assert200(response)
     send_mock.assert_called_once()
     _, mail_title, body = send_mock.call_args[0]
-    self.assertEqual(mail_title, "Bulk update of Assessments is finished")
-    self.assertIn("Bulk Assessments update is finished successfully", body)
-    self.assertNotIn("Bulk Assessments update is finished partially", body)
-    self.assertNotIn("Bulk Assessments update has failed", body)
+    self.assertEqual(
+        mail_title,
+        "Completing certifications in bulk is finished",
+    )
+    self.assertIn(
+        "The following certifications are completed successfully:",
+        body,
+    )
+    self.assertNotIn(
+        "Failed to complete the following certifications:",
+        body,
+    )
     for asmt_title in assessments_titles:
       self.assertIn(asmt_title, body)
 
-  @unittest.skip(
-      "Implementing transition to MatrixCsvBuilder for bulk operations"
-  )
   def test_not_completed(self):
-    """Test assessment complete finished partially notification"""
+    """Test assessment complete failed notification, missed mandatory lca"""
     assessments = []
     with factories.single_commit():
       for _ in range(3):
@@ -76,7 +228,10 @@ class TestBulkCompleteNotification(TestCase):
 
     data = {
         "assessments_ids": assessments_ids,
-        "attributes": [],
+        "attributes": [{
+            "assessment": {"id": asmt.id, "slug": asmt.slug},
+            "values": [],
+        } for asmt in assessments],
     }
     with mock.patch("ggrc.notifications.common.send_email") as send_mock:
       response = self.client.post("/api/bulk_operations/complete",
@@ -85,16 +240,21 @@ class TestBulkCompleteNotification(TestCase):
     self.assert200(response)
     send_mock.assert_called_once()
     _, mail_title, body = send_mock.call_args[0]
-    self.assertEqual(mail_title, "Bulk update of Assessments is finished")
-    self.assertNotIn("Bulk Assessments update is finished successfully", body)
-    self.assertNotIn("Bulk Assessments update has failed", body)
-    self.assertIn("Bulk Assessments update is finished partially", body)
+    self.assertEqual(
+        mail_title,
+        "Completing certifications in bulk is finished",
+    )
+    self.assertNotIn(
+        "The following certifications are completed successfully:",
+        body,
+    )
+    self.assertIn(
+        "Failed to complete the following certifications:",
+        body,
+    )
     for asmt_title in assessments_titles:
       self.assertIn(asmt_title, body)
 
-  @unittest.skip(
-      "Implementing transition to MatrixCsvBuilder for bulk operations"
-  )
   def test_attributes_failed(self):
     """Test notification if bulk couldn't fill attributes"""
     assessments = []
@@ -111,18 +271,19 @@ class TestBulkCompleteNotification(TestCase):
       assessments_ids = [assmt.id for assmt in assessments]
       assessments_titles = [assmt.title for assmt in assessments]
 
-    bulk_update = [{"assessment_id": assmt.id,
-                    "attribute_definition_id": None,
-                    "slug": assmt.slug} for assmt in assessments]
     data = {
         "assessments_ids": assessments_ids,
         "attributes": [{
-            "attribute_value": "lcavalue",
-            "attribute_title": "lca_title",
-            "attribute_type": "Dropdown",
-            "extra": None,
-            "bulk_update": bulk_update
-        }],
+            "assessment": {"id": assmt.id, "slug": assmt.slug},
+            "values": [{
+                "value": "1",
+                "title": "lca_title",
+                "type": "Dropdown",
+                "definition_id": assmt.id,
+                "id": None,
+                "extra": None,
+            }]
+        } for assmt in assessments]
     }
     with mock.patch("ggrc.notifications.common.send_email") as send_mock:
       response = self.client.post("/api/bulk_operations/complete",
@@ -131,10 +292,78 @@ class TestBulkCompleteNotification(TestCase):
     self.assert200(response)
     send_mock.assert_called_once()
     _, mail_title, body = send_mock.call_args[0]
-    self.assertEqual(mail_title, "Bulk update of Assessments is finished")
-    self.assertNotIn("Bulk Assessments update is finished successfully", body)
-    self.assertNotIn("Bulk Assessments update is finished partially", body)
-    self.assertIn("Bulk Assessments update has failed", body)
+    self.assertEqual(
+        mail_title,
+        "Completing certifications in bulk is finished",
+    )
+    self.assertNotIn(
+        "The following certifications are completed successfully:",
+        body,
+    )
+    self.assertIn(
+        "Failed to complete the following certifications:",
+        body,
+    )
+    for asmt_title in assessments_titles:
+      self.assertIn(asmt_title, body)
+
+  def test_complete_failed(self):
+    """Test assessment failed to update and assessment failed to complete"""
+    with factories.single_commit():
+      asmt1 = factories.AssessmentFactory()
+      asmt2 = factories.AssessmentFactory()
+      assessments_titles = [asmt1.title, asmt2.title]
+      factories.CustomAttributeDefinitionFactory(
+          definition_type="assessment",
+          definition_id=asmt1.id,
+          attribute_type="Dropdown",
+          title="test dropdown lca",
+      )
+      factories.CustomAttributeDefinitionFactory(
+          definition_type="assessment",
+          definition_id=asmt2.id,
+          attribute_type="Text",
+          title="test text lca",
+          mandatory=True,
+      )
+    data = {
+        "assessments_ids": [asmt1.id, asmt2.id],
+        "attributes": [{
+            "assessment": {"id": asmt1.id, "slug": asmt1.slug},
+            "values": [{
+                "value": "test value",
+                "title": "test dropdown lca",
+                "type": "Dropdown",
+                "definition_id": asmt1.id,
+                "id": None,
+                "extra": None,
+            }]
+        }, {
+            "assessment": {"id": asmt2.id, "slug": asmt2.slug},
+            "values": [],
+        }]
+    }
+    with mock.patch("ggrc.notifications.common.send_email") as send_mock:
+      response = self.client.post(
+          "/api/bulk_operations/complete",
+          data=json.dumps(data),
+          headers=self.headers,
+      )
+    self.assert200(response)
+    send_mock.assert_called_once()
+    _, mail_title, body = send_mock.call_args[0]
+    self.assertEqual(
+        mail_title,
+        "Completing certifications in bulk is finished",
+    )
+    self.assertNotIn(
+        "The following certifications are completed successfully:",
+        body,
+    )
+    self.assertIn(
+        "Failed to complete the following certifications:",
+        body,
+    )
     for asmt_title in assessments_titles:
       self.assertIn(asmt_title, body)
 

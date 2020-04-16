@@ -260,8 +260,11 @@ def make_import(csv_data, dry_run, ie_job=None, bulk_import=False,
 
     converter.import_csv_data()
 
-    return {"data": converter.get_info(),
-            "failed_slugs": converter.failed_slugs}
+    return {
+        "data": converter.get_info(),
+        "failed_slugs": converter.failed_slugs,
+        "warning_slugs": converter.warning_slugs,
+    }
 
   except models_exceptions.ImportStoppedException:
     raise
