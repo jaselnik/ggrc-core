@@ -354,22 +354,22 @@ def send_daily_digest_bg(task):  # pylint: disable=unused-argument
 def send_daily_digest_notifications():
   """Send emails for today's or overdue notifications."""
   with benchmark("contributed cron job send_daily_digest_notifications"):
-    for notif_list, notif_data in generate_daily_notifications():
-      with benchmark("processing notification data chunk"):
-        subject = "GGRC daily digest for {}".format(
-            date.today().strftime("%b %d")
-        )
-        sent_emails = []
-        with benchmark("sending daily emails"):
-          for user_email, data in notif_data.iteritems():
-            data = modify_data(data)
-            email_body = settings.EMAIL_DIGEST.render(digest=data)
-            send_email(user_email, subject, email_body)
-            sent_emails.append(user_email)
+    notif_list, notif_data = get_daily_notifications()
+    with benchmark("processing notification data chunk"):
+      subject = "GGRC daily digest for {}".format(
+          date.today().strftime("%b %d")
+      )
+      sent_emails = []
+      with benchmark("sending daily emails"):
+        for user_email, data in notif_data.iteritems():
+          data = modify_data(data)
+          email_body = settings.EMAIL_DIGEST.render(digest=data)
+          send_email(user_email, subject, email_body)
+          sent_emails.append(user_email)
 
-        with benchmark("processing sent notifications"):
-          process_sent_notifications(notif_list)
-        logger.info("emails sent to: %s", ",".join(sent_emails))
+      with benchmark("processing sent notifications"):
+        process_sent_notifications(notif_list)
+      logger.info("emails sent to: %s", ",".join(sent_emails))
 
 
 def generate_cycle_tasks_notifs():

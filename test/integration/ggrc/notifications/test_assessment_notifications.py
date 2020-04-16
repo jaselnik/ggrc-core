@@ -451,3 +451,34 @@ class TestAssessmentNotification(TestCase):
     obj_created_at = asmts_data[0]["obj_created_at"].values()
     self.assertEqual(len(notifs), 1)
     self.assertEqual(obj_created_at, [converted_date])
+
+  @mock.patch("ggrc.settings.DAILY_DIGEST_BATCH_SIZE", 1)
+  def test_send_daily_email_one_chunk(self):
+    """Test one user receive one daily digest email"""
+    object_generator = ObjectGenerator()
+    _, user = object_generator.generate_person(user_role="Creator")
+    with factories.single_commit():
+      assessment1 = factories.AssessmentFactory()
+      assessment2 = factories.AssessmentFactory()
+      assessment1.add_person_with_role_name(user, "Verifiers")
+      assessment2.add_person_with_role_name(user, "Verifiers")
+      assessment1.status = "Not Started"
+      assessment2.status = "Not Started"
+      db.session.commit()
+
+    response = self.import_data(*[
+        collections.OrderedDict([
+            ("object_type", "Assessment"),
+            ("Code*", assessment1.slug),
+            ("Evidence URL", "test url"),
+        ]),
+        collections.OrderedDict([
+            ("object_type", "Assessment"),
+            ("Code*", assessment2.slug),
+            ("Evidence URL", "test url"),
+        ]),
+    ])
+    self._check_csv_response(response, {})
+    with mock.patch("ggrc.notifications.common.send_email") as send_email_mock:
+      self.client.get("/_notifications/send_daily_digest")
+      send_email_mock.assert_called_once()
