@@ -87,7 +87,7 @@ def bulk_complete(task):
   flask.session['credentials'] = task.parameters.get("credentials")
 
   with benchmark("Create CsvBuilder"):
-    builder = csvbuilder.CsvBuilder(task.parameters.get("data", {}))
+    builder = csvbuilder.MatrixCsvBuilder(task.parameters.get("data", {}))
 
   with benchmark("Prepare import data for attributes update"):
     update_data = builder.attributes_update_to_csv()
@@ -124,7 +124,7 @@ def bulk_verify(task):
   """Process bulk verify"""
 
   with benchmark("Create CsvBuilder"):
-    builder = csvbuilder.CsvBuilder(task.parameters.get("data", {}))
+    builder = csvbuilder.VerifyCsvBuilder(task.parameters.get("data", {}))
 
   with benchmark("Prepare import data for verification"):
     update_data = builder.assessments_verify_to_csv()
@@ -152,6 +152,37 @@ def bulk_verify(task):
   bulk_notifications.send_notification(update_errors=verify_errors,
                                        partial_errors={},
                                        asmnt_ids=builder.assessment_ids)
+
+  return app.make_response(('success', 200, [("Content-Type", "text/json")]))
+
+
+@app.route("/_background_tasks/cavs/save", methods=["POST"])
+@background_task.queued_task
+def bulk_cavs_save(task):
+  """Process bulk cavs save"""
+  with benchmark("Create CsvBuilder"):
+    builder = csvbuilder.MatrixCsvBuilder(task.parameters.get("data", {}))
+
+  with benchmark("Prepare import data for attributes update"):
+    update_data = builder.attributes_update_to_csv()
+
+  with benchmark("Update assessments attributes"):
+    import_arguments = {
+        "csv_data": update_data,
+        "dry_run": False,
+        "bulk_import": True,
+    }
+
+    update_attrs = converters.make_import(**import_arguments)
+
+  _log_import(update_attrs["data"])
+
+  upd_errors = set(update_attrs["failed_slugs"])
+  bulk_notifications.send_notification(
+      update_errors=upd_errors,
+      partial_errors={},
+      asmnt_ids=[asmt.id for asmt in builder.assessments],
+  )
 
   return app.make_response(('success', 200, [("Content-Type", "text/json")]))
 
@@ -202,4 +233,25 @@ def run_bulk_verify():
   return bg_task.make_response(
       app.make_response((utils.as_json(bg_task), 200,
                          [('Content-Type', "text/json")]))
+  )
+
+
+@app.route("/api/bulk_operations/cavs/save", methods=["POST"])
+@login.login_required
+def run_bulk_cavs_save():
+  """Call bulk cavs save"""
+  data = flask.request.json
+  parameters = {"data": data}
+
+  bg_task = background_task.create_task(
+      name="bulk_cavs_save",
+      url=flask.url_for(bulk_cavs_save.__name__),
+      queued_callback=bulk_cavs_save,
+      parameters=parameters
+  )
+  db.session.commit()
+  return bg_task.make_response(
+      app.make_response(
+          (utils.as_json(bg_task), 200, [('Content-Type', "text/json")])
+      )
   )
