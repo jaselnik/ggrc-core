@@ -100,7 +100,6 @@ class Person(customattributable.CustomAttributable,
       'email',
       'language',
       'name',
-      'user_roles',
       reflection.Attribute('profile', create=False, update=False),
       reflection.Attribute('object_people', create=False, update=False),
       reflection.Attribute('system_wide_role', create=False, update=False),
@@ -208,7 +207,6 @@ class Person(customattributable.CustomAttributable,
         orm.joinedload('language'),
         orm.joinedload('profile'),
         orm.subqueryload('object_people'),
-        orm.subqueryload('user_roles'),
     )
 
   @classmethod

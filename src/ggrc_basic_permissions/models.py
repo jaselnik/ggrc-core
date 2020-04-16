@@ -10,6 +10,7 @@ from ggrc import db
 from ggrc.builder import simple_property
 from ggrc.models import all_models
 from ggrc.models.context import Context
+from ggrc.models.person import Person
 from ggrc.models.mixins import base
 from ggrc.models.mixins import rest_handable
 from ggrc.models.mixins import Base, Described
@@ -75,6 +76,45 @@ class Role(base.ContextRBAC, Base, Described, db.Model):
 
   def _display_name(self):
     return self.name
+
+
+Person._api_attrs.add('user_roles')
+# FIXME: Cannot use `include_links`, because Memcache expiry doesn't handle
+#   sub-resources correctly
+# Person._include_links.extend(['user_roles'])
+
+
+# Override `Person.eager_query` to ensure `user_roles` is loaded efficiently
+_orig_Person_eager_query = Person.eager_query
+
+
+def _Person_eager_query(cls, **kwargs):
+  from sqlalchemy import orm
+
+  return _orig_Person_eager_query(**kwargs).options(
+      orm.subqueryload('user_roles'),
+      # orm.subqueryload('user_roles').undefer_group('UserRole_complete'),
+      # orm.subqueryload('user_roles').joinedload('context'),
+      # orm.subqueryload('user_roles').joinedload('role'),
+  )
+
+
+Person.eager_query = classmethod(_Person_eager_query)
+
+
+Context._api_attrs.add('user_roles')
+_orig_Context_eager_query = Context.eager_query
+
+
+def _Context_eager_query(cls, **kwargs):
+  from sqlalchemy import orm
+
+  return _orig_Context_eager_query(**kwargs).options(
+      orm.subqueryload('user_roles')
+  )
+
+
+Context.eager_query = classmethod(_Context_eager_query)
 
 
 class UserRole(rest_handable.WithDeleteHandable,

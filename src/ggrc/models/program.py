@@ -36,11 +36,11 @@ class Program(mega.Mega,
               context.HasOwnContext,
               mixins.LastDeprecatedTimeboxed,
               rest_handable_mixins.WithDeleteHandable,
-              mixins.CycleTaskable,
               mixins.base.ContextRBAC,
               mixins.BusinessObject,
               proposal.Proposalable,
               mixins.Folderable,
+              mixins.WithWorkflowState,
               ft_mixin.Indexed,
               db.Model):
   """Representation for Program model."""

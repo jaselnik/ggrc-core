@@ -22,10 +22,10 @@ class Metric(Personable,
              mixins.TestPlanned,
              mixins.LastDeprecatedTimeboxed,
              mixins.CustomAttributable,
-             mixins.CycleTaskable,
              mixins.ScopeObject,
              mixins.base.ContextRBAC,
              mixins.Folderable,
+             mixins.WithWorkflowState,
              Indexed,
              db.Model):
   """Representation for Metric model."""

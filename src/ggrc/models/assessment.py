@@ -28,7 +28,7 @@ from ggrc.models.mixins import Notifiable
 from ggrc.models.mixins import TestPlanned
 from ggrc.models.mixins import LastDeprecatedTimeboxed
 from ggrc.models.mixins import VerifiedDate
-from ggrc.models.mixins import CycleTaskable
+from ggrc.models.mixins import WithWorkflowState
 from ggrc.models.mixins import reminderable
 from ggrc.models.mixins import statusable
 from ggrc.models.mixins import labeled
@@ -69,11 +69,11 @@ class Assessment(Assignable,
                  labeled.Labeled,
                  with_last_comment.WithLastComment,
                  issue_tracker_mixins.IssueTrackedWithUrl,
-                 CycleTaskable,
                  base.ContextRBAC,
                  BusinessObject,
                  with_sox_302.WithSOX302FlowReadOnly,
                  WithCustomRestrictions,
+                 WithWorkflowState,
                  Indexed,
                  db.Model):
   """Class representing Assessment.

@@ -29,11 +29,11 @@ class SystemOrProcess(ScopedCommentable,
                       synchronizable.Synchronizable,
                       mixins.TestPlanned,
                       mixins.LastDeprecatedTimeboxed,
-                      mixins.CycleTaskable,
                       mixins.base.ContextRBAC,
                       mixins.WithNetworkZone,
                       mixins.ScopeObject,
                       mixins.Folderable,
+                      mixins.WithWorkflowState,
                       db.Model):
   # Override model_inflector
   _table_plural = 'systems_or_processes'

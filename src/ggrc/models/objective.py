@@ -25,10 +25,10 @@ class Objective(mixins.with_last_assessment_date.WithLastAssessmentDate,
                 Commentable,
                 mixins.TestPlanned,
                 mixins.with_similarity_score.WithSimilarityScore,
-                mixins.CycleTaskable,
                 mixins.base.ContextRBAC,
                 mixins.BusinessObject,
                 mixins.Folderable,
+                mixins.WithWorkflowState,
                 Indexed,
                 db.Model):
   """Class representing Objective."""

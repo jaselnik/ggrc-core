@@ -31,10 +31,10 @@ class Risk(with_external_created_by.WithExternalCreatedBy,
            comment.ExternalCommentable,
            mixins.TestPlanned,
            mixins.LastDeprecatedTimeboxed,
-           mixins.CycleTaskable,
            mixins.base.ContextRBAC,
            mixins.BusinessObject,
            mixins.Folderable,
+           mixins.WithWorkflowState,
            Indexed,
            db.Model):
   """Basic Risk model."""

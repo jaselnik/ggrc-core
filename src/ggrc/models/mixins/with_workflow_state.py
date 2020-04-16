@@ -7,13 +7,8 @@ This is a mixin for adding workflow_state to all objects that can be mapped
 to workflow tasks.
 """
 
-import sqlalchemy as sa
-from sqlalchemy import orm
-from sqlalchemy.ext.declarative import declared_attr
-
 from ggrc import db
 from ggrc.models import reflection
-from ggrc.models import relationship
 
 
 class WithWorkflowState(object):
@@ -121,43 +116,3 @@ class WithWorkflowState(object):
           return cls.OVERDUE
       current_cycles.append(cycle_instance)
     return cls._get_state(current_cycles)
-
-
-class CycleTaskable(WithWorkflowState):
-  """CycleTaskable mixin."""
-
-  @declared_attr
-  def cycle_task_group_object_tasks(cls):  # pylint: disable=no-self-argument
-    """CycleTaskGroupObjectTasks to which object is mapped."""
-
-    secondary_join = """CycleTaskGroupObjectTask.id == case(
-                        [(Relationship.source_type == '{}',
-                          Relationship.destination_id)],
-                        else_=Relationship.source_id)"""
-
-    return db.relationship(
-        "CycleTaskGroupObjectTask",
-        primaryjoin=lambda: sa.or_(
-            sa.and_(
-                cls.id == relationship.Relationship.source_id,
-                relationship.Relationship.source_type == cls.__name__,
-                relationship.Relationship.destination_type ==
-                "CycleTaskGroupObjectTask",
-            ),
-            sa.and_(
-                cls.id == relationship.Relationship.destination_id,
-                relationship.Relationship.destination_type == cls.__name__,
-                relationship.Relationship.source_type ==
-                "CycleTaskGroupObjectTask",
-            )
-        ),
-        secondary=relationship.Relationship.__table__,
-        secondaryjoin=secondary_join.format(cls.__name__),
-        viewonly=True
-    )
-
-  @classmethod
-  def eager_query(cls, **kwargs):
-    """Eager query for objects with cycle tasks."""
-    query = super(CycleTaskable, cls).eager_query(**kwargs)
-    return query.options(orm.subqueryload('cycle_task_group_object_tasks'))

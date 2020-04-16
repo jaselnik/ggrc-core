@@ -22,10 +22,10 @@ class Threat(Roleable,
              PublicDocumentable,
              Commentable,
              mixins.TestPlanned,
-             mixins.CycleTaskable,
              mixins.base.ContextRBAC,
              mixins.BusinessObject,
              mixins.Folderable,
+             mixins.WithWorkflowState,
              Indexed,
              db.Model):
   __tablename__ = 'threats'
