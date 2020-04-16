@@ -16,7 +16,8 @@ from ggrc.models.relationship import Relatable
 from ggrc.models import reflection
 
 
-class System(WithReadOnlyAccess,
+class System(mixins.CustomAttributable,
+             WithReadOnlyAccess,
              Personable,
              synchronizable.RoleableSynchronizable,
              Relatable,
