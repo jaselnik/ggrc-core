@@ -54,7 +54,7 @@ const requestAssessmentsCount = (
   return batchRequests(param).then(({Assessment: {count}}) => count);
 };
 
-export const getAsmtCountForCompletion = (relevant, currentFilter) => {
+export const getFiltersForCompletion = (currentFilter) => {
   const filters = [{
     expression: {
       left: {
@@ -109,6 +109,12 @@ export const getAsmtCountForCompletion = (relevant, currentFilter) => {
     currentFilter = currentFilter.serialize();
     filters.push(currentFilter.filter);
   }
+  return filters;
+};
+
+export const getAsmtCountForCompletion = (relevant, currentFilter) => {
+  const filters = getFiltersForCompletion(currentFilter);
+
   return requestAssessmentsCount(relevant, filters, 'update');
 };
 

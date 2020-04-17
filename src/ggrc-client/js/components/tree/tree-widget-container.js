@@ -37,7 +37,6 @@ import '../last-comment/last-comment';
 import '../tree-view-filter/tree-view-filter';
 import loGet from 'lodash/get';
 import '../assessment/assessments-bulk-complete-container/assessments-bulk-complete-container';
-
 import template from './templates/tree-widget-container.stache';
 import * as StateUtils from '../../plugins/utils/state-utils';
 import {
@@ -226,6 +225,7 @@ const ViewModel = canDefineMap.extend({
         this.loading = false;
         this.pubSub.dispatch({
           ...REFRESH_ITEMS_LIST,
+          modelName,
           currentFilter: this.currentFilter,
         });
       })

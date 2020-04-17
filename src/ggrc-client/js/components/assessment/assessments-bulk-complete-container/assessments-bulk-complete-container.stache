@@ -4,22 +4,25 @@
 }}
 
 <div class="flex-box flex-col">
-  <div class="flex-box flex-row bulk-complete-header">
-        <div class="alert alert-nomargin bulk-complete-header__alert">
-            Below are listed SOX 302 certifications in statuses "Not Started", "In Progress", "Rework Needed" that are assigned on you.
-        </div>
-        <div class="bulk-complete-header__action">
-            <button type="button" class="btn btn-white">
-              Exit bulk completion
-            </button>
+  <spinner-component toggle:from="isLoading" size:from="'large'" class="bulk-complete-spinner"/>
+  {{^if isLoading}}
+    <div class="flex-box flex-row bulk-complete-header">
+      <div class="alert alert-nomargin bulk-complete-header__alert">
+           Below are listed SOX 302 certifications in statuses "Not Started", "In Progress", "Rework Needed" that are assigned on you.
+      </div>
+      <div class="bulk-complete-header__action">
+          <button type="button" class="btn btn-white">
+            Exit bulk completion
+          </button>
 
-            <button type="button" disabled class="btn btn-white">
-              Save answers
-            </button>
+          <button type="button" disabled class="btn btn-white">
+            Save answers
+          </button>
 
-            <button type="button" disabled class="btn btn-darkBlue">
-              Complete
-            </button>
-        </div>
-  </div>
+          <button type="button" disabled class="btn btn-darkBlue">
+            Complete
+          </button>
+      </div> 
+    </div>
+  {{/if}}
 </div>

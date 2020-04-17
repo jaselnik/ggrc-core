@@ -3,9 +3,8 @@
   Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 }}
 
-<assessments-bulk-completion-button enabled:from="showBulkCompletion"/>
 {{#if showBulkSection}}
-
+  <assessments-bulk-completion-button enabled:from="showBulkCompletion"/>
   {{#if showBulkVerify}}
     <assessments-bulk-verify-button
       class="bulk-verify__button"
@@ -15,6 +14,7 @@
   {{#if_instance_of parentInstance 'Audit'}}
     {{^if instance.archived}}
     {{#is_allowed 'update' parentInstance}}
+      <assessments-bulk-completion-button enabled:from="showBulkCompletion"/>
       <a href="javascript://"
         class="btn btn-small btn-darkBlue tree-action__create-button"
         rel="tooltip"
