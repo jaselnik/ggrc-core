@@ -679,8 +679,8 @@ export default canComponent.extend({
     '{pubSub} createdCycleTaskGroup'() {
       this.viewModel.loadItems();
     },
-    '{pubSub} enableBulkCompleteMode'() {
-      this.viewModel.bulkCompleteModeEnabled = true;
+    '{pubSub} enableBulkCompleteMode'(scope, {enable}) {
+      this.viewModel.bulkCompleteModeEnabled = enable;
     },
     '{pubSub} refetchOnce'(scope, event) {
       if (event.modelNames.includes(this.viewModel.modelNam)) {
