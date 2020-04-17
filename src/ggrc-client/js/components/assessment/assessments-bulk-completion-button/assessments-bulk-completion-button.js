@@ -18,7 +18,7 @@ const ViewModel = canDefineMap.extend({
   },
   openBulkCompleteMode() {
     pubSub.dispatch({
-      type: 'enableBulkCompleteMode',
+      type: 'updateBulkCompleteMode',
       enable: true,
     });
   },

@@ -10,6 +10,8 @@ import * as RequestUtils from '../../../../plugins/utils/request-utils';
 import * as BulkUpdateService from '../../../../plugins/utils/bulk-update-service';
 import * as CurrentPageUtils from '../../../../plugins/utils/current-page-utils';
 import * as QueryApiUtils from '../../../../plugins/utils/query-api-utils';
+import pubSub from '../../../../pub-sub';
+import * as ModalsUtils from '../../../../plugins/utils/modals';
 
 describe('assessments-bulk-complete-container component', () => {
   let viewModel;
@@ -108,6 +110,34 @@ describe('assessments-bulk-complete-container component', () => {
     });
   });
 
+  describe('exitBulkCompletionMode() method', () => {
+    let event;
+
+    beforeEach(() => {
+      event = {
+        type: 'updateBulkCompleteMode',
+        enable: false,
+      };
+      spyOn(pubSub, 'dispatch').and.returnValue(event);
+    });
+
+    it('calls confirmation modal when there is any unsaved answer', () => {
+      spyOn(ModalsUtils, 'confirm');
+      viewModel.isAttributeModified = true;
+      viewModel.exitBulkCompletionMode();
+
+      expect(ModalsUtils.confirm).toHaveBeenCalled();
+    });
+
+    it('dispatches updateBulkCompleteMode when there is no unsaved answer',
+      () => {
+        viewModel.isAttributeModified = false;
+        viewModel.exitBulkCompletionMode();
+
+        expect(pubSub.dispatch).toHaveBeenCalled();
+      });
+  });
+
   describe('events', () => {
     let events;
 
@@ -138,6 +168,32 @@ describe('assessments-bulk-complete-container component', () => {
         handler();
 
         expect(viewModel.loadItems).toHaveBeenCalled();
+      });
+      it('adds "beforeunload" event listener', () => {
+        spyOn(viewModel, 'buildAsmtListRequest');
+        spyOn(viewModel, 'loadItems');
+        spyOn(window, 'addEventListener');
+        handler();
+
+        expect(window.addEventListener).toHaveBeenCalled();
+      });
+    });
+
+    describe('removed() method', () => {
+      let handler;
+
+      beforeEach(() => {
+        handler = events.removed.bind({viewModel});
+      });
+
+      it('removes "beforeunload" event listener', () => {
+        spyOn(window, 'removeEventListener');
+        const beforeUnloadHandler = () => {};
+        viewModel._beforeUnloadHandler = beforeUnloadHandler;
+        handler();
+
+        expect(window.removeEventListener)
+          .toHaveBeenCalledWith('beforeunload', beforeUnloadHandler);
       });
     });
   });

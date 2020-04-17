@@ -87,7 +87,7 @@ const ViewModel = canDefineMap.extend({
   },
   exitBulkCompletionMode() {
     const disableBulkCompletionMode = () => pubSub.dispatch({
-      type: 'enableBulkCompleteMode',
+      type: 'updateBulkCompleteMode',
       enable: false,
     });
     if (this.isAttributeModified) {
