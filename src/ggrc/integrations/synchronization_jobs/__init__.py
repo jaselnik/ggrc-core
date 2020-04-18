@@ -8,6 +8,12 @@ from ggrc.integrations.synchronization_jobs.assessment_sync_job import \
     sync_assessment_attributes
 from ggrc.integrations.synchronization_jobs.issue_sync_job import \
     sync_issue_attributes
+from ggrc.integrations.synchronization_jobs.superusers_sync_job import \
+    sync_superusers
 
 
-__all__ = ["sync_assessment_attributes", "sync_issue_attributes"]
+__all__ = [
+    "sync_assessment_attributes",
+    "sync_issue_attributes",
+    "sync_superusers",
+]
