@@ -117,6 +117,15 @@ def compute_attributes(task):
     return app.make_response(("success", 200, [("Content-Type", "text/html")]))
 
 
+@app.route("/_background_tasks/compute_role_acls", methods=["POST"])
+@background_task.queued_task
+def compute_role_acls(task):
+  """Web hook to update ACL entries for the given role."""
+  from ggrc.models.hooks import access_control_role
+  access_control_role.handle_role_acls(role_id=task.parameters.get("role_id"))
+  return app.make_response(("success", 200, [("Content-Type", "text/html")]))
+
+
 @app.route("/_background_tasks/indexing", methods=["POST"])
 @background_task.queued_task
 def bg_update_ft_records(task):
@@ -374,6 +383,18 @@ def start_compute_attributes(revision_ids=None, event_id=None):
       parameters={"revision_ids": revision_ids, "event_id": event_id},
       method="POST",
       queued_callback=compute_attributes
+  )
+  db.session.commit()
+
+
+def start_compute_role_acls(role_id=None):
+  """Start a background task for acl role comutations."""
+  background_task.create_task(
+      name="compute_role_acls",
+      url=flask.url_for(compute_role_acls.__name__),
+      parameters={"role_id": role_id},
+      method="POST",
+      queued_callback=compute_role_acls,
   )
   db.session.commit()
 

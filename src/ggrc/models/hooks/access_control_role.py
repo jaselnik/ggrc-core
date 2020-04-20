@@ -21,6 +21,7 @@ Note:
     that already existed before the request was sent. Adding a person to a
     new role must now be done in separate requests.
 """
+# pylint: disable=cyclic-import
 
 import logging
 
@@ -75,13 +76,15 @@ def _get_missing_models_query(role):
   return query
 
 
-def handle_role_acls(role):
+def handle_role_acls(role=None, role_id=None):
   """Handle creation of ACL entries for the given role.
 
   This function takes care of eager acl creation when a new role is created.
   Because this is called after the commit on the role, we can not have new
   role creation and people assignment to that role in the same request.
   """
+  if not role:
+    role = all_models.AccessControlRole.query.get(role_id)
   with utils.benchmark(u"Generating ACL entries on {} for role {}".format(
           role.object_type, role.name)):
     query = _get_missing_models_query(role)
@@ -107,4 +110,5 @@ def init_hook():
     """Handle ACL entries creation for newly created access control role."""
     # pylint: disable=unused-argument
     # Arguments here have to be listed for the hooks to work.
-    handle_role_acls(obj)
+    from ggrc import views
+    views.start_compute_role_acls(role_id=obj.id)
