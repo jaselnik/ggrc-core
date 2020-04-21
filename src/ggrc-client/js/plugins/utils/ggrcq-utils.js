@@ -98,6 +98,19 @@ function getQuestionsUrl(instance) {
 }
 
 /**
+ * Get attribute url to page with questions
+ * @param {Object} instance - The model instance
+ * @return {String} Url to questions
+ */
+function getQuestionsAttrUrl(instance) {
+  const questionsUrl = getQuestionsUrl(instance);
+  if (instance.status === 'Active') {
+    return `${questionsUrl}/initialize`;
+  }
+  return questionsUrl;
+}
+
+/**
  * Get url to info view
  * @param {Object} instance - The model instance
  * @return {String} Url to info view
@@ -338,6 +351,7 @@ export {
   getReviewUrl,
   getMappingUrl,
   getUnmappingUrl,
+  getQuestionsAttrUrl,
   getCreateObjectUrl,
   getUrl,
   getProposalsUrl,

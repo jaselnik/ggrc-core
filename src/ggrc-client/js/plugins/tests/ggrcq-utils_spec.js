@@ -10,6 +10,7 @@ import {
   getMappingUrl,
   getUnmappingUrl,
   getChangeLogUrl,
+  getQuestionsAttrUrl,
   isMappableExternally,
   getCreateObjectUrl,
 } from '../utils/ggrcq-utils';
@@ -451,6 +452,31 @@ describe('GGRCQ utils', () => {
     it('should return proper url for non-scope object', () => {
       const url = `${GGRC.GGRC_Q_INTEGRATION_URL}controls?action=create`;
       expect(getCreateObjectUrl(Control)).toBe(url);
+    });
+  });
+
+  describe('getQuestionsAttrUrl util', () => {
+    it('should return proper url for scope object in Active status', () => {
+      let instance = makeFakeInstance({model: TechnologyEnvironment})({
+        type: 'TechnologyEnvironment',
+        slug: 'TechnologyEnvironment-1',
+        status: 'Active',
+      });
+      const url = GGRC.GGRC_Q_INTEGRATION_URL +
+      'questionnaires/technology_environment=' +
+      'technologyenvironment-1/initialize';
+      expect(getQuestionsAttrUrl(instance)).toBe(url);
+    });
+
+    it('should return proper url for scope object in Draft status', () => {
+      let instance = makeFakeInstance({model: TechnologyEnvironment})({
+        type: 'TechnologyEnvironment',
+        slug: 'TechnologyEnvironment-1',
+        status: 'Draft',
+      });
+      const url = GGRC.GGRC_Q_INTEGRATION_URL +
+      'questionnaires/technology_environment=technologyenvironment-1';
+      expect(getQuestionsAttrUrl(instance)).toBe(url);
     });
   });
 });
