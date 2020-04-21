@@ -30,6 +30,7 @@ def _query_all_cads_asmt_matches(asmt_ids):
     return []
   all_cads = db.session.query(
       all_models.Assessment.id,
+      all_models.Assessment.slug,
       all_models.Assessment.title,
       all_models.Assessment.assessment_type,
       all_models.Assessment.status,
@@ -124,7 +125,7 @@ def _prepare_attributes_and_assessments(all_cads):
   """
   attributes = collections.OrderedDict()
   assessments = collections.OrderedDict()
-  for (asmt_id, asmt_title, asmt_type,
+  for (asmt_id, asmt_slug, asmt_title, asmt_type,
        asmt_status, cad, cav_value, cav_person_id) in all_cads:
     if cad:
       unique_key = _generate_unique_cad_key(cad)
@@ -139,6 +140,7 @@ def _prepare_attributes_and_assessments(all_cads):
     assessments[asmt_id] = {
         "assessment_type": asmt_type,
         "id": asmt_id,
+        "slug": asmt_slug,
         "title": asmt_title,
         "status": asmt_status,
     }
@@ -177,6 +179,7 @@ def get_data(asmt_ids):
      "assessments": [{
         "assessment_type": 'Type', /* String */
         "id": 12345, /* Number */
+        "slug": 'Some slug', /* String */
         "title": 'Some title', /* String */
         "status": 'Some status', /* String */
      }],
