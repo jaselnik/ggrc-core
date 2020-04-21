@@ -33,7 +33,6 @@ class SystemOrProcess(ScopedCommentable,
                       mixins.WithNetworkZone,
                       mixins.ScopeObject,
                       mixins.Folderable,
-                      mixins.WithWorkflowState,
                       db.Model):
   # Override model_inflector
   _table_plural = 'systems_or_processes'
