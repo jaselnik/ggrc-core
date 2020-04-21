@@ -14,6 +14,7 @@ class AssessmentStub(object):
   """Class stores assessment attributes needed for builders"""
   # pylint: disable=too-few-public-methods
   def __init__(self):
+    # pylint: disable=invalid-name
     self.id = None
     self.files = []
     self.urls = []
@@ -68,6 +69,7 @@ class AbstractCsvBuilder(object):
 
 class VerifyCsvBuilder(AbstractCsvBuilder):
   """Handle data and build csv for assessments bulk verify."""
+  # pylint: disable=too-few-public-methods
   def assessments_verify_to_csv(self):
     """Prepare csv to verify assessments in bulk via import"""
 
@@ -290,6 +292,7 @@ class MatrixCsvBuilder(AbstractCsvBuilder):
 
 def _have_verifiers(assessment_ids):
   """Returns subset of assessment_ids for assessments which have verifiers"""
+  # pylint: disable=invalid-name
   ACL = models.AccessControlList
   ACP = models.AccessControlPerson
   ACR = models.AccessControlRole

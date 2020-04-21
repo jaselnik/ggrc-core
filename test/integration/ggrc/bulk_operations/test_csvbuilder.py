@@ -273,8 +273,8 @@ class TestMatrixCsvBuilder(TestCase):
                     "urls": [],
                     "files": [],
                 },
-            }]
-        }]
+            }],
+        }],
     }
     builder = csvbuilder.MatrixCsvBuilder(data)
     expected_data = {
@@ -453,10 +453,7 @@ class TestMatrixCsvBuilder(TestCase):
     data = {
         "assessments_ids": [],
         "attributes": [{
-            "assessment": {
-                "id": asmt.id,
-                "slug": asmt.slug,
-            },
+            "assessment": {"id": asmt.id, "slug": asmt.slug},
             "values": [{
                 "value": "cav_value",
                 "title": cad.title,

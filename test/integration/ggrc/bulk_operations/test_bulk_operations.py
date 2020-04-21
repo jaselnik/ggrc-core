@@ -85,6 +85,7 @@ class TestBulkOperations(ggrc.TestCase):
     2nd assessment has no Verifiers and can be moved to the Complete status
     in a one step.
     """
+    # pylint: disable=invalid-name
     with factories.single_commit():
       user = models.Person.query.first()
       asmt1 = factories.AssessmentFactory(status="Not Started")
@@ -443,10 +444,7 @@ class TestBulkOperations(ggrc.TestCase):
     data = {
         "assessments_ids": asmts_ids,
         "attributes": [{
-            "assessment": {
-                "id": asmt.id,
-                "slug": asmt.slug,
-            },
+            "assessment": {"id": asmt.id, "slug": asmt.slug},
             "values": [{
                 "value": value,
                 "title": "text_lca",
