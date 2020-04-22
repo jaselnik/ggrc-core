@@ -127,7 +127,8 @@ class TestStatusApiPost(TestCase):
     resp = self.api.put(self.group, data={"status": state})
     self.assert403(resp)
 
-  def test_update_titile_of_cycle(self):
+  def test_update_title_of_cycle_task_group(self):
+    # pylint: disable=invalid-name
     """Check title updating of Cycle Task Group """
     resp = self.api.put(self.group, data={"title": "Updated title"})
     self.assert403(resp)
@@ -142,6 +143,11 @@ class TestStatusApiPost(TestCase):
     resp = self.api.put(self.cycle, data={"status": state})
     cycle = all_models.Cycle.query.get(resp.json["cycle"]["id"])
     self.assertEqual(state, cycle.status)
+
+  def test_update_title_of_cycle(self):
+    """Check title updating of Cycle"""
+    resp = self.api.put(self.cycle, data={"title": "Updated title"})
+    self.assert403(resp)
 
   @ddt.data((u"Assigned", True),
             (u"In Progress", True),

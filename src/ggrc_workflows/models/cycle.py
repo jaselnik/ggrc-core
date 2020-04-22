@@ -37,6 +37,7 @@ class Cycle(roleable.Roleable,
             relationship.Relatable,
             mixins.WithContact,
             wf_mixins.CycleStatusValidatedMixin,
+            wf_mixins.WFCustomRestrictions,
             mixins.Timeboxed,
             mixins.Described,
             mixins.Titled,
@@ -70,6 +71,10 @@ class Cycle(roleable.Roleable,
   # This parameter is overridden by workflow backref, but is here to ensure
   # pylint does not complain
   _workflow = None
+
+  _method_fields_restrictions = {
+      "PUT": ["title", "description"],
+  }
 
   @hybrid.hybrid_property
   def workflow(self):
