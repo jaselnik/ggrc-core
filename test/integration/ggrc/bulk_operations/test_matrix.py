@@ -146,6 +146,7 @@ class TestMatrix(ggrc.TestCase):
     return [{
         "assessment_type": asmt.assessment_type,
         "id": asmt.id,
+        "slug": asmt.slug,
         "title": asmt.title,
         "status": asmt.status,
     } for asmt in assessments]

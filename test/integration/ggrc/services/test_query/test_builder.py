@@ -5,7 +5,6 @@
 import datetime
 
 import ddt
-import mock
 import flask
 
 from ggrc.query import builder
@@ -75,9 +74,17 @@ class TestQueryHelper(ggrc.TestCase):
             }
         }}
     }]
-    left_expression = {"ids": [audit.id]}
+    left_expression = {
+        "ids": [audit.id],
+        "object_name": "Audit",
+        "op": {"name": "relevant"},
+    }
     left_expression[query_filter] = [getattr(audit, attr)]
-    right_expression = {"ids": [asmt.id]}
+    right_expression = {
+        "ids": [asmt.id],
+        "object_name": "Assessment",
+        "op": {"name": "relevant"},
+    }
     right_expression[query_filter] = [getattr(asmt, attr)]
     self.assertEqual(
         builder.QueryHelper(query).query,
@@ -86,16 +93,9 @@ class TestQueryHelper(ggrc.TestCase):
             "filters": {
                 "expression": {
                     "ids": [],
-                    "left": {
-                        "object_name": "Audit",
-                        "op": {"name": "relevant"},
-                    }.update(left_expression),
+                    "left": left_expression,
                     "op": {"name": "AND"},
-                    "right": {
-                        "object_name": "Assessment",
-                        "op": {"name": "relevant"},
-                        "ids": [asmt.id]
-                    }.update(right_expression),
+                    "right": right_expression,
                 }
             }
         }],
