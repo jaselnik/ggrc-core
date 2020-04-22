@@ -66,6 +66,7 @@ let SUB_TREE_FIELDS = Object.freeze([
   'type',
   'selfLink',
   'viewLink',
+  'slug',
 
   // title fields
   'title',
