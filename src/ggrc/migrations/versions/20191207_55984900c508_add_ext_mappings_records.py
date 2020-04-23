@@ -2,7 +2,7 @@
 # Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 
 """
-add_ext_mappings_records
+Fill `external_mappings` table with mappings between CADs on C and Q.
 
 Create Date: 2019-12-07 10:41:48.084931
 """
@@ -11,6 +11,7 @@ Create Date: 2019-12-07 10:41:48.084931
 
 import datetime
 import logging
+
 import sqlalchemy as sa
 
 from alembic import op
@@ -25,73 +26,71 @@ down_revision = '18b61f3b870c'
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 DATE_NOW = datetime.datetime.utcnow().replace(microsecond=0).isoformat()
 
 
-def _get_count_of_ids_for_mapping(conn):
-  """Count ids for mappings records
+def _get_count_of_cad_ids_for_mapping(connection):
+  """Get count of CAD IDs to be inserted into `external_mappings`.
 
   Args:
-    conn: base mysql connection
+    connection (sqlalchemy.Connection): A database connection.
 
   Returns:
-      Count of related records
+    A number of CAD IDs.
   """
 
-  query = sa.text(
-      """ SELECT COUNT(*) FROM(
-            SELECT DISTINCT ecav.id
-              FROM external_custom_attribute_definitions as ecav
-              JOIN custom_attribute_definitions as cav
-              WHERE (cav.id = ecav.id OR cav.previous_id = ecav.id)
-              AND ecav.external_id IS NOT NULL
-          ) AS count_1
-      """
-  )
-  count = conn.execute(query).fetchone()
-  return count[0]
+  query = """
+      SELECT COUNT(*)
+        FROM (SELECT DISTINCT cad.id
+                FROM external_custom_attribute_definitions AS ecad
+                     JOIN custom_attribute_definitions AS cad
+                     ON cad.previous_id = ecad.id
+               WHERE ecad.external_id IS NOT NULL) AS count_1
+  """
+
+  result = connection.execute(sa.text(query)).fetchone()
+  return result[0]
 
 
-def _add_mappings_records(conn):
-  """Fill External_mappings table
+def _fill_external_mappings_tbl(connection):
+  """Fill `external_mappings` table with mappings between C and Q CADs.
 
   Args:
-    conn: base mysql connection
-
+    connection (sqlalchemy.Connection): A database connection.
   """
-  query = sa.text(
-      """
-          INSERT INTO external_mappings(
-              object_type,
-              external_type,
-              object_id,
-              external_id,
-              created_at)
-          SELECT DISTINCT
-              "CustomAttributeDefinition" AS object_type,
-              "CustomAttributeDefinition" AS external_type,
-              ecav.id,
-              ecav.external_id,
-              :date_time
-          FROM external_custom_attribute_definitions as ecav
-          JOIN custom_attribute_definitions as cav
-          WHERE (cav.id = ecav.id OR cav.previous_id = ecav.id)
-          AND ecav.external_id IS NOT NULL
-      """
-  )
-  conn.execute(query, date_time=DATE_NOW)
+  query = """
+      INSERT INTO external_mappings (
+             object_type,
+             external_type,
+             object_id,
+             external_id,
+             created_at)
+      SELECT DISTINCT
+             "CustomAttributeDefinition" AS object_type,
+             "CustomAttributeDefinition" AS external_type,
+             cad.id,
+             ecad.external_id,
+             :date_time
+        FROM external_custom_attribute_definitions AS ecad
+             JOIN custom_attribute_definitions AS cad
+             ON cad.previous_id = ecad.id
+       WHERE ecad.external_id IS NOT NULL
+  """
+
+  connection.execute(sa.text(query),
+                     date_time=DATE_NOW)
 
 
 def upgrade():
   """Upgrade database schema and/or data, creating a new revision."""
-  conn = op.get_bind()
-  ids_count = _get_count_of_ids_for_mapping(conn)
+  connection = op.get_bind()
+  ids_count = _get_count_of_cad_ids_for_mapping(connection)
 
   if ids_count:
-    _add_mappings_records(conn)
+    _fill_external_mappings_tbl(connection)
 
-  # pylint: disable=logging-not-lazy
-  logger.info("%d mapper records where created " % ids_count)
+  logger.info("%d mapper records where created.", ids_count)
 
 
 def downgrade():

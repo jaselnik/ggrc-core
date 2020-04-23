@@ -297,8 +297,7 @@ class TestWithReadOnlyAccessFolder(TestCase):
 
   FOLDERABLE_MODEL_NAMES = list(m.__name__ for m in all_models.all_models
                                 if issubclass(m, mixins.Folderable) and
-                                m not in (all_models.Directive,
-                                          all_models.SystemOrProcess))
+                                m not in (all_models.Directive,))
 
   def setUp(self):
     """setUp"""

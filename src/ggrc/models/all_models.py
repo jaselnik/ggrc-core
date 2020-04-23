@@ -73,7 +73,6 @@ from ggrc.models.risk import Risk
 from ggrc.models.snapshot import Snapshot
 from ggrc.models.system import Process
 from ggrc.models.system import System
-from ggrc.models.system import SystemOrProcess
 from ggrc.models.technology_environment import TechnologyEnvironment
 from ggrc.models.threat import Threat
 from ggrc.models.vendor import Vendor
@@ -156,7 +155,6 @@ all_models = [  # pylint: disable=invalid-name
     Snapshot,
     Standard,
     System,
-    SystemOrProcess,
     TechnologyEnvironment,
     Threat,
     Vendor,
@@ -203,10 +201,6 @@ def get_scope_models():
   """Return all usable scope model classes"""
   ret = list(m for m in all_models
              if issubclass(m, _ScopeObject))
-
-  # SystemOrProcess is abstract model which represents models System & Process
-  # We have to exclude it from the list, as cannot be used directly
-  ret.remove(SystemOrProcess)
 
   return ret
 

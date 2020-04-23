@@ -21,7 +21,7 @@ class TestStates(unittest.TestCase):
       'Control', 'DataAsset', 'Directive', 'Facility', 'Market',
       'Objective', 'OrgGroup', 'Policy', 'Process', 'Product', 'Program',
       'Project', 'Regulation', 'Risk', 'Requirement', 'Standard', 'System',
-      'SystemOrProcess', 'Threat', 'Vendor', 'Metric', 'ProductGroup',
+      'Threat', 'Vendor', 'Metric', 'ProductGroup',
       'TechnologyEnvironment')
 
   def _assert_states(self, objType, expected_states, default):
