@@ -157,15 +157,14 @@ class MatrixCsvBuilder(AbstractCsvBuilder):
     """Prepare csv to complete assessments in bulk via import"""
 
     assessments_list = []
-    proceed_slugs = []
     for assessment in self.assessments:
-      if assessment.slug not in errors:
+      if assessment.slug not in errors and \
+         assessment.id in self.assessment_ids:
         assessments_list.append([
             u"",
             assessment.slug,
             u"In Review" if assessment.needs_verification else u"Completed",
         ])
-        proceed_slugs.append(assessment.slug)
 
     result_csv = []
     if assessments_list:
@@ -173,7 +172,7 @@ class MatrixCsvBuilder(AbstractCsvBuilder):
       result_csv.append([u"Assessment", u"Code", u"State"])
       result_csv.extend(assessments_list)
 
-    return result_csv, proceed_slugs
+    return result_csv
 
   def _convert_data(self):
     """Convert request data to appropriate format.
