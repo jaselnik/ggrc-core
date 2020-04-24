@@ -894,7 +894,16 @@ class Objectives(page_mixins.WithAssignFolder, InfoWidget):
     scope.update(admin=self.admins.get_people_emails())
 
 
-class OrgGroups(ReadOnlyInfoWidget):
+class ScopeObjects(ReadOnlyInfoWidget):
+  """Model for Scope Objects Info pages and Info panels."""
+
+  @property
+  def role_to_edit(self):
+    """Returns a role for trying to edit."""
+    return self._related_people_list(roles.COMPLIANCE_CONTACT, self._root)
+
+
+class OrgGroups(ScopeObjects):
   """Model for Org Group object Info pages and Info panels."""
 
   def update_obj_scope(self, scope):
@@ -902,59 +911,59 @@ class OrgGroups(ReadOnlyInfoWidget):
     scope.update(admin=self.admins.get_people_emails())
 
 
-class Vendors(ReadOnlyInfoWidget):
+class Vendors(ScopeObjects):
   """Model for Vendor object Info pages and Info panels."""
 
 
-class TechnologyEnvironments(ReadOnlyInfoWidget):
+class TechnologyEnvironments(ScopeObjects):
   """Model for Technology Environment object Info pages and Info panels."""
 
 
-class AccessGroups(ReadOnlyInfoWidget):
+class AccessGroups(ScopeObjects):
   """Model for Access Group object Info pages and Info panels."""
 
 
-class AccountBalances(ReadOnlyInfoWidget):
+class AccountBalances(ScopeObjects):
   """Model for Account Balance object Info pages and Info panels."""
 
 
-class Systems(ReadOnlyInfoWidget):
+class Systems(ScopeObjects):
   """Model for System object Info pages and Info panels."""
 
 
-class Processes(ReadOnlyInfoWidget):
+class Processes(ScopeObjects):
   """Model for Process object Info pages and Info panels."""
 
 
-class DataAssets(ReadOnlyInfoWidget):
+class DataAssets(ScopeObjects):
   """Model for Data Asset object Info pages and Info panels."""
 
 
-class Products(ReadOnlyInfoWidget):
+class Products(ScopeObjects):
   """Model for Product object Info pages and Info panels."""
 
 
-class Projects(ReadOnlyInfoWidget):
+class Projects(ScopeObjects):
   """Model for Project object Info pages and Info panels."""
 
 
-class Facilities(ReadOnlyInfoWidget):
+class Facilities(ScopeObjects):
   """Model for Facility object Info pages and Info panels."""
 
 
-class KeyReports(ReadOnlyInfoWidget):
+class KeyReports(ScopeObjects):
   """Model for Key Report object Info pages and Info panels."""
 
 
-class Markets(ReadOnlyInfoWidget):
+class Markets(ScopeObjects):
   """Model for Market object Info pages and Info panels."""
 
 
-class Metrics(ReadOnlyInfoWidget):
+class Metrics(ScopeObjects):
   """Model for Metric object Info pages and Info panels."""
 
 
-class ProductGroups(ReadOnlyInfoWidget):
+class ProductGroups(ScopeObjects):
   """Model for Product object Info pages and Info panels."""
 
 

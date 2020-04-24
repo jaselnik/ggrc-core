@@ -37,6 +37,7 @@ AUDITORS = "Auditors"
 AUDIT_CAPTAINS = "Audit Captains"
 PRINCIPAL_ASSIGNEES = "Principal " + ASSIGNEES
 SECONDARY_ASSIGNEES = "Secondary " + ASSIGNEES
+COMPLIANCE_CONTACT = "Compliance Contacts"
 PRIMARY_CONTACTS = "Primary Contacts"
 SECONDARY_CONTACTS = "Secondary Contacts"
 CONTROL_OPERATORS = "Control Operators"
