@@ -395,7 +395,7 @@ class TestBulkOperations(ggrc.TestCase):
             "assessment": {"id": asmt.id, "slug": asmt.slug},
             "values": [{
                 "value": value,
-                "title": "text_lca",
+                "title": "test_lca",
                 "type": attribute_type,
                 "definition_id": asmt.id,
                 "extra": {},
@@ -414,6 +414,54 @@ class TestBulkOperations(ggrc.TestCase):
       self.assertEqual(asmt.status, "Completed")
     for cav in cavs:
       self.assertEqual(cav.attribute_value, expected_value)
+
+  def test_complete_one_asmt_one_update_only(self):
+    """Test request /complete with two asmts, 1 for update, 1 for complete"""
+    # pylint: disable=invalid-name
+    asmt1 = factories.AssessmentFactory(status="Not Started")
+    asmt1_id = asmt1.id
+    asmt2 = factories.AssessmentFactory(status="Not Started")
+    asmt2_id = asmt2.id
+    cad_id = factories.CustomAttributeDefinitionFactory(
+        definition_id=asmt1.id,
+        title="test_lca",
+        definition_type="assessment",
+        attribute_type="Checkbox",
+        mandatory=True,
+    ).id
+    data = {
+        "assessments_ids": [asmt2.id],
+        "attributes": [{
+            "assessment": {"id": asmt2.id, "slug": asmt2.slug},
+            "values": [],
+        }, {
+            "assessment": {"id": asmt1.id, "slug": asmt1.slug},
+            "values": [{
+                "value": True,
+                "title": "test_lca",
+                "type": "Checkbox",
+                "definition_id": asmt1.id,
+                "extra": {},
+            }],
+        }],
+    }
+    self.client.post(
+        "/api/bulk_operations/complete",
+        data=json.dumps(data),
+        headers=self.headers,
+    )
+    cav = models.CustomAttributeValue.query.filter_by(
+        custom_attribute_id=cad_id,
+    ).first()
+    self.assertTrue(cav.attribute_value)
+    self.assertEqual(
+        models.Assessment.query.get(asmt1_id).status,
+        "In Progress",
+    )
+    self.assertEqual(
+        models.Assessment.query.get(asmt2_id).status,
+        "Completed",
+    )
 
   @ddt.data(
       ("Multiselect", "onE,tWo,Three", "One,three", "onE,Three"),

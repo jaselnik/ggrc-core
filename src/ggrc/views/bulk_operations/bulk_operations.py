@@ -123,7 +123,7 @@ def bulk_complete(task):
   error_slugs = set(update_attrs["failed_slugs"])
 
   with benchmark("Prepare import data for attributes update"):
-    complete_data, proceed_slugs = builder.assessments_complete_to_csv(
+    complete_data = builder.assessments_complete_to_csv(
         error_slugs,
     )
 
