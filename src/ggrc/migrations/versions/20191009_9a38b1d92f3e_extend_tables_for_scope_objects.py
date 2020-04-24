@@ -13,14 +13,26 @@ import sqlalchemy as sa
 
 from alembic import op
 
-from ggrc.models.all_models import get_scope_models
-
 # revision identifiers, used by Alembic.
 revision = '9a38b1d92f3e'
 down_revision = 'ddc897e22d54'
 
-
-scope_tables_names = set([model.__tablename__ for model in get_scope_models()])
+scope_tables_names = {
+    'access_groups',
+    'account_balances',
+    'data_assets',
+    'facilities',
+    'markets',
+    'org_groups',
+    'vendors',
+    'products',
+    'projects',
+    'systems',
+    'key_reports',
+    'product_groups',
+    'metrics',
+    'technology_environments',
+}
 
 
 def upgrade():

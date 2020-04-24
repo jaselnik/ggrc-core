@@ -6,8 +6,11 @@
 import loDifference from 'lodash/difference';
 import {
   getUrl,
+  getInfoUrl,
   getMappingUrl,
   getUnmappingUrl,
+  getChangeLogUrl,
+  getQuestionsAttrUrl,
   isMappableExternally,
   getCreateObjectUrl,
 } from '../utils/ggrcq-utils';
@@ -22,6 +25,8 @@ import Control from '../../models/business-models/control';
 import Risk from '../../models/business-models/risk';
 import Standard from '../../models/business-models/standard';
 import AccessGroup from '../../models/business-models/access-group';
+import Product from '../../models/business-models/product';
+import Market from '../../models/business-models/market';
 import TechnologyEnvironment
   from '../../models/business-models/technology-environment';
 
@@ -133,6 +138,72 @@ describe('GGRCQ utils', () => {
 
       expect(getUrl(options))
         .toBe(`${GGRC.GGRC_Q_INTEGRATION_URL}import`);
+    });
+  });
+
+  describe('getInfoUrl util', () => {
+    it('should return url for Control', () => {
+      const instance = makeFakeInstance({model: Control})({
+        type: 'Control',
+        slug: 'CONTROL-1',
+      });
+
+      const url = GGRC.GGRC_Q_INTEGRATION_URL +
+        'controls/control=control-1/info';
+      expect(getInfoUrl(instance)).toBe(url);
+    });
+
+    it('should return url for scoping objects', () => {
+      let instance = makeFakeInstance({model: Product})({
+        type: 'Product',
+        slug: 'PRODUCT-1',
+      });
+
+      let url = GGRC.GGRC_Q_INTEGRATION_URL +
+        'questionnaires/product=product-1';
+      expect(getInfoUrl(instance)).toBe(url);
+
+      instance = makeFakeInstance({model: Market})({
+        type: 'Market',
+        slug: 'MARKET-1',
+      });
+
+      url = GGRC.GGRC_Q_INTEGRATION_URL +
+        'questionnaires/market=market-1';
+      expect(getInfoUrl(instance)).toBe(url);
+    });
+  });
+
+  describe('getChangeLogUrl util', () => {
+    it('should return url for Control', () => {
+      const instance = makeFakeInstance({model: Control})({
+        type: 'Control',
+        slug: 'CONTROL-1',
+      });
+
+      const url = GGRC.GGRC_Q_INTEGRATION_URL +
+        'controls/control=control-1/change-log';
+      expect(getChangeLogUrl(instance)).toBe(url);
+    });
+
+    it('should return url for scoping objects', () => {
+      let instance = makeFakeInstance({model: Product})({
+        type: 'Product',
+        slug: 'PRODUCT-1',
+      });
+
+      let url = GGRC.GGRC_Q_INTEGRATION_URL +
+        'questionnaires/product=product-1/change-log';
+      expect(getChangeLogUrl(instance)).toBe(url);
+
+      instance = makeFakeInstance({model: Market})({
+        type: 'Market',
+        slug: 'MARKET-1',
+      });
+
+      url = GGRC.GGRC_Q_INTEGRATION_URL +
+        'questionnaires/market=market-1/change-log';
+      expect(getChangeLogUrl(instance)).toBe(url);
     });
   });
 
@@ -381,6 +452,31 @@ describe('GGRCQ utils', () => {
     it('should return proper url for non-scope object', () => {
       const url = `${GGRC.GGRC_Q_INTEGRATION_URL}controls?action=create`;
       expect(getCreateObjectUrl(Control)).toBe(url);
+    });
+  });
+
+  describe('getQuestionsAttrUrl util', () => {
+    it('should return proper url for scope object in Active status', () => {
+      let instance = makeFakeInstance({model: TechnologyEnvironment})({
+        type: 'TechnologyEnvironment',
+        slug: 'TechnologyEnvironment-1',
+        status: 'Active',
+      });
+      const url = GGRC.GGRC_Q_INTEGRATION_URL +
+      'questionnaires/technology_environment=' +
+      'technologyenvironment-1/initialize';
+      expect(getQuestionsAttrUrl(instance)).toBe(url);
+    });
+
+    it('should return proper url for scope object in Draft status', () => {
+      let instance = makeFakeInstance({model: TechnologyEnvironment})({
+        type: 'TechnologyEnvironment',
+        slug: 'TechnologyEnvironment-1',
+        status: 'Draft',
+      });
+      const url = GGRC.GGRC_Q_INTEGRATION_URL +
+      'questionnaires/technology_environment=technologyenvironment-1';
+      expect(getQuestionsAttrUrl(instance)).toBe(url);
     });
   });
 });

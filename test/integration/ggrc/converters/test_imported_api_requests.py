@@ -32,7 +32,7 @@ class TestComprehensiveSheets(TestCase):
   """
 
   # skip abstract models since they are not really first class
-  WHITELIST = {"Directive", "SystemOrProcess"}
+  WHITELIST = {"Directive"}
   MODELS = [getattr(all_models, model_name)
             for model_name in all_models.__all__
             if model_name not in WHITELIST]

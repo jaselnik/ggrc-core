@@ -46,7 +46,6 @@ class TestSlugPrefix(unittest.TestCase):
       'Requirement': 'REQUIREMENT',
       'Standard': 'STANDARD',
       'System': 'SYSTEM',
-      'SystemOrProcess': 'SYSTEMORPROCESS',  # unused but has slug prefix
       'TaskGroup': 'TASKGROUP',
       'TaskGroupTask': 'TASK',
       'Threat': 'THREAT',

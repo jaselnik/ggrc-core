@@ -174,7 +174,6 @@ permissions = {
             "condition": "relationship",
         },
         "Requirement",
-        "SystemOrProcess",
         "System",
         "KeyReport",
         "Process",

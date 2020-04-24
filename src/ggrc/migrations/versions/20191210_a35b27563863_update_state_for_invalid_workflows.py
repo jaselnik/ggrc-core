@@ -17,7 +17,7 @@ from ggrc.migrations import utils
 
 # revision identifiers, used by Alembic.
 revision = 'a35b27563863'
-down_revision = '55984900c508'
+down_revision = '381a58793fba'
 
 
 def get_workflows_without_active_cycles(conn):
