@@ -117,12 +117,6 @@ class ExternalResourceFactory(ModelFactory):
   created_by_id = factory.SelfAttribute("created_by.id")
 
 
-class SystemOrProcess(ExternalResourceFactory):
-  """SystemOrProcess factory class"""
-  class Meta:
-    model = all_models.SystemOrProcess
-
-
 class WithACLandCAFactory(ModelFactory):
   """Factory class to create object with ACL and CA in one step"""
 
@@ -447,7 +441,7 @@ class OrgGroupFactory(ExternalResourceFactory, TitledFactory):
     model = all_models.OrgGroup
 
 
-class SystemFactory(SystemOrProcess, TitledFactory):
+class SystemFactory(ExternalResourceFactory, TitledFactory):
 
   class Meta:
     model = all_models.System
@@ -465,7 +459,7 @@ class AccountBalanceFactory(ExternalResourceFactory, TitledFactory):
     model = all_models.AccountBalance
 
 
-class ProcessFactory(SystemOrProcess, TitledFactory):
+class ProcessFactory(ExternalResourceFactory, TitledFactory):
 
   class Meta:
     model = all_models.Process
