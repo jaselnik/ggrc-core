@@ -239,9 +239,9 @@ class MatrixCsvBuilder(AbstractCsvBuilder):
 
   def _populate_value(self, raw_value, cav_type):
     """Populate values to be applicable for our import"""
-    if cav_type == "Checkbox":
+    if cav_type.lower() == "checkbox":
       return "yes" if raw_value == "1" else "no"
-    if cav_type == "Map:Person":
+    if cav_type.lower() == "map:person":
       return self._people_cache.get(raw_value, "")
     return raw_value if raw_value else ""
 
