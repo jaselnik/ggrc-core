@@ -140,7 +140,7 @@ class TestBaseExternalObjects(integration_ggrc.TestCase):
     acrs = all_models.AccessControlRole.query.filter(
         all_models.AccessControlRole.object_type == model.__name__,
         all_models.AccessControlRole.name.in_(
-            ["Secondary Contacts", "Primary Contacts", "Admin"])
+            ["Admin"])
     ).all()
     acrs = [acr.id for acr in acrs]
 
@@ -199,15 +199,10 @@ class TestExternalAppObjects(TestBaseExternalObjects):
     data = self._make_test_models_payload(model)
     acl = {
         "access_control_list": {
-            "Primary Contacts": [
-                {"email": "test1@exp.com", "name": "Test 1"},
-            ],
-            "Secondary Contacts": [
-                {"email": "test2@exp.com", "name": "Test 2"},
-            ],
             "Admin": [
                 {"email": "test3@exp.com", "name": "Test 3"},
-            ]}
+            ]
+        }
     }
     data.update(acl)
 
@@ -215,7 +210,7 @@ class TestExternalAppObjects(TestBaseExternalObjects):
 
     self.assert201(response)
     object_id = response.json[model._inflector.table_singular]["id"]
-    self._validate_acl_counts(model, object_id, expected_count=3)
+    self._validate_acl_counts(model, object_id, expected_count=1)
 
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_external_object_get_allowed(self, model):
@@ -255,21 +250,16 @@ class TestExternalAppObjects(TestBaseExternalObjects):
     ext_obj = self._create_test_model_instance(model)
     data = {
         "access_control_list": {
-            "Primary Contacts": [
-                {"email": "test1@exp.com", "name": "Test 1"},
-            ],
-            "Secondary Contacts": [
-                {"email": "test2@exp.com", "name": "Test 2"},
-            ],
             "Admin": [
                 {"email": "test3@exp.com", "name": "Test 3"},
-            ]}
+            ]
+        }
     }
 
     response = self.api.put(ext_obj, obj_id=ext_obj.id, data=data)
 
     self.assert200(response)
-    self._validate_acl_counts(model, ext_obj.id, expected_count=3)
+    self._validate_acl_counts(model, ext_obj.id, expected_count=1)
 
   @ddt.data(*TestBaseExternalObjects.OBJECTS)
   def test_exernal_object_review_deprecated(self, model):
