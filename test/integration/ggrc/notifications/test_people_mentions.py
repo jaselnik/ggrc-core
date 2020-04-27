@@ -261,10 +261,6 @@ class TestPeopleMentions(TestCase):
       all_models.Standard,
       all_models.Program,
       all_models.Regulation,
-      all_models.Contract,
-      all_models.Policy,
-      all_models.Threat,
-      all_models.Objective,
   )
   def test_review_posted(self, model, send_email_mock):
     """Test mentions in request review comment {}."""

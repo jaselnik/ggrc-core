@@ -321,8 +321,7 @@ class TestArchivedAudit(TestAuditArchivingBase):
         program.add_person_with_role_name(user, object_role)
 
       objective = factories.ObjectiveFactory(title="objective")
-      factories.RelationshipFactory(source=program,
-                                    destination=objective)
+      factories.RelationshipFactory(source=program, destination=objective)
 
       revision = all_models.Revision.query.filter(
           all_models.Revision.resource_type == 'Objective').first()
@@ -337,23 +336,29 @@ class TestArchivedAudit(TestAuditArchivingBase):
           context=audit.context,
       )
       snapshot_id = snapshot.id
-      factories.RelationshipFactory(source=audit,
-                                    destination=snapshot)
+      factories.RelationshipFactory(
+          source=audit,
+          destination=snapshot,
+      )
+
+      # Updating Objective and creating a new Revision.
+      objective.status = "Active"
+      factories.RevisionFactory(
+          obj=objective,
+          action="modified",
+          modified_by_id=user.id,
+          content=objective.log_json(),
+      )
 
     self.api.set_user(user)
     snapshot = all_models.Snapshot.query.get(snapshot_id)
-    # update obj to create new revision
-    self.api.put(
-        all_models.Objective.query.get(snapshot.revision.resource_id),
+    response = self.api.put(
+        snapshot,
         {
-            "status": "Active",
-        }
+            "update_revision": "latest",
+        },
     )
-    json = {
-        "update_revision": "latest"
-    }
 
-    response = self.api.put(snapshot, json)
     assert response.status_code == status, \
         "{} put returned {} instead of {} for {}".format(
             rolename, response.status, status, 'snapshot')

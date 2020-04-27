@@ -56,7 +56,7 @@ class _Issues(lhn.AccordionGroup):
 
 class _Directives(lhn.DropdownStatic):
   """Directives dropdown in LHN."""
-  _locator_element = locator.LhnMenu.TOGGLE_DIRECTIVES
+  _locator_element = locator.LhnMenu.DIRECTIVES
 
   def __init__(self, driver):
     super(_Directives, self).__init__(driver)
@@ -153,7 +153,7 @@ class _Requirements(lhn.AccordionGroup):
 
 class _ControlsOrObjectives(lhn.DropdownStatic):
   """Controls or objects dropdown in LHN."""
-  _locator_element = locator.LhnMenu.TOGGLE_CONTROLS_OR_OBJECTIVES
+  _locator_element = locator.LhnMenu.CONTROLS_OR_OBJECTIVES
 
   def __init__(self, driver):
     super(_ControlsOrObjectives, self).__init__(driver)
@@ -199,7 +199,7 @@ class _Objectives(lhn.AccordionGroup):
 
 class _PeopleOrGroups(lhn.DropdownStatic):
   """People or groups dropdown in LHN."""
-  _locator_element = locator.LhnMenu.TOGGLE_PEOPLE_OR_GROUPS
+  _locator_element = locator.LhnMenu.PEOPLE_OR_GROUPS
 
   def __init__(self, driver):
     super(_PeopleOrGroups, self).__init__(driver)
@@ -229,7 +229,7 @@ class _People(lhn.AccordionGroup):
 class _Scope(lhn.DropdownStatic):
   """Scope dropdown in LHN."""
   # pylint: disable=too-many-instance-attributes
-  _locator_element = locator.LhnMenu.TOGGLE_SCOPE
+  _locator_element = locator.LhnMenu.SCOPE
 
   def __init__(self, driver):
     super(_Scope, self).__init__(driver)
@@ -502,7 +502,7 @@ class _Vendors(lhn.AccordionGroup):
 
 class _RisksOrThreats(lhn.DropdownStatic):
   """Risks or threats dropdown in LHN."""
-  _locator_element = locator.LhnMenu.TOGGLE_RISK_OR_THREATS
+  _locator_element = locator.LhnMenu.RISK_OR_THREATS
 
   def __init__(self, driver):
     super(_RisksOrThreats, self).__init__(driver)
@@ -595,15 +595,15 @@ class Menu(base.AnimatedComponent):
         self._driver, locator.LhnMenu.TOGGLE_ISSUES,
         locator.LhnMenu.COUNT_ISSUES)
     self.toggle_directives = base.Toggle(
-        self._driver, locator.LhnMenu.TOGGLE_DIRECTIVES)
+        self._driver, locator.LhnMenu.DIRECTIVES)
     self.toggle_controls_or_objectives = base.Toggle(
-        self._driver, locator.LhnMenu.TOGGLE_CONTROLS_OR_OBJECTIVES)
+        self._driver, locator.LhnMenu.CONTROLS_OR_OBJECTIVES)
     self.toggle_people_or_groups = base.Toggle(
-        self._driver, locator.LhnMenu.TOGGLE_PEOPLE_OR_GROUPS)
+        self._driver, locator.LhnMenu.PEOPLE_OR_GROUPS)
     self.toggle_scope = base.Toggle(
-        self._driver, locator.LhnMenu.TOGGLE_SCOPE)
+        self._driver, locator.LhnMenu.SCOPE)
     self.toggle_risks_or_threats = base.Toggle(
-        self._driver, locator.LhnMenu.TOGGLE_RISK_OR_THREATS)
+        self._driver, locator.LhnMenu.RISK_OR_THREATS)
 
   def filter_query(self, query):
     """Type query in LHN filter and submit."""

@@ -41,22 +41,29 @@ class TestExport(query_helper.WithQueryApi, TestCase):
         "X-Requested-By": "GGRC",
         "X-export-view": "blocks",
     }
-    extr_comment = factories.CommentFactory(description="bad_desc")
-    extr_assessment = factories.AssessmentFactory()
-    db.session.execute(
-        'update assessments set '
-        'updated_at = "2010-10-10", '
-        'created_at = "2010-10-10";'
-    )
-    factories.RelationshipFactory(source=extr_assessment,
-                                  destination=extr_comment)
-    self.comment = factories.CommentFactory(description="123")
-    self.assessment = factories.AssessmentFactory(
-        verified_date=datetime.datetime.now(),
-        finished_date=datetime.datetime.now(),
-    )
-    self.rel = factories.RelationshipFactory(source=self.comment,
-                                             destination=self.assessment)
+    with factories.single_commit():
+      extr_comment = factories.CommentFactory(description="bad_desc")
+      extr_assessment = factories.AssessmentFactory(title="bad_assmnt")
+      factories.RelationshipFactory(source=extr_assessment,
+                                    destination=extr_comment)
+
+      self.comment = factories.CommentFactory(description="123")
+      self.assessment = factories.AssessmentFactory(
+          verified_date=datetime.datetime.now(),
+          finished_date=datetime.datetime.now(),
+      )
+
+      self.rel = factories.RelationshipFactory(source=self.comment,
+                                               destination=self.assessment)
+
+  def _change_date_fields(self):
+    assmnt = all_models.Assessment.query.filter(
+        all_models.Assessment.title == "bad_assmnt"
+    ).one()
+    assmnt.created_at = "2010-10-10"
+    assmnt.updated_at = "2010-10-10"
+    db.session.add(assmnt)
+    db.session.commit()
 
   # pylint: disable=too-many-arguments
   def assert_filter_by_datetime(self, alias, datetime_value, slugs,
@@ -185,9 +192,10 @@ class TestExport(query_helper.WithQueryApi, TestCase):
     """Filter by added new comment and old comment exists"""
     slugs = [self.assessment.slug]
     desc = "321"
-    new_comment = factories.CommentFactory(description=desc)
-    factories.RelationshipFactory(source=new_comment,
-                                  destination=self.assessment)
+    with factories.single_commit():
+      new_comment = factories.CommentFactory(description=desc)
+      factories.RelationshipFactory(source=self.assessment,
+                                    destination=new_comment)
     self.assert_slugs("comment", self.comment.description, slugs)
     self.assert_slugs("comment", desc, slugs)
 
@@ -206,6 +214,7 @@ class TestExport(query_helper.WithQueryApi, TestCase):
   @ddt.data("created_at", "Created Date", "created Date")
   def test_filter_by_created_at(self, alias):
     """Test filter by created at"""
+    self._change_date_fields()
     self.assert_filter_by_datetime(alias,
                                    self.assessment.created_at,
                                    [self.assessment.slug])
@@ -213,6 +222,7 @@ class TestExport(query_helper.WithQueryApi, TestCase):
   @ddt.data("updated_at", "Last Updated Date", "Last Updated Date")
   def test_filter_by_updated_at(self, alias):
     """Test filter by updated at"""
+    self._change_date_fields()
     self.assert_filter_by_datetime(alias,
                                    self.assessment.updated_at,
                                    [self.assessment.slug])

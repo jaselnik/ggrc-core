@@ -1,0 +1,197 @@
+{{!
+    Copyright (C) 2020 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+{{#instance}}
+  <section class="info{{#if is_info_pin}} sticky-info-panel{{/if}}">
+    <div class="tier-content">
+      <general-page-header instance:from="instance" />
+      <tab-container instance:from="instance">
+        <tab-panel panels:bind="panels" titleText:from="'Attributes'">
+          <div class="info-pane__body">
+            <div class="info-pane__main-content {{^if isSnapshot}}info-pane__main-content-with-sidebar{{/if}}">
+              {{> base_objects/object-review-state.stache}}
+
+              <div class="row-fluid wrap-row">
+                <div class="span12">
+                  <external-attribute
+                    instance:from="instance"
+                    title:from="'Description'"
+                    attrName:from="'description'"
+                  >
+                    <div class="rtf-block">
+                      <read-more
+                        text:from="description"
+                        handleMarkdown:from="true" />
+                    </div>
+                  </external-attribute>
+                </div>
+              </div>
+              
+              <div class="row-fluid wrap-row">
+                <div class="span12">
+                  <external-attribute
+                    instance:from="instance"
+                    title:from="'Assessment Procedure'"
+                    attrName:from="'test_plan'"
+                  >
+                    <div class="rtf-block">
+                      <read-more
+                        text:from="test_plan"
+                        handleMarkdown:from="true" />
+                    </div>
+                  </external-attribute>
+                </div>
+              </div>
+
+              <div class="row-fluid wrap-row">
+                <div class="span12">
+                  <external-attribute
+                    instance:from="instance"
+                    title:from="'notes'"
+                    attrName:from="'notes'"
+                  >
+                    <div class="rtf-block">
+                      <read-more
+                        text:from="notes"
+                        handleMarkdown:from="true" />
+                    </div>
+                  </external-attribute>
+                </div>
+              </div>
+
+              {{> base_objects/contacts.stache}}
+              {{> base_objects/reference-urls.stache}}
+              {{> base_objects/folder-attachments.stache}}
+
+              <div class="custom-attr-wrap info-pane__section">
+                <div class="row-fluid">
+                  <div class="span12">
+                    <div class="info-expand">
+                      <a class="show-hidden-fields info-show-hide active" href="javascript://">
+                        <span class="out">
+                          <i class="fa fa-caret-right"></i>
+                          Show
+                        </span>
+                        <span class="in">
+                          <i class="fa fa-caret-down"></i>
+                          Hide
+                        </span>
+                        Advanced
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="hidden-fields-area">
+                  
+                  <div class="row-fluid wrap-row">
+                    <div class="span4">
+                      <div class="action-toolbar-container">
+                        <div class="action-toolbar">
+                          <h6 class="action-toolbar__header">
+                            Code
+                          </h6>
+                        </div>
+                        <p>
+                          {{slug}}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="span4">
+                      <external-attribute
+                        instance:from="instance"
+                        title:from="'Effective Date'"
+                        attrName:from="'start_date'"
+                      >
+                        {{#if start_date}}
+                          <p>
+                            {{localize_date start_date}}
+                          </p>
+                        {{else}}
+                          <span class="empty-message">None</span>
+                        {{/if}}
+                      </external-attribute>
+                    </div>
+                    <div class="span4">
+                      <div class="action-toolbar-container">
+                        <div class="action-toolbar">
+                          <h6 class="action-toolbar__header">
+                            Last Deprecated Date
+                          </h6>
+                        </div>
+                        {{#if last_deprecated_date}}
+                          <p>
+                            {{localize_date last_deprecated_date}}
+                          </p>
+                        {{else}}
+                          {{#if end_date}}
+                            <p>
+                              {{localize_date end_date}}
+                            </p>
+                          {{else}}
+                            <span class="empty-message">None</span>
+                          {{/if}}
+                        {{/if}}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row-fluid wrap-row">
+                    <div class="span4">
+                      <div class="action-toolbar-container">
+                        <div class="action-toolbar">
+                          <h6 class="action-toolbar__header">
+                            Created By
+                          </h6>
+                        </div>
+                        {{#if created_by}}
+                          <p>
+                            {{created_by.email}}
+                          </p>
+                        {{else}}
+                          <span class="empty-message">None</span>
+                        {{/if}}
+                      </div>
+                    </div>
+                  </div>
+
+                </div><!-- hidden-fields-area end -->
+              </div><!-- custom-attr-wrap end -->
+
+              {{> custom_attributes/info.stache}}
+            </div>
+            {{^if isSnapshot}}
+              <div class="info-pane__sidebar">
+                <div class="info-pane__section-title">Responses/Comments</div>
+                <comments-section
+                  class="flex-box flex-col"
+                  instance:from="instance" />
+              </div>
+            {{/if}}
+          </div>
+        </tab-panel>
+        {{^if isSnapshot}}
+          <tab-panel
+            tabId:from="'change-log'"
+            panels:bind="panels"
+            titleText:from="'Change Log'"
+          >
+            <revision-log instance:from="instance" options:from="tabOptions" />
+          </tab-panel>
+          <tab-link
+            instance:from="instance"
+            panels:bind="panels"
+            titleText:from="'Change Proposals'"
+            linkType:from="'proposals'" />
+        {{/if}}
+      </tab-container>
+    </div><!-- tier-content end -->
+  </section>
+  {{#if is_info_widget}}
+    <info-pane-footer 
+      createdAt:from="instance.created_at"
+      modifiedAt:from="instance.updated_at"
+      modifiedBy:from="instance.modified_by" />
+  {{/if}}
+{{/instance}}

@@ -5,7 +5,8 @@
 
 import canMap from 'can-map';
 import canComponent from 'can-component';
-const roleToLinkMap = {
+
+const ROLE_TO_LINK_MAP = {
   Control: {
     Admin: 'owner',
     'Control Operators': 'control_operator',
@@ -19,13 +20,20 @@ const roleToLinkMap = {
     'Risk Owners': 'risk_owner',
     'Other Contacts': 'other_contact',
   },
+  'default': {
+    Admin: 'owner',
+    'Primary Contacts': 'contact',
+    'Secondary Contacts': 'secondary_contact',
+  },
 };
 
 const viewModel = canMap.extend({
   define: {
     linkAttrName: {
       get() {
-        return roleToLinkMap[this.attr('modelType')][this.attr('roleName')];
+        const modelType = ROLE_TO_LINK_MAP[this.attr('modelType')]
+          || ROLE_TO_LINK_MAP['default'];
+        return modelType[this.attr('roleName')];
       },
     },
   },

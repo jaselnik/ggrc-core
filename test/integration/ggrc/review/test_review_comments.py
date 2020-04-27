@@ -18,12 +18,8 @@ class TestCommentsForReview(TestCase):
 
   @ddt.data(
       all_models.Standard,
-      all_models.Contract,
       all_models.Regulation,
-      all_models.Policy,
       all_models.Program,
-      all_models.Threat,
-      all_models.Objective,
   )
   def test_create_comment_post(self, model):
     """Test create review comment for {}."""
@@ -43,12 +39,8 @@ class TestCommentsForReview(TestCase):
 
   @ddt.data(
       all_models.Standard,
-      all_models.Contract,
       all_models.Regulation,
-      all_models.Policy,
       all_models.Program,
-      all_models.Threat,
-      all_models.Objective,
   )
   def test_put_comment_empty_text(self, model):
     """Test update review comment for {}."""

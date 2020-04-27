@@ -4,32 +4,32 @@
 """Module for Objective model."""
 
 from ggrc import db
-from ggrc.access_control.roleable import Roleable
-from ggrc.fulltext.mixin import Indexed
-from ggrc.models.comment import Commentable
-from ggrc.models import mixins, review
-from ggrc.models.object_document import PublicDocumentable
-from ggrc.models.object_person import Personable
-from ggrc.models.relationship import Relatable
+from ggrc.fulltext import mixin as ft_mixins
+from ggrc.models import comment
+from ggrc.models import mixins
+from ggrc.models import object_document
+from ggrc.models import object_person
+from ggrc.models import relationship
 
 
-class Objective(mixins.with_last_assessment_date.WithLastAssessmentDate,
-                Roleable,
-                review.Reviewable,
+class Objective(mixins.synchronizable.Synchronizable,
+                mixins.synchronizable.RoleableSynchronizable,
+                mixins.WithExternalCreatedBy,
+                comment.ExternalCommentable,
+                mixins.with_last_assessment_date.WithLastAssessmentDate,
                 mixins.CustomAttributable,
                 mixins.WithStartDate,
                 mixins.WithLastDeprecatedDate,
-                Relatable,
-                Personable,
-                PublicDocumentable,
-                Commentable,
+                relationship.Relatable,
+                object_person.Personable,
+                object_document.PublicDocumentable,
                 mixins.TestPlanned,
                 mixins.with_similarity_score.WithSimilarityScore,
                 mixins.base.ContextRBAC,
                 mixins.BusinessObject,
                 mixins.Folderable,
                 mixins.WithWorkflowState,
-                Indexed,
+                ft_mixins.Indexed,
                 db.Model):
   """Class representing Objective."""
 

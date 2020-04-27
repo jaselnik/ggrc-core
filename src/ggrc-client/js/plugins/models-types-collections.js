@@ -41,7 +41,8 @@ export const externalDirectiveObjects = [
 /**
  * External business objects
  */
-export const externalBusinessObjects = ['Control', 'Risk'];
+export const externalBusinessObjects = ['Control', 'Risk', 'Contract',
+  'Objective', 'Policy', 'Requirement', 'Threat'];
 
 /**
  * Snapshotable objects

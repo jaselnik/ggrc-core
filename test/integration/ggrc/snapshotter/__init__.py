@@ -69,8 +69,8 @@ class SnapshotterBaseTestCase(TestCase):
     if not cad_definitions:
       cad_definitions = [
           {
-              "definition_type": "objective",
-              "title": "objective rich field 1",
+              "definition_type": "regulation",
+              "title": "regulation rich field 1",
               "attribute_type": "Rich Text",
           },
       ]

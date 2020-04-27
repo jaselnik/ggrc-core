@@ -109,13 +109,13 @@ class TestExportEmptyTemplate(TestCase):
             ("System", 4),
             ("TechnologyEnvironment", 4),
             ("Vendor", 4),
-            ("Threat", 6),
-            ("Objective", 6),
+            ("Threat", 4),
+            ("Objective", 4),
             ("Issue", 6),
-            ("Contract", 6),
-            ("Policy", 6),
+            ("Contract", 4),
+            ("Policy", 4),
             ("Regulation", 6),
-            ("Requirement", 6),
+            ("Requirement", 4),
             ("Standard", 6),
             ("Audit", 4),
             ("Program", 6),
@@ -410,14 +410,18 @@ class TestExportEmptyTemplate(TestCase):
     data = {
         "export_to": "csv",
         "objects": [
-            {"object_name": "Policy", "fields": "all"},
+            {"object_name": "Policy", "fields": ["kind"]},
         ],
     }
     response = self.client.post("/_service/export_csv",
                                 data=dumps(data), headers=self.headers)
 
-    self.assertIn("Allowed values are:\n{}".format('\n'.join(
-        all_models.Policy.POLICY_OPTIONS)), response.data)
+    self.assertIn(
+        "Allowed values are:\n{kinds}".format(
+            kinds="\n".join(sorted(all_models.Policy.VALID_KINDS)),
+        ),
+        response.data,
+    )
 
   def test_f_realtime_email_updates(self):
     """Tests if Force real-time email updates column has tip message. """
@@ -537,12 +541,7 @@ class TestExportSingleObject(TestCase):
   @ddt.data(
       ("Program", factories.ProgramFactory),
       ("Regulation", factories.RegulationFactory),
-      ("Objective", factories.ObjectiveFactory),
-      ("Contract", factories.ContractFactory),
-      ("Policy", factories.PolicyFactory),
       ("Standard", factories.StandardFactory),
-      ("Threat", factories.ThreatFactory),
-      ("Requirement", factories.RequirementFactory),
   )
   @ddt.unpack
   def test_reviewable_object_columns(self, object_name, object_factory):
@@ -692,37 +691,42 @@ class TestExportSingleObject(TestCase):
   def test_requirement_policy_relevant_query(self):
     """Test requirement policy relevant query"""
     with factories.single_commit():
-      policies = [factories.PolicyFactory(title="pol-{}".format(i))
-                  for i in range(1, 3)]
-      standards = [factories.StandardFactory(title="stand-{}".format(i))
-                   for i in range(1, 3)]
-      regulations = [factories.RegulationFactory(title="reg-{}".format(i))
-                     for i in range(1, 3)]
-      requirements = [factories.RequirementFactory(title="req-{}".format(i))
-                      for i in range(1, 4)]
+      policies = [
+          factories.PolicyFactory(title="pol-{}".format(i))
+          for i in range(1, 3)
+      ]
+      standards = [
+          factories.StandardFactory(title="stand-{}".format(i))
+          for i in range(1, 3)
+      ]
+      regulations = [
+          factories.RegulationFactory(title="reg-{}".format(i))
+          for i in range(1, 3)
+      ]
+      requirements = [
+          factories.RequirementFactory(title="req-{}".format(i))
+          for i in range(1, 4)
+      ]
+      factories.RelationshipFactory(
+          source=policies[0],
+          destination=requirements[0],
+          is_external=True
+      )
+      factories.RelationshipFactory(
+          source=standards[0],
+          destination=requirements[1],
+          is_external=True
+      )
+      factories.RelationshipFactory(
+          source=regulations[0],
+          destination=requirements[2],
+          is_external=True
+      )
 
     policy_slugs = [policy.slug for policy in policies]
     standard_slugs = [standard.slug for standard in standards]
     regulation_slugs = [regulation.slug for regulation in regulations]
     requirement_slugs = [requirement.slug for requirement in requirements]
-
-    policy_map_data = [
-        get_object_data("Policy", policy_slugs[0],
-                        requirement=requirement_slugs[0]),
-    ]
-    self.import_data(*policy_map_data)
-
-    standard_map_data = [
-        get_object_data("Standard", standard_slugs[0],
-                        requirement=requirement_slugs[1]),
-    ]
-    self.import_data(*standard_map_data)
-
-    regulation_map_data = [
-        get_object_data("Regulation", regulation_slugs[0],
-                        requirement=requirement_slugs[2]),
-    ]
-    self.import_data(*regulation_map_data)
 
     data = [
         get_related_objects("Policy", "Requirement", policy_slugs[:1]),
@@ -948,25 +952,39 @@ class TestExportMultipleObjects(TestCase):
                   for i in range(1, 3)]
       programs = [factories.ProgramFactory(title="program-{}".format(i))
                   for i in range(1, 3)]
-
-    product_slugs = [product.slug for product in products]
-    policy_slugs = [policy.slug for policy in policies]
-    program_slugs = [program.slug for program in programs]
-
-    policy_data = [
-        get_object_data("Policy", policy_slugs[0], product=product_slugs[0]),
-        get_object_data("Policy", policy_slugs[1],
-                        product="\n".join(product_slugs[:2])),
-    ]
-    self.import_data(*policy_data)
-
-    program_data = [
-        get_object_data("Program", program_slugs[0], policy=policy_slugs[0],
-                        product=product_slugs[1]),
-        get_object_data("Program", program_slugs[1], policy=policy_slugs[1],
-                        product=product_slugs[0]),
-    ]
-    self.import_data(*program_data)
+      factories.RelationshipFactory(
+          source=policies[0],
+          destination=products[0],
+          is_external=True
+      )
+      factories.RelationshipFactory(
+          source=policies[1],
+          destination=products[0],
+          is_external=True
+      )
+      factories.RelationshipFactory(
+          source=policies[1],
+          destination=products[1],
+          is_external=True
+      )
+      factories.RelationshipFactory(
+          source=programs[0],
+          destination=policies[0],
+          is_external=True
+      )
+      factories.RelationshipFactory(
+          source=programs[0],
+          destination=products[1],
+      )
+      factories.RelationshipFactory(
+          source=programs[1],
+          destination=policies[1],
+          is_external=True
+      )
+      factories.RelationshipFactory(
+          source=programs[1],
+          destination=products[0],
+      )
 
     data = [{
         "object_name": "Program",  # program-1
@@ -999,12 +1017,8 @@ class TestExportMultipleObjects(TestCase):
 
   @ddt.data(
       "Assessment",
-      "Policy",
       "Regulation",
       "Standard",
-      "Contract",
-      "Requirement",
-      "Objective",
   )
   def test_asmnt_procedure_export(self, model):
     """Test export of Assessment Procedure. {}"""

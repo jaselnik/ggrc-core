@@ -115,11 +115,10 @@ class TestExportTasks(TestCase):
     """Test filter by comments"""
     task_id = self.generate_tasks_for_cycle(4)[0]
     comment_text = "123"
-    task = all_models.CycleTaskGroupObjectTask.query.filter(
-        all_models.CycleTaskGroupObjectTask.id == task_id
-    ).one()
-    comment = ggrc_factories.CommentFactory(description=comment_text)
-    ggrc_factories.RelationshipFactory(source=task, destination=comment)
+    task = all_models.CycleTaskGroupObjectTask.query.get(task_id)
+    with ggrc_factories.single_commit():
+      comment = ggrc_factories.CommentFactory(description=comment_text)
+      ggrc_factories.RelationshipFactory(source=task, destination=comment)
     self.assert_slugs("comment", comment_text, [task.slug])
 
   @data(

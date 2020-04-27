@@ -183,7 +183,7 @@
     {{/isImportStopped}}
 
     <div class="import-section import-notice">
-      Please notice! Import for Control, Risk and Scope objects is not available in GGRC system anymore.
+      Please notice! Import for Controls, Risks, Scope objects, Requirements, Objectives, Policies, Contracts and Threats is not available in GGRC system anymore.
       <a class="import-notice__external-link" href="{{externalImportUrl}}" target="_blank">Go to new frontend</a> to perform import there.
     </div>
 

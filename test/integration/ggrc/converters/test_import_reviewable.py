@@ -122,25 +122,25 @@ class TestImportReviewable(TestCase):
     """Don't revert state when comment added.
     Review -> REVIEWED
     """
-    requirement = factories.RequirementFactory()
+    program = factories.ProgramFactory()
     resp, review = generate_review_object(
-        requirement, state=all_models.Review.STATES.REVIEWED)
+        program, state=all_models.Review.STATES.REVIEWED)
     del review
-    requirement_id = requirement.id
+    program_id = program.id
     self.assertEqual(201, resp.status_code)
     import_data = OrderedDict(
         [
-            ("object_type", "Requirement"),
-            ("Code*", requirement.slug),
+            ("object_type", "Program"),
+            ("Code*", program.slug),
             ("comments", "some comments")
         ]
     )
     response = self.import_data(import_data)
     self._check_csv_response(response, {})
-    requirement = all_models.Requirement.query.get(requirement_id)
+    program = all_models.Program.query.get(program_id)
     self.assertEqual(
         all_models.Review.STATES.REVIEWED,
-        requirement.review_status
+        program.review_status
     )
 
   def test_reference_url_import(self):
@@ -249,12 +249,7 @@ class TestImportReviewable(TestCase):
   @ddt.data(
       ("Program", all_models.Program, factories.ProgramFactory),
       ("Regulation", all_models.Regulation, factories.RegulationFactory),
-      ("Objective", all_models.Objective, factories.ObjectiveFactory),
-      ("Contract", all_models.Contract, factories.ContractFactory),
-      ("Policy", all_models.Policy, factories.PolicyFactory),
       ("Standard", all_models.Standard, factories.StandardFactory),
-      ("Threat", all_models.Threat, factories.ThreatFactory),
-      ("Requirement", all_models.Requirement, factories.RequirementFactory),
   )
   @ddt.unpack
   def test_reviewable_warning_columns(self, object_type, object_class,

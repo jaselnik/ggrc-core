@@ -9,6 +9,7 @@ from copy import deepcopy
 import ddt
 
 from ggrc import converters
+from ggrc import models
 from ggrc.models import all_models
 from ggrc.access_control import roleable
 from ggrc.converters import column_handlers
@@ -18,7 +19,6 @@ from ggrc.utils import rules
 from ggrc.utils import title_from_camelcase
 from integration.ggrc import TestCase
 from integration.ggrc.models import factories
-from integration.ggrc.generator import ObjectGenerator
 
 
 def get_mapping_names(class_name):
@@ -66,15 +66,37 @@ class TestACLAttributeDefinitions(TestCase):
 class TestCustomAttributesDefinitions(TestCase):
   """Test for custom attribute definition columns."""
 
-  def setUp(self):
-    super(TestCustomAttributesDefinitions, self).setUp()
-    self.generator = ObjectGenerator()
+  @staticmethod
+  def create_custom_attribute_for(  # pylint: disable=too-many-arguments
+      type_,
+      id_=None,
+      attribute_type="Text",
+      title="",
+      mandatory=True,
+      helptext="",
+      placeholder="",
+      multi_choice_options="",
+      multi_choice_mandatory="",
+  ):
+    """Create custom attribute defintions with given arguments."""
+    model = models.get_model(type_)
+    factories.CustomAttributeDefinitionFactory(
+        definition_type=model._inflector.table_singular,
+        definition_id=id_,
+        attribute_type=attribute_type,
+        title=title,
+        mandatory=mandatory,
+        helptext=helptext,
+        placeholder=placeholder,
+        multi_choice_options=multi_choice_options,
+        multi_choice_mandatory=multi_choice_mandatory,
+    )
 
   def test_policy_definitions(self):
     """Test custom attribute definitions on Policy model."""
-    self.generator.generate_custom_attribute("policy", title="My Attribute")
-    self.generator.generate_custom_attribute(
-        "policy", title="Mandatory Attribute", mandatory=True)
+    self.create_custom_attribute_for("Policy", title="My Attribute")
+    self.create_custom_attribute_for(
+        "Policy", title="Mandatory Attribute", mandatory=True)
     definitions = get_object_column_definitions(all_models.Policy)
     mapping_names = get_mapping_names(all_models.Policy.__name__)
     display_names = {val["display_name"] for val in definitions.itervalues()}
@@ -91,18 +113,14 @@ class TestCustomAttributesDefinitions(TestCase):
         "State",
         "My Attribute",
         "Mandatory Attribute",
-        "Review State",
-        "Reviewers",
         "Primary Contacts",
         "Secondary Contacts",
-        "Recipients",
-        "Send by default",
-        "Comments",
         "Assessment Procedure",
         "Created Date",
         "Last Updated Date",
         "Last Updated By",
         "GDrive Folder ID",
+        "Created By",
     }
     expected_names = element_names.union(mapping_names)
     self.assertEqual(expected_names, display_names)
@@ -115,19 +133,21 @@ class TestCustomAttributesDefinitions(TestCase):
   def test_program_definitions(self):
     """ test custom attribute headers for Program."""
 
-    self.generator.generate_custom_attribute(
-        "program",
-        title="My Attribute")
-    self.generator.generate_custom_attribute(
-        "program",
+    self.create_custom_attribute_for(
+        "Program",
+        title="My Attribute",
+    )
+    self.create_custom_attribute_for(
+        "Program",
         title="Mandatory Attribute",
-        mandatory=True)
-    self.generator.generate_custom_attribute(
-        "program",
+        mandatory=True,
+    )
+    self.create_custom_attribute_for(
+        "Program",
         title="Choose",
         mandatory=True,
         attribute_type="Dropdown",
-        multi_choice="hello,world,what's,up"
+        multi_choice_options="hello,world,what's,up",
     )
     definitions = get_object_column_definitions(all_models.Program)
     mapping_names = get_mapping_names(all_models.Program.__name__)
@@ -576,20 +596,39 @@ class TestGetObjectColumnDefinitions(TestCase):
         "Effective Date",
         "Last Deprecated Date",
         "State",
-        "Review State",
-        "Reviewers",
         "Primary Contacts",
         "Secondary Contacts",
-        "Recipients",
-        "Send by default",
-        "Comments",
         "Assessment Procedure",
         "Created Date",
         "Last Updated Date",
         "Last Updated By",
         "GDrive Folder ID",
+        "Created By",
     }
     self._test_single_object(all_models.Policy, names, self.COMMON_EXPECTED)
+
+  def test_contract_definitions(self):
+    """Test default headers for Contract."""
+    names = {
+        "Title",
+        "Description",
+        "Notes",
+        "Admin",
+        "Reference URL",
+        "Code",
+        "Effective Date",
+        "Last Deprecated Date",
+        "State",
+        "Primary Contacts",
+        "Secondary Contacts",
+        "Assessment Procedure",
+        "Created Date",
+        "Last Updated Date",
+        "Last Updated By",
+        "GDrive Folder ID",
+        "Created By",
+    }
+    self._test_single_object(all_models.Contract, names, self.COMMON_EXPECTED)
 
   def test_requirement_definitions(self):
     """Test default headers for Requirement."""
@@ -602,13 +641,8 @@ class TestGetObjectColumnDefinitions(TestCase):
         "Reference URL",
         "Code",
         "State",
-        "Review State",
-        "Reviewers",
         "Primary Contacts",
         "Secondary Contacts",
-        "Recipients",
-        "Send by default",
-        "Comments",
         "Created Date",
         "Last Updated Date",
         "Last Updated By",
@@ -616,6 +650,7 @@ class TestGetObjectColumnDefinitions(TestCase):
         "Last Deprecated Date",
         "Effective Date",
         "GDrive Folder ID",
+        "Created By",
     }
     self._test_single_object(all_models.Requirement, names,
                              self.COMMON_EXPECTED)
@@ -677,13 +712,8 @@ class TestGetObjectColumnDefinitions(TestCase):
         "Last Assessment Date",
         "Code",
         "State",
-        "Review State",
-        "Reviewers",
         "Primary Contacts",
         "Secondary Contacts",
-        "Recipients",
-        "Send by default",
-        "Comments",
         "Assessment Procedure",
         "Created Date",
         "Last Updated Date",
@@ -691,6 +721,7 @@ class TestGetObjectColumnDefinitions(TestCase):
         "Last Deprecated Date",
         "Effective Date",
         "GDrive Folder ID",
+        "Created By",
     }
     self._test_single_object(all_models.Objective, names, self.COMMON_EXPECTED)
 
@@ -717,7 +748,6 @@ class TestGetObjectColumnDefinitions(TestCase):
     self._test_single_object(all_models.Person, names, expected_fields)
 
   @ddt.data(
-      all_models.Contract,
       all_models.Regulation,
       all_models.Standard,
   )

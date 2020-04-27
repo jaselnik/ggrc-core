@@ -13,33 +13,13 @@ import pytest  # pylint: disable=import-error
 from lib import base, url, factory
 from lib.constants import objects
 from lib.page import dashboard, lhn
-from lib.page.widget import generic_widget, object_modal
+from lib.page.widget import object_modal
 from lib.service import webui_facade
 from lib.utils import selenium_utils
 
 
 class TestMyWorkPage(base.Test):
   """Tests My Work page, part of smoke tests, section 2."""
-
-  @pytest.mark.smoke_tests
-  def test_destructive_horizontal_nav_bar_tabs(
-      self, objectives_mapped_to_program, my_work_dashboard, selenium
-  ):
-    """Tests that several objects in widget can be deleted sequentially.
-    Preconditions:
-    - Controls created via REST API.
-    """
-    objectives_tab = my_work_dashboard.select_objectives()
-    for _ in xrange(objectives_tab.member_count):
-      counter = objectives_tab.get_items_count()
-      (objectives_tab.select_member_by_num(0).
-       three_bbs.select_delete().confirm_delete())
-      objectives_tab.wait_member_deleted(counter)
-    objectives_generic_widget = generic_widget.Objectives(
-        selenium, objects.OBJECTIVES)
-    expected_widget_members = []
-    actual_widget_members = objectives_generic_widget.members_listed
-    assert expected_widget_members == actual_widget_members
 
   @pytest.mark.smoke_tests
   def test_redirect(self, header_dashboard, selenium):

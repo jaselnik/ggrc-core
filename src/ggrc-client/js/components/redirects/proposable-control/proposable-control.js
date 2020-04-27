@@ -7,17 +7,22 @@ import canStache from 'can-stache';
 import canMap from 'can-map';
 import canComponent from 'can-component';
 import template from './templates/proposable-control.stache';
-import {getProposalAttrUrl} from '../../../plugins/utils/ggrcq-utils';
+import {
+  getInfoUrl,
+  getProposalAttrUrl,
+} from '../../../plugins/utils/ggrcq-utils';
 
 const viewModel = canMap.extend({
   define: {
     link: {
       get() {
-        return getProposalAttrUrl(
-          this.attr('instance'),
-          this.attr('attrName'),
-          this.attr('isCustomAttribute')
-        );
+        const attrName = this.attr('attrName');
+        const instance = this.attr('instance');
+        const isCustomAttribute = this.attr('isCustomAttribute');
+
+        return attrName
+          ? getProposalAttrUrl(instance, attrName, isCustomAttribute)
+          : getInfoUrl(instance);
       },
     },
   },

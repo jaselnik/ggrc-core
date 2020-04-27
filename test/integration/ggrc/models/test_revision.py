@@ -661,7 +661,10 @@ class TestRevisions(query_helper.WithQueryApi, TestCase):
 
   def test_created_by_none_in_revision(self):
     """Test revision for Risk contains created_by attr and contains None."""
-    risk = factories.RiskFactory()
+    risk = factories.RiskFactory(
+        created_by=None,
+        created_by_id=None,
+    )
 
     revision = all_models.Revision.query.filter(
         all_models.Revision.resource_id == risk.id,

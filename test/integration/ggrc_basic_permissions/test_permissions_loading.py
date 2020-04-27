@@ -265,9 +265,9 @@ class TestPermissionsLoading(TestMemcacheBase):
         all_models.AccessControlRole.object_type == "Program",
         all_models.AccessControlRole.name == "Program Managers"
     ).first()
-    oa_role = all_models.AccessControlRole.query.filter_by(
+    ia_role = all_models.AccessControlRole.query.filter_by(
         name="Admin",
-        object_type="Objective",
+        object_type="Issue",
     ).one()
 
     response = self.api.post(all_models.Program, {
@@ -283,28 +283,34 @@ class TestPermissionsLoading(TestMemcacheBase):
             }],
         },
     })
-
     program = all_models.Program.query.get(response.json["program"]["id"])
-    response = self.api.post(all_models.Objective, {
-        "objective": {
+
+    response = self.api.post(all_models.Issue, {
+        "issue": {
             "access_control_list": [{
-                "ac_role_id": oa_role.id,
+                "ac_role_id": ia_role.id,
                 "person": {
                     "id": self.user_id,
                     "type": "Person",
                 }
             }],
-            "title": "Objective title",
+            "title": "Issue title",
+            "due_date": "02/24/2020",
             "context": None,
-        }
+        },
     })
+    issue = all_models.Issue.query.get(response.json["issue"]["id"])
+
     self.set_dummy_permissions_in_cache(self.user_id, self.user1_id)
     response = self.api.post(all_models.Relationship, {
         "relationship": {
-            "source": {"id": program.id, "type": "Program"},
+            "source": {
+                "id": program.id,
+                "type": "Program",
+            },
             "destination": {
-                "id": response.json["objective"]["id"],
-                "type": "Objective"
+                "id": issue.id,
+                "type": "Issue"
             },
             "context": None,
         },
@@ -597,8 +603,8 @@ class TestPermissionsCacheFlushing(TestMemcacheBase):
     # ensure that new permissions were returned instead of old ones
     self.assertEquals(result, {"11": "b"})
 
-  def test_permissions_flush_not_flush_on_simple_post(self):
-    """Test that permissions in memcache are cleaned after POST request."""
+  def test_permissions_not_flush_on_simple_post(self):
+    """Test that permissions in memcache are not cleaned after POST request."""
     user = self.create_user_with_role("Creator")
     self.api.set_user(user)
     self.api.client.get("/permissions")
@@ -607,21 +613,28 @@ class TestPermissionsCacheFlushing(TestMemcacheBase):
     self.assertEqual(perm_ids, {"permissions:{}".format(user.id)})
 
     response = self.api.post(
-        all_models.Objective,
-        {"objective": {"title": "Test Objective", "context": None}}
+        all_models.Issue,
+        {
+            "issue": {
+                "title": "Test Issue",
+                "context": None,
+                "due_date": "02/24/2020",
+            },
+        }
     )
+
     self.assert_status(response, 201)
 
     perm_ids = self.memcache_client.get("permissions:list")
     self.assertIn("permissions:{}".format(user.id), perm_ids)
 
   def test_permissions_not_flush_on_simple_put(self):
-    """Test that permissions in memcache are cleaned after PUT request."""
+    """Test that permissions in memcache are not cleaned after PUT request."""
     with ggrc_factories.single_commit():
       user = self.create_user_with_role("Creator")
-      objective = ggrc_factories.ObjectiveFactory()
-      objective_id = objective.id
-      objective.add_person_with_role_name(user, "Admin")
+      issue = ggrc_factories.IssueFactory()
+      issue_id = issue.id
+      issue.add_person_with_role_name(user, "Admin")
 
     self.api.set_user(user)
     self.api.client.get("/permissions")
@@ -629,8 +642,8 @@ class TestPermissionsCacheFlushing(TestMemcacheBase):
     perm_ids = self.memcache_client.get("permissions:list")
     self.assertEqual(perm_ids, {"permissions:{}".format(user.id)})
 
-    objective = all_models.Objective.query.get(objective_id)
-    response = self.api.put(objective, {"title": "new title"})
+    issue = all_models.Issue.query.get(issue_id)
+    response = self.api.put(issue, {"title": "new title"})
     self.assert200(response)
 
     perm_ids = self.memcache_client.get("permissions:list")
@@ -640,9 +653,9 @@ class TestPermissionsCacheFlushing(TestMemcacheBase):
     """Test that permissions in memcache are cleaned after DELETE request."""
     with ggrc_factories.single_commit():
       user = self.create_user_with_role("Creator")
-      objective = ggrc_factories.ObjectiveFactory()
-      objective.add_person_with_role_name(user, "Admin")
-      objective_id = objective.id
+      issue = ggrc_factories.IssueFactory()
+      issue.add_person_with_role_name(user, "Admin")
+      issue_id = issue.id
 
     self.api.set_user(user)
     self.api.client.get("/permissions")
@@ -650,8 +663,8 @@ class TestPermissionsCacheFlushing(TestMemcacheBase):
     perm_ids = self.memcache_client.get("permissions:list")
     self.assertEqual(perm_ids, {"permissions:{}".format(user.id)})
 
-    objective = all_models.Objective.query.get(objective_id)
-    response = self.api.delete(objective)
+    issue = all_models.Issue.query.get(issue_id)
+    response = self.api.delete(issue)
     self.assert200(response)
 
     perm_ids = self.memcache_client.get("permissions:list")

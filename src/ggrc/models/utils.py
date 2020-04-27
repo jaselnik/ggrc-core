@@ -70,8 +70,16 @@ class JsonPolymorphicRelationship(PolymorphicRelationship):
       if prop_instance is self:
         instance = referenced_objects.get(json_obj[field_name]["type"],
                                           json_obj[field_name]["id"])
-        if self.INSTANCE_TYPE:
-          assert isinstance(instance, self.INSTANCE_TYPE)
+        if (
+            self.INSTANCE_TYPE and not
+            isinstance(instance, self.INSTANCE_TYPE)
+        ):
+          raise ValueError(
+              "{actual_obj_type} is not of {required_obj_type} type.".format(
+                  actual_obj_type=instance.type,
+                  required_obj_type=self.INSTANCE_TYPE.__name__,
+              )
+          )
         return instance
     return None
 

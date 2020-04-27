@@ -38,7 +38,7 @@ class TestAssessmentResource(TestCase):
       factories.IssueFactory()  # unrelated issue
       for _ in range(2):
         issue = factories.IssueFactory()
-        factories.RelationshipFactory.randomize(assessment, issue)
+        factories.RelationshipFactory(source=assessment, destination=issue)
     related_objects = self._get_related_objects(assessment)
 
     expected_keys = {"id", "type", "title", "description"}
@@ -54,7 +54,7 @@ class TestAssessmentResource(TestCase):
       factories.IssueFactory()  # unrelated issue
       for _ in range(2):
         issue = factories.IssueFactory()
-        factories.RelationshipFactory.randomize(assessment, issue)
+        factories.RelationshipFactory(source=assessment, destination=issue)
 
     expected_fields = {"Audit", "Snapshot",
                        "Evidence:URL", "Evidence:FILE"}

@@ -15,6 +15,7 @@ from ggrc.fulltext.mysql import MysqlRecordProperty as Record
 from ggrc.snapshotter import indexer as snapshotter_indexer
 from ggrc.snapshotter import rules as snapshotter_rules
 
+from integration.ggrc import api_helper
 from integration.ggrc.snapshotter import SnapshotterBaseTestCase
 from integration.ggrc.models import factories
 from integration.ggrc_workflows.models import factories as wf_factories
@@ -51,7 +52,7 @@ class TestSnapshotIndexing(SnapshotterBaseTestCase):
   # pylint: disable=invalid-name,too-many-locals
   def setUp(self):
     super(TestSnapshotIndexing, self).setUp()
-
+    self.api = api_helper.Api()
     self.client.get("/login")
     self.headers = {
         'Content-Type': 'application/json',
@@ -124,78 +125,6 @@ class TestSnapshotIndexing(SnapshotterBaseTestCase):
 
     _title = get_record_query(snapshot.id, "title",
                               "Test Snapshot 1 - {} EDIT".format(model_name))
-    self.assertEqual(_title.count(), 1)
-
-  @ddt.data(
-      ("Objective", "objective", "objective value 1",
-       "objective value 1 - MODIFIED")
-  )
-  @ddt.unpack
-  def test_update_indexing_ca(self, model_name,
-                              ca_attr, ca_value,
-                              updated_ca_value):
-    """Test that updating objects with custom attributes,
-    results in full index.
-    """
-    program = self.create_object(models.Program, {
-        "title": "Test Program Snapshot 1"
-    })
-    object_model = models.get_model(model_name)
-    model_object = self.create_object(object_model, {
-        "title": "Test Snapshot 1 - {}".format(model_name)
-    })
-    model_object_id = model_object.id
-
-    self.create_mapping(program, model_object)
-
-    custom_attribute_defs = self.create_custom_attribute_definitions()
-
-    ca_attr = custom_attribute_defs[ca_attr]
-    ca_attr_id = ca_attr.id
-    factories.CustomAttributeValueFactory(custom_attribute=ca_attr,
-                                          attributable=model_object,
-                                          attribute_value=ca_value)
-
-    model_object = self.refresh_object(model_object)
-    self.api.modify_object(model_object, {
-        "title": "Test Snapshot 1 - {} EDIT".format(model_name)
-    })
-
-    program = self.refresh_object(program)
-    self.create_audit(program)
-    model_object = self.refresh_object(model_object)
-    self.api.modify_object(model_object, {
-        'custom_attribute_values': [{
-            'custom_attribute_id': ca_attr_id,
-            'attribute_value': updated_ca_value
-        }],
-    })
-
-    audit = db.session.query(models.Audit).filter(
-        models.Audit.title.like("%Snapshotable audit%")).one()
-
-    # Initiate update operation
-    self.api.modify_object(audit, {
-        "snapshots": {
-            "operation": "upsert"
-        }
-    })
-
-    snapshots = db.session.query(models.Snapshot).all()
-    records = get_records(audit, snapshots)
-
-    self.assertEqual(records.count(), 1)
-
-    snapshot = db.session.query(models.Snapshot).filter(
-        models.Snapshot.child_type == model_object.type,
-        models.Snapshot.child_id == model_object_id,
-    ).one()
-
-    _cav = get_record_query(snapshot.id, ca_attr.title, updated_ca_value)
-    _title = get_record_query(snapshot.id, "title",
-                              "Test Snapshot 1 - {} EDIT".format(model_name))
-
-    self.assertEqual(_cav.count(), 1)
     self.assertEqual(_title.count(), 1)
 
   @unittest.skip("Deprecated during GGRC-8069 until full_reindex and "

@@ -350,8 +350,8 @@ class TestPropagation(BaseTestPropagation):
     with factories.single_commit():
       control = factories.ControlFactory()
       regulation = factories.RegulationFactory()
-      objective = factories.ObjectiveFactory()
-      normal_objects = [control, regulation, objective]
+      issue = factories.IssueFactory()
+      normal_objects = [control, regulation, issue]
 
       for obj1, obj2 in itertools.combinations(normal_objects, 2):
         if control in (obj1, obj2):

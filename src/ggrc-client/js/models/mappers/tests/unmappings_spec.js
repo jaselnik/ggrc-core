@@ -9,10 +9,10 @@ import canMap from 'can-map';
 import * as Mappings from '../mappings';
 import * as Permission from '../../../permission';
 
-describe('Mappings', function () {
+describe('Mappings', () => {
   let allTypes = [];
   let notMappableModels = [];
-  let modules = {
+  const modules = {
     core: {
       models: [
         'AccessGroup',
@@ -49,38 +49,12 @@ describe('Mappings', function () {
         'Threat',
       ],
       notMappable: ['Assessment', 'AssessmentTemplate', 'Evidence', 'Person'],
-      scope: {
-        models: [
-          'AccessGroup',
-          'AccountBalance',
-          'DataAsset',
-          'Facility',
-          'KeyReport',
-          'Market',
-          'Metric',
-          'OrgGroup',
-          'Process',
-          'Product',
-          'ProductGroup',
-          'Project',
-          'System',
-          'TechnologyEnvironment',
-          'Vendor',
-        ],
-        notMappable: [
-          'Audit',
-          'Control',
-          'Risk',
-          'Regulation',
-          'Standard',
-        ],
-      },
     },
     workflows: {
       models: [
+        'Workflow',
         'TaskGroup',
         'TaskGroupTask',
-        'Workflow',
         'CycleTaskGroupObjectTask',
         'CycleTaskGroup',
       ],
@@ -94,75 +68,89 @@ describe('Mappings', function () {
     },
   };
 
-  Object.keys(modules).forEach(function (module) {
+  const externalModels = {
+    scope: [
+      'AccessGroup',
+      'AccountBalance',
+      'DataAsset',
+      'Facility',
+      'KeyReport',
+      'Market',
+      'Metric',
+      'OrgGroup',
+      'Process',
+      'Product',
+      'ProductGroup',
+      'Project',
+      'System',
+      'TechnologyEnvironment',
+      'Vendor',
+    ],
+    directives: [
+      'Regulation',
+      'Standard',
+    ],
+    business: [
+      'Control',
+      'Risk',
+      'Contract',
+      'Objective',
+      'Policy',
+      'Requirement',
+      'Threat',
+    ],
+  };
+
+  Object.keys(modules).forEach((module) => {
     allTypes = allTypes.concat(modules[module].models);
     notMappableModels = notMappableModels.concat(modules[module].notMappable);
   });
 
   const filtered = loDifference(allTypes, notMappableModels);
 
+  const basicObjectsUnmappingRule = loDifference(filtered, ['Audit'],
+    externalModels.scope, externalModels.directives, externalModels.business);
+
+  const scopingObjectsUnmappingRules = {}; // eslint-disable-line id-length
+  externalModels.scope.forEach((model) => {
+    scopingObjectsUnmappingRules[model] = basicObjectsUnmappingRule;
+  });
+
+  const directivesObjectsUnmappingRules = { // eslint-disable-line id-length
+    Standard: ['Regulation', ...basicObjectsUnmappingRule],
+    Regulation: ['Standard', ...basicObjectsUnmappingRule],
+  };
+
+  const businessObjectsUnmappingRules = { // eslint-disable-line id-length
+    Control: ['Control', ...basicObjectsUnmappingRule],
+    Risk: ['Risk', ...basicObjectsUnmappingRule],
+    Contract: basicObjectsUnmappingRule,
+    Objective: basicObjectsUnmappingRule,
+    Policy: basicObjectsUnmappingRule,
+    Requirement: basicObjectsUnmappingRule,
+    Threat: basicObjectsUnmappingRule,
+  };
+
   const unmappingRules = Object.freeze({
-    AccessGroup: loDifference(filtered,
-      modules.core.scope.notMappable, modules.core.scope.models),
-    AccountBalance: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
+    ...scopingObjectsUnmappingRules,
+    ...directivesObjectsUnmappingRules,
+    ...businessObjectsUnmappingRules,
     Assessment: loDifference(filtered, ['Audit', 'Person', 'Program', 'Project',
       'Workflow', 'Assessment', 'Document']).concat(['Evidence']),
     AssessmentTemplate: [],
     Audit: ['Issue'],
-    Contract: loDifference(filtered, ['Audit', 'Contract']),
-    Control: loDifference(filtered, modules.core.scope.models,
-      ['Audit', 'Regulation', 'Risk', 'Standard']),
     CycleTaskGroupObjectTask: loDifference(filtered, ['Person',
       'Workflow', 'Assessment', 'Document']),
-    DataAsset: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
     Evidence: [],
     Document: loDifference(filtered,
       ['Audit', 'Assessment', 'Document', 'Person', 'Workflow']),
-    Facility: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
-    Issue: loDifference(allTypes,
-      ['Person', 'AssessmentTemplate', 'Evidence']
-        .concat(modules.workflows.notMappable)),
-    KeyReport: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
-    Market: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
-    Metric: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
-    Objective: loDifference(filtered, ['Audit']),
-    OrgGroup: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
+    Issue: loDifference(allTypes, ['Person', 'AssessmentTemplate', 'Evidence'],
+      modules.workflows.notMappable),
     Person: [],
-    Policy: loDifference(filtered, ['Audit', 'Policy']),
-    Process: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
-    Product: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
-    ProductGroup: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
-    Program: loDifference(allTypes,
-      ['Audit', 'Assessment', 'Person']
-        .concat(modules.core.notMappable, modules.workflows.notMappable)),
-    Project: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
-    Regulation: loDifference(filtered, modules.core.scope.models,
-      ['Audit', 'Regulation', 'Control', 'Risk']),
-    Risk: loDifference(filtered, modules.core.scope.models,
-      ['Audit', 'Control', 'Standard', 'Regulation']),
-    Requirement: loDifference(filtered, ['Audit']),
-    Standard: loDifference(filtered, modules.core.scope.models,
-      ['Audit', 'Standard', 'Control', 'Risk']),
-    System: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
+    Program: loDifference(allTypes, ['Audit'], modules.core.notMappable,
+      modules.workflows.notMappable),
     TaskGroup: loDifference(filtered, ['Audit', 'Person',
       'Workflow', 'Assessment', 'Document']),
-    TechnologyEnvironment: loDifference(filtered,
-      modules.core.scope.notMappable, modules.core.scope.models),
-    Threat: loDifference(filtered, ['Audit']),
-    Vendor: loDifference(filtered, modules.core.scope.notMappable,
-      modules.core.scope.models),
   });
 
   describe('allowedToUnmap() method', () => {
@@ -207,8 +195,8 @@ describe('Mappings', function () {
       'Workflow',
     ]);
 
-    modelsForTests.forEach(function (type) {
-      it('returns mappable types for ' + type, function () {
+    modelsForTests.forEach((type) => {
+      it('returns mappable types for ' + type, () => {
         let expectedModels = unmappingRules[type];
         let result = Mappings.getAllowedToUnmapModels(type);
         let resultModels = loKeys(result);

@@ -4,6 +4,7 @@
 """Test for not_empty operator."""
 
 import ddt
+import mock
 
 from ggrc.models import all_models
 
@@ -142,8 +143,10 @@ class TestNotEmptyRevisions(test_ggrc.TestCase, query_helper.WithQueryApi):
       objective = factories.ObjectiveFactory()
       data_asset = factories.DataAssetFactory()
       metric = factories.MetricFactory()
-      factories.RelationshipFactory(source=objective, destination=data_asset)
-      factories.RelationshipFactory(source=metric, destination=objective)
+      with mock.patch('ggrc.models.relationship.is_external_app_user',
+                      return_value=True):
+        factories.RelationshipFactory(source=objective, destination=data_asset)
+        factories.RelationshipFactory(source=metric, destination=objective)
 
     not_empty_revisions = self._query_not_empty_revisions(
         objective, ignore_relationships

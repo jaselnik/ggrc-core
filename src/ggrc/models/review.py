@@ -280,10 +280,10 @@ class Review(mixins.person_relation_factory("last_reviewed_by"),
 
   REVIEWABLE_TMPL = "{}_reviewable"
 
-  reviewable = model_utils.json_polymorphic_relationship_factory(
-      Reviewable
-  )(
-      "reviewable_id", "reviewable_type", REVIEWABLE_TMPL
+  reviewable = model_utils.JsonPolymorphicRelationship(
+      "reviewable_id",
+      "reviewable_type",
+      REVIEWABLE_TMPL,
   )
 
   notification_type = db.Column(

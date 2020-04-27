@@ -807,11 +807,24 @@ class Policies(InfoWidget):
     super(Policies, self).__init__(driver)
 
 
-class Standards(ReadOnlyInfoWidget):
+class Standards(page_mixins.WithAssignFolder, InfoWidget):
   """Model for Standard object Info pages and Info panels."""
 
   def __init__(self, driver):
     super(Standards, self).__init__(driver)
+    self.reference_urls = self._related_urls(self._reference_url_label)
+
+  def update_obj_scope(self, scope):
+    """Updates obj scope."""
+    scope.update(admin=self.admins.get_people_emails())
+
+  def els_shown_for_editor(self):
+    """Elements shown for user with edit permissions"""
+    return [self.request_review_btn,
+            self.three_bbs.edit_option,
+            self.comments_panel.add_btn,
+            self.reference_urls.add_button,
+            self.assign_folder_button] + list(self.inline_edit_controls)
 
 
 class Contracts(InfoWidget):
@@ -874,20 +887,11 @@ class Controls(page_mixins.WithAssignFolder, page_mixins.WithDisabledProposals,
     return self._related_people_list(roles.CONTROL_OWNERS, self._root)
 
 
-class Objectives(page_mixins.WithAssignFolder, InfoWidget):
+class Objectives(InfoWidget):
   """Model for Objective object Info pages and Info panels."""
 
   def __init__(self, driver):
     super(Objectives, self).__init__(driver)
-    self.reference_urls = self._related_urls(self._reference_url_label)
-
-  def els_shown_for_editor(self):
-    """Elements shown for user with edit permissions"""
-    return [self.request_review_btn,
-            self.three_bbs.edit_option,
-            self.comments_panel.add_btn,
-            self.reference_urls.add_button,
-            self.assign_folder_button] + list(self.inline_edit_controls)
 
   def update_obj_scope(self, scope):
     """Updates obj scope."""

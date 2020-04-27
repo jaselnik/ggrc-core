@@ -37,225 +37,6 @@ class TestBasicCsvImport(TestCase):
           "email": "{}@reciprocitylabs.com".format(person),
       }, "Administrator")
 
-  def test_policy_basic_import(self):
-    """Test basic policy import."""
-    filename = "policy_basic_import.csv"
-    self.import_file(filename)
-    policies = models.Policy.query.count()
-    self.assertEqual(policies, 3)
-    revisions = models.Revision.query.filter(
-        models.Revision.resource_type == "Policy"
-    ).count()
-    self.assertEqual(revisions, 3)
-    policy = models.Policy.eager_query().first()
-    self.assertEqual(policy.modified_by.email, "user@example.com")
-
-  def test_policy_work_with_warnings(self):
-    """Test Policy import with warnings."""
-    def test_owners(policy):
-      """Assert policy has the correct Admin set."""
-      self.assertNotEqual([], policy.access_control_list)
-      self.assertEqual(
-          "user@example.com",
-          policy.access_control_list[0][0].email
-      )
-      owner = models.Person.query.filter_by(email="user@example.com").first()
-      self.assert_roles(policy, Admin=owner)
-
-    filename = "policy_import_working_with_warnings.csv"
-    response_json = self.import_file(filename, safe=False)
-
-    expected_warnings = {
-        errors.UNKNOWN_USER_WARNING.format(line=3, email="miha@policy.com"),
-        errors.UNKNOWN_OBJECT.format(
-            line=3, object_type="Program", slug="p753"),
-        errors.OWNER_MISSING.format(line=4, column_name="Admin"),
-        errors.UNKNOWN_USER_WARNING.format(line=6, email="not@a.user"),
-        errors.OWNER_MISSING.format(line=6, column_name="Admin"),
-    }
-    response_warnings = response_json[0]["row_warnings"]
-    self.assertEqual(expected_warnings, set(response_warnings))
-    response_errors = response_json[0]["row_errors"]
-    self.assertEqual(set(), set(response_errors))
-    self.assertEqual(4, response_json[0]["created"])
-
-    policies = models.Policy.query.all()
-    self.assertEqual(len(policies), 4)
-    # Only 1 and 3 policies should have owners
-    test_owners(policies[0])
-    test_owners(policies[2])
-
-  def test_policy_same_titles(self):
-    """Test Policy imports with title collisions."""
-    def test_owners(policy):
-      """Assert policy has the correct Admin set."""
-      self.assertNotEqual([], policy.access_control_list)
-      self.assertEqual("user@example.com",
-                       policy.access_control_list[0][0].email)
-      owner = models.Person.query.filter_by(email="user@example.com").first()
-      self.assert_roles(policy, Admin=owner)
-
-    filename = "policy_same_titles.csv"
-    response_json = self.import_file(filename, safe=False)
-
-    self.assertEqual(3, response_json[0]["created"])
-    self.assertEqual(6, response_json[0]["ignored"])
-    self.assertEqual(0, response_json[0]["updated"])
-    self.assertEqual(9, response_json[0]["rows"])
-
-    expected_errors = {
-        errors.DUPLICATE_VALUE_IN_CSV.format(
-            line="4", processed_line="3", column_name="Title",
-            value="A title"),
-        errors.DUPLICATE_VALUE_IN_CSV.format(
-            line="6", processed_line="3", column_name="Title",
-            value="A title"),
-        errors.DUPLICATE_VALUE_IN_CSV.format(
-            line="10", processed_line="3", column_name="Title",
-            value="A title"),
-        errors.DUPLICATE_VALUE_IN_CSV.format(
-            line="11", processed_line="3", column_name="Title",
-            value="A title"),
-        errors.DUPLICATE_VALUE_IN_CSV.format(
-            line="7", processed_line="5", column_name="Title",
-            value="A different title"),
-        errors.DUPLICATE_VALUE_IN_CSV.format(
-            line="9", processed_line="8", column_name="Code", value="code"),
-        errors.DUPLICATE_VALUE_IN_CSV.format(
-            line="10", processed_line="8", column_name="Code", value="code"),
-        errors.DUPLICATE_VALUE_IN_CSV.format(
-            line="11", processed_line="8", column_name="Code", value="code"),
-    }
-    response_errors = response_json[0]["row_errors"]
-    self.assertEqual(expected_errors, set(response_errors))
-
-    policies = models.Policy.query.all()
-    self.assertEqual(len(policies), 3)
-    for policy in policies:
-      test_owners(policy)
-
-  @ddt.data(['Standard', ('Regulation', 'Policy', 'Contract', 'Requirement'),
-             {"Standard": ["map:standard"]}],
-            ['Regulation', ('Standard', 'Policy', 'Contract', 'Requirement'),
-             {"Regulation": ["map:regulation"]}],
-            ['Policy', ('Regulation', 'Standard', 'Contract', 'Requirement'),
-             {"Policy": ["map:policy"]}],
-            ['Requirement', ('Regulation', 'Policy', 'Contract', 'Standard'),
-             {}],
-            ['Contract', ('Regulation', 'Policy', 'Standard', 'Requirement'),
-             {"Contract": ["map:contract"]}])
-  @ddt.unpack
-  def test_map_core_objects(self, check_object, other_objects, block_warnings):
-    """Ensure that core GRC objects correctly map to each other
-
-    Core objects to test are:
-    * Standard
-    * Regulation
-    * Policy
-    * Requirement
-    * Contract
-
-    CANNOT be mapped the following pairs:
-    * Standard to Standard
-    * Regulation to Regulation
-    * Policy to Policy
-    * Contract to Contract
-    (however, Requirement CAN be mapped to Requirement)
-    """
-
-    data_block = [
-        OrderedDict([
-            ("object_type", obj_type),
-            ("Code*", "{}-1".format(obj_type.upper())),
-            ("Title*", "{}-1".format(obj_type)),
-            ("Admin*", "user@example.com"),
-        ]) for obj_type in other_objects
-    ]
-
-    # Add object to check
-    data_block.extend([
-        OrderedDict([
-            ("object_type", check_object),
-            ("Code*", "{}-1".format(check_object.upper())),
-            ("Title*", "{}-1".format(check_object)),
-            ("Admin*", "user@example.com"),
-            ("map:regulation", ""),
-            ("map:policy", ""),
-            ("map:contract", ""),
-            ("map:requirement", ""),
-            ("map:standard", ""),
-        ]),
-        OrderedDict([
-            ("object_type", check_object),
-            ("Code*", "{}-2".format(check_object.upper())),
-            ("Title*", "{}-2".format(check_object)),
-            ("Admin*", "user@example.com"),
-            ("map:regulation", "REGULATION-1"),
-            ("map:policy", "POLICY-1"),
-            ("map:contract", "CONTRACT-1"),
-            ("map:requirement", "REQUIREMENT-1"),
-            ("map:standard", "STANDARD-1"),
-        ]),
-    ])
-
-    response = self.import_data(*data_block)
-
-    self._check_csv_response(response, {
-        obj_type: {
-            "block_warnings": {
-                errors.UNSUPPORTED_MAPPING.format(
-                    line=18,
-                    obj_a=obj_type,
-                    obj_b=warn_column.split(":", 1)[1].title(),
-                    column_name=warn_column
-                )
-            } for warn_column in warn_columns
-        } for obj_type, warn_columns in block_warnings.iteritems()
-    })
-
-  def test_policy_unique_title(self):
-    """Test import of existing policy."""
-    filename = "policy_sample1.csv"
-    response_json = self.import_file(filename)
-
-    self.assertEqual(response_json[0]["row_errors"], [])
-
-    filename = "policy_sample2.csv"
-    response_json = self.import_file(filename, safe=False)
-
-    self.assertEqual(response_json[0]["row_errors"], [
-        "Line 3: title 'will this work' already exists.Record will be ignored."
-    ])
-
-  def test_assessments_import_update(self):
-    """Test for updating Assessment with import
-
-    Checks for fields being updarted correctly
-    """
-    self.import_file("pci_program.csv")
-
-    assessment = models.Assessment.query.filter_by(slug="CA.PCI 1.1").first()
-    audit = models.Audit.query.filter_by(slug="AUDIT-Consolidated").first()
-    self.assertEqual(assessment.design, "Effective")
-    self.assertEqual(assessment.operationally, "Effective")
-    self.assertIsNone(models.Relationship.find_related(assessment, audit))
-
-    response = self.import_file("pci_program_update.csv", safe=False)
-
-    self._check_csv_response(response, {
-        "Assessment": {
-            "row_warnings": {
-                errors.UNMODIFIABLE_COLUMN.format(line=3, column_name="Audit")
-            }
-        }
-    })
-
-    assessment = models.Assessment.query.filter_by(slug="CA.PCI 1.1").first()
-    audit = models.Audit.query.filter_by(slug="AUDIT-Consolidated").first()
-    self.assertEqual(assessment.design, "Needs improvement")
-    self.assertEqual(assessment.operationally, "Ineffective")
-    self.assertIsNone(models.Relationship.find_related(assessment, audit))
-
   def test_person_imports(self):
     """Test imports for Person object with user roles."""
     filename = "people_test.csv"
@@ -270,23 +51,6 @@ class TestBasicCsvImport(TestCase):
 
     self.assertEqual(expected_errors, set(response["row_errors"]))
     self.assertEqual(0, models.Person.query.filter_by(email=None).count())
-
-  def test_duplicate_people(self):
-    """Test adding two of the same object people objects in the same row."""
-    filename = "duplicate_object_person.csv"
-    response = self.import_file(filename)[0]
-
-    self.assertEqual(0, len(response["row_warnings"]))
-    self.assertEqual(0, len(response["row_errors"]))
-
-  def test_duplicate_people_objective(self):
-    """Test duplicate error that causes request to fail."""
-    self.generator.generate_object(models.Objective, {"slug": "objective1"})
-    filename = "duplicate_object_person_objective_error.csv"
-    response = self.import_file(filename)[0]
-
-    self.assertEqual(0, len(response["row_warnings"]))
-    self.assertEqual(0, len(response["row_errors"]))
 
   def test_audit_import_context(self):
     """Test audit context on edits via import."""
@@ -433,13 +197,8 @@ class TestBasicCsvImport(TestCase):
     self.assertEqual(program.folder, folder_id)
 
   @ddt.data(
-      'Contract',
-      'Objective',
-      'Policy',
       'Regulation',
-      'Requirement',
       'Standard',
-      'Threat',
   )
   def test_document_recipients(self, object_type):
     """Test check admin recipients for document created via import"""
@@ -527,7 +286,8 @@ class TestImportPermissions(TestCase):
     with factories.single_commit():
       user = factories.PersonFactory()
       user_id = user.id
-      market = factories.MarketFactory(slug="test market")
+      market = factories.MarketFactory()
+      market_slug = market.slug
       system_role = all_models.Role.query.filter(
           all_models.Role.name == "Creator"
       ).one()
@@ -548,14 +308,16 @@ class TestImportPermissions(TestCase):
     data = [
         collections.OrderedDict([
             ("Code*", ""),
-            ("Title*", "Test Objective"),
-            ("Admin", "user@example.com"),
-            ("map:market", "test market"),
+            ("Title*", "Test Program"),
+            ("Program managers", "user@example.com"),
+            ("map:market", market_slug),
         ])
     ]
-    response = self.api.run_import_job(user, "Objective", data)
+    response = self.api.run_import_job(user, "Program", data)
+
     self.assert200(response)
-    self.assertEqual(all_models.Objective.query.count(), 1)
+    self._check_csv_response(response.json["results"], {})
+    self.assertEqual(all_models.Program.query.count(), 1)
 
     perm_ids = self.memcache_client.get('permissions:list')
     self.assertEqual(perm_ids, set())

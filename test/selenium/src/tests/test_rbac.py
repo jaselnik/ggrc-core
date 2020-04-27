@@ -33,7 +33,7 @@ class TestRBAC(base.Test):
     """
     user = rest_facade.create_user_with_role(role_name=role)
     users.set_current_user(user)
-    objs = [rest_facade.create_program(), rest_facade.create_objective()]
+    objs = [rest_facade.create_program(), rest_facade.create_standard()]
     for obj in objs:
       webui_facade.assert_can_edit(selenium, obj, can_edit=True)
       webui_facade.assert_can_delete(selenium, obj, can_delete=True)
@@ -58,8 +58,8 @@ class TestRBAC(base.Test):
     for role in other_roles:
       users.set_current_user(users_with_all_roles[role])
       program = rest_facade.create_program()
-      objective = rest_facade.create_objective()
-      objs.extend([program, objective])
+      standard = rest_facade.create_standard()
+      objs.extend([program, standard])
     users.set_current_user(users_with_all_roles[login_role])
     for obj in objs:
       if can_view:

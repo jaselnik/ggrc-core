@@ -16,7 +16,7 @@
   <div class="tree-item__popover">
     <div class="tree-item__popover-content">
       {{#if triggered}}
-        {{#if isDirective}}
+        {{#if isShowRequirement}}
           <section>
             <h3 class="task-list-title">Number of mapped objects</h3>
             <mapped-counter instance:from="instance"

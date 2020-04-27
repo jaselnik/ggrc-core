@@ -1,5 +1,0 @@
-Object type,required,required,required,required,,
-policy,code,title,admin,state,Custom Text,Custom mandatory text
-,"p1",some weird policy,user@example.com,Draft,AUEO,someText
-,p2,another weird policy,user@example.com,Draft,,
-,,Who let the dogs out,user@example.com,Draft,Some longer Text,Not missing Text

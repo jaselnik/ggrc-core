@@ -9,38 +9,38 @@ import Assessment from '../../js/models/business-models/assessment';
 import Issue from '../../js/models/business-models/issue';
 import * as businessModels from '../../js/models/business-models';
 
-describe('Model states test', function () {
+describe('Model states test', () => {
   let basicStateObjects = ['AccessGroup', 'AccountBalance', 'Contract',
     'Control', 'DataAsset', 'Facility', 'KeyReport', 'Market',
     'Objective', 'OrgGroup', 'Policy', 'Process', 'Product', 'Program',
     'Project', 'Regulation', 'Risk', 'Requirement', 'Standard', 'System',
     'Threat', 'Vendor'];
 
-  basicStateObjects.forEach(function (object) {
+  basicStateObjects.forEach((object) => {
     let expectedStatuses = ['Draft', 'Deprecated', 'Active'];
-    it('checks if ' + object + ' has expected statuses', function () {
+    it('checks if ' + object + ' has expected statuses', () => {
       expect(businessModels[object].statuses).toEqual(
         expectedStatuses, 'for object ' + object);
     });
   });
-  it('checks if Audit has expected statuses', function () {
+  it('checks if Audit has expected statuses', () => {
     let expectedStatuses = ['Planned', 'In Progress', 'Manager Review',
       'Ready for External Review', 'Completed', 'Deprecated'];
     expect(Audit.statuses).toEqual(expectedStatuses);
   });
-  it('checks if Assessment has correct statuses', function () {
+  it('checks if Assessment has correct statuses', () => {
     let expectedStatuses = ['Not Started', 'In Progress', 'In Review',
       'Verified', 'Completed', 'Deprecated', 'Rework Needed'];
     expect(Assessment.statuses).toEqual(expectedStatuses);
   });
-  it('checks if Issue has correct statuses', function () {
+  it('checks if Issue has correct statuses', () => {
     let expectedStatuses = ['Draft', 'Deprecated', 'Active', 'Fixed',
       'Fixed and Verified'];
     expect(Issue.statuses).toEqual(expectedStatuses);
   });
 });
 
-describe('Model "status" attr test', function () {
+describe('Model "status" attr test', () => {
   const objectsWithState = ['Assessment', 'AssessmentTemplate', 'Audit',
     'Contract', 'Control', 'Cycle', 'Document', 'Evidence', 'Issue',
     'Objective', 'Policy', 'Program', 'Regulation', 'Risk',
@@ -50,7 +50,7 @@ describe('Model "status" attr test', function () {
     'Process', 'Product', 'ProductGroup', 'Project', 'System',
     'TechnologyEnvironment', 'Vendor'];
 
-  objectsWithState.forEach(function (object) {
+  objectsWithState.forEach((object) => {
     it(`checks if ${object} has State in attr_list`, () => {
       const attrList = businessModels[object].tree_view_options.attr_list;
 
@@ -59,7 +59,7 @@ describe('Model "status" attr test', function () {
     });
   });
 
-  objectsWithLaunchStatus.forEach(function (object) {
+  objectsWithLaunchStatus.forEach((object) => {
     it(`checks if ${object} has Launch Status in attr_list`, () => {
       const attrList = businessModels[object].tree_view_options.attr_list;
 
@@ -77,17 +77,16 @@ describe('Model "status" attr test', function () {
   });
 });
 
-describe('Model review state test', function () {
-  const reviewObjects = ['Contract', 'Objective',
-    'Policy', 'Program', 'Regulation', 'Requirement', 'Standard',
-    'Threat'];
+describe('Model review state test', () => {
+  const reviewObjects = ['Program', 'Regulation', 'Standard'];
   const externalReviewObjects = ['Control', 'Risk'];
   const objectsWithoutReview = ['AccessGroup', 'AccountBalance', 'Assessment',
     'AssessmentTemplate', 'Audit', 'DataAsset', 'Facility', 'Issue',
     'KeyReport', 'Market', 'Metric', 'OrgGroup', 'Process', 'Product',
-    'ProductGroup', 'Project', 'System', 'TechnologyEnvironment', 'Vendor'];
+    'ProductGroup', 'Project', 'System', 'TechnologyEnvironment', 'Vendor',
+    'Contract', 'Objective', 'Policy', 'Requirement', 'Threat'];
 
-  reviewObjects.forEach(function (object) {
+  reviewObjects.forEach((object) => {
     it('checks if ' + object + ' has review status in attr_list', () => {
       const attrList = businessModels[object].tree_view_options.attr_list;
 
@@ -98,7 +97,7 @@ describe('Model review state test', function () {
     });
   });
 
-  externalReviewObjects.forEach(function (object) {
+  externalReviewObjects.forEach((object) => {
     it('checks if ' + object + ' has external review status in attr_list',
       () => {
         const attrList = businessModels[object].tree_view_options.attr_list;
@@ -112,7 +111,7 @@ describe('Model review state test', function () {
       });
   });
 
-  objectsWithoutReview.forEach(function (object) {
+  objectsWithoutReview.forEach((object) => {
     it('checks if ' + object + ' has not review status in attr_list', () => {
       const attrList = businessModels[object].tree_view_options.attr_list;
 

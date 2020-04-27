@@ -62,21 +62,26 @@ class Types(object):
   external = {
       "AccessGroup",
       "AccountBalance",
+      "Contract",
+      "Control",
       "DataAsset",
       "Facility",
       "KeyReport",
       "Market",
       "Metric",
+      "Objective",
       "OrgGroup",
+      "Policy",
       "Process",
       "Product",
       "ProductGroup",
       "Project",
+      "Requirement",
+      "Risk",
       "System",
       "Vendor",
       "TechnologyEnvironment",
-      "Control",
-      "Risk",
+      "Threat",
   }
 
   @classmethod

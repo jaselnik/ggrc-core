@@ -271,12 +271,11 @@ class TestExportTasks(ggrc.TestCase):
     task_cycle_filter = self.generate_tasks_for_cycle(cycle_count, task_count)
     filter_params = {}
     for task_id, slug in task_cycle_filter.iteritems():
-      task = all_models.CycleTaskGroupObjectTask.query.filter(
-          all_models.CycleTaskGroupObjectTask.id == task_id
-      ).one()
+      task = all_models.CycleTaskGroupObjectTask.query.get(task_id)
       comment_text = "comment for task # {}".format(task_id)
-      comment = ggrc_factories.CommentFactory(description=comment_text)
-      ggrc_factories.RelationshipFactory(source=task, destination=comment)
+      with ggrc_factories.single_commit():
+        comment = ggrc_factories.CommentFactory(description=comment_text)
+        ggrc_factories.RelationshipFactory(source=task, destination=comment)
       filter_params[comment_text] = slug
 
     for comment_text, slug in filter_params.iteritems():

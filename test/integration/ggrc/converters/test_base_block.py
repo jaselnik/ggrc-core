@@ -43,12 +43,12 @@ class TestBaseBlock(TestCase):
       expected_cache = defaultdict(lambda: defaultdict(list))
       for i in range(count):
         for j in range(i):
-          factories.RelationshipFactory(
-              source=regulations[j] if i % 2 == 0 else requirements[i],
-              destination=regulations[j] if i % 2 == 1 else requirements[i],
-          )
           with mock.patch('ggrc.models.relationship.is_external_app_user',
                           return_value=True):
+            factories.RelationshipFactory(
+                source=regulations[j] if i % 2 == 0 else requirements[i],
+                destination=regulations[j] if i % 2 == 1 else requirements[i],
+            )
             factories.RelationshipFactory(
                 source=regulations[j] if i % 2 == 0 else controls[i],
                 destination=regulations[j] if i % 2 == 1 else controls[i],
@@ -92,12 +92,12 @@ class TestBaseBlock(TestCase):
 
       relationships = []
       for i in range(count):
-        relationships.append(factories.RelationshipFactory(
-            source=regulation if i % 2 == 0 else requirements[i],
-            destination=regulation if i % 2 == 1 else requirements[i],
-        ))
         with mock.patch('ggrc.models.relationship.is_external_app_user',
                         return_value=True):
+          relationships.append(factories.RelationshipFactory(
+              source=regulation if i % 2 == 0 else requirements[i],
+              destination=regulation if i % 2 == 1 else requirements[i],
+          ))
           relationships.append(factories.RelationshipFactory(
               source=regulation if i % 2 == 0 else controls[i],
               destination=regulation if i % 2 == 1 else controls[i],

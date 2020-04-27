@@ -724,10 +724,6 @@ export default canModel.extend({
   autocomplete_label: function () {
     return this.title;
   },
-
-  delay_resolving_save_until: function (dfd) {
-    return this.notifier.queue(dfd);
-  },
   _save: function (saveCallback) {
     let isNew = this.isNew();
     let saveDfd = this._dfd;

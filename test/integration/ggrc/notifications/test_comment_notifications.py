@@ -145,14 +145,9 @@ class TestCommentNotification(TestNotifications):
         self.assertTrue(comment["description"].endswith(expected_suffix))
 
   @ddt.data(
-      all_models.Objective,
-      all_models.Requirement,
       all_models.Issue,
-      all_models.Policy,
       all_models.Regulation,
       all_models.Standard,
-      all_models.Contract,
-      all_models.Threat,
   )
   @patch("ggrc.notifications.common.send_email")
   def test_models_comments(self, model, _):

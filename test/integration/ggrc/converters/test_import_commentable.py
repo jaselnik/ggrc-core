@@ -17,13 +17,8 @@ class TestImportCommentable(TestCase):
   """Class with tests of importing fields of Commentable mixin."""
 
   @ddt.data(
-      all_models.Objective,
-      all_models.Requirement,
       all_models.Regulation,
-      all_models.Policy,
       all_models.Standard,
-      all_models.Threat,
-      all_models.Contract,
   )
   def test_model_import(self, model):
     """Test import commentable model {}."""

@@ -150,50 +150,6 @@ class Directive(mixins.LastDeprecatedTimeboxed,
     )
 
 
-# FIXME: For subclasses, restrict kind
-class Policy(review.Reviewable,
-             Roleable,
-             mixins.CustomAttributable,
-             Relatable,
-             Personable,
-             PublicDocumentable,
-             Directive,
-             Indexed):
-  __mapper_args__ = {
-      'polymorphic_identity': 'Policy'
-  }
-
-  _table_plural = 'policies'
-
-  VALID_KINDS = frozenset([
-      "Company Policy", "Org Group Policy", "Data Asset Policy",
-      "Product Policy", "Contract-Related Policy", "Company Controls Policy"
-  ])
-
-  POLICY_OPTIONS = ("Company Policy",
-                    "Org Group Policy",
-                    "Data Asset Policy",
-                    "Product Policy",
-                    "Contract-Related Policy",
-                    "Company Controls Policy"
-                    )
-
-  _aliases = {
-      "documents_file": None,
-      "kind": {
-          "display_name": "Kind/Type",
-          "filter_by": "_filter_by_kind",
-          "description": "Allowed values are:\n{}".format(
-              "\n".join(POLICY_OPTIONS))
-      },
-  }
-
-  # pylint: disable=unused-argument
-  @validates('meta_kind')
-  def validates_meta_kind(self, key, value):
-    return 'Policy'
-
-
 class Regulation(review.Reviewable,
                  Roleable,
                  mixins.CustomAttributable,
@@ -246,30 +202,3 @@ class Standard(review.Reviewable,
   @validates('meta_kind')
   def validates_meta_kind(self, key, value):
     return 'Standard'
-
-
-class Contract(review.Reviewable,
-               Roleable,
-               mixins.CustomAttributable,
-               Relatable,
-               Personable,
-               PublicDocumentable,
-               Directive,
-               Indexed):
-  __mapper_args__ = {
-      'polymorphic_identity': 'Contract'
-  }
-
-  _table_plural = 'contracts'
-
-  VALID_KINDS = ("Contract",)
-
-  _aliases = {
-      "kind": None,
-      "documents_file": None,
-  }
-
-  # pylint: disable=unused-argument
-  @validates('meta_kind')
-  def validates_meta_kind(self, key, value):
-    return 'Contract'

@@ -28,6 +28,7 @@ from sqlalchemy import exc as sa_exc
 from werkzeug import exceptions as wzg_exceptions
 
 
+from ggrc import converters
 from ggrc import db
 from ggrc import login
 from ggrc import settings
@@ -36,7 +37,6 @@ from ggrc.app import app
 from ggrc.cache import utils as cache_utils
 from ggrc.cloud_api import task_queue
 from ggrc.converters import base
-from ggrc.converters import get_exportables
 from ggrc.converters import import_helper
 from ggrc.gdrive import file_actions as fa
 from ggrc.models import all_models
@@ -51,8 +51,9 @@ from ggrc.utils import errors as app_errors
 from ggrc.utils import objects_cache
 
 
-EXPORTABLES_MAP = {exportable.__name__: exportable for exportable
-                   in get_exportables().values()}
+IMPORTABLES_MAP = {importable.__name__: importable for importable
+                   in converters.get_importables().values()}
+
 
 IGNORE_FIELD_IN_TEMPLATE = {
     "Assessment": {"evidences_file",
@@ -149,14 +150,30 @@ def handle_export_request():
     return export_file(export_to, filename, csv_string)
 
 
+def _check_if_import_allowed_for(object_data):
+  """Check if import is allowed for passed objects.
+
+  Args:
+    object_data (List[dict]): A list of dictionaries containing object info.
+      List items are {"object_name": <str>, ...} dictionaries.
+
+  Raises:
+    wzg_exceptions.Forbidden: Import of at least one object from `object_data`
+      is not allowed.
+  """
+  if any(item["object_name"] not in IMPORTABLES_MAP for item in object_data):
+    raise wzg_exceptions.Forbidden()
+
+
 def get_csv_template(objects):
   """Make csv template"""
+  _check_if_import_allowed_for(objects)
   ca_cache = {}
   for object_data in objects:
     class_name = object_data["object_name"]
     template_ids = tuple(object_data.get("template_ids") or [])
 
-    object_class = EXPORTABLES_MAP[class_name]
+    object_class = IMPORTABLES_MAP[class_name]
     ignore_fields = IGNORE_FIELD_IN_TEMPLATE.get(class_name, [])
 
     class_name = utils.underscore_from_camelcase(class_name)

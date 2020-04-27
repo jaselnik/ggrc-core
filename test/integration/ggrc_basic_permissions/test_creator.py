@@ -12,7 +12,6 @@ from ggrc.models import get_model
 from ggrc.models import all_models
 
 from integration.ggrc import TestCase
-from integration.ggrc.access_control import acl_helper
 from integration.ggrc.api_helper import Api
 from integration.ggrc.generator import ObjectGenerator
 from integration.ggrc.models import factories
@@ -50,8 +49,7 @@ class TestCreator(TestCase):
     creator_id = self.users["creator"].id
     audit_id = factories.AuditFactory().id
     all_errors = []
-    base_models = {"Contract", "Requirement", "Policy", "Regulation",
-                   "Standard", "Document", "Objective"}
+    base_models = {"Regulation", "Standard", "Document"}
 
     for model_singular in base_models:
       try:
@@ -139,32 +137,29 @@ class TestCreator(TestCase):
 
   def test_creator_search(self):
     """Test if creator can see the correct object while using the search api"""
-    self.api.set_user(self.users['admin'])
-    self.api.post(all_models.Regulation, {
-        "regulation": {"title": "Admin regulation", "context": None},
-    })
-    self.api.set_user(self.users['creator'])
-    acr_id = all_models.AccessControlRole.query.filter_by(
-        object_type="Policy",
-        name="Admin"
-    ).first().id
-    response = self.api.post(all_models.Policy, {
-        "policy": {
-            "title": "Creator Policy",
-            "context": None,
-            "access_control_list": [
-                acl_helper.get_acl_json(acr_id, self.users["creator"].id)],
-        },
-    })
-    response.json.get("policy").get("id")
+    with factories.single_commit():
+      factories.RegulationFactory()
+      policy = factories.PolicyFactory()
+      policy.add_person_with_role_name(
+          self.users["creator"],
+          "Admin",
+      )
+
+    self.api.set_user(self.users["creator"])
+
     response, _ = self.api.search("Regulation,Policy")
+    self.assert200(response)
+    # Global Creator has read access only to Policy object.
     entries = response.json["results"]["entries"]
-    self.assertEqual(len(entries), 1)
-    self.assertEqual(entries[0]["type"], "Policy")
+    self.assertEqual(1, len(entries))
+    self.assertEqual("Policy", entries[0]["type"])
+
     response, _ = self.api.search("Regulation,Policy", counts=True)
-    self.assertEqual(response.json["results"]["counts"]["Policy"], 1)
-    self.assertEqual(
-        response.json["results"]["counts"].get("Regulation"), None)
+    self.assert200(response)
+    # Global Creator has read access only to Policy object.
+    counts = response.json["results"]["counts"]
+    self.assertEqual(1, counts.get("Policy", 1))
+    self.assertEqual(0, counts.get("Regulation", 0))
 
   def _get_count(self, obj):
     """ Return the number of counts for the given object from search """
@@ -205,45 +200,47 @@ class TestCreator(TestCase):
   def test_revision_access(self):
     """Check if creator can access the right revision objects."""
 
-    def gen(title, extra_data=None):
-      """Generates requirement."""
-      requirement_content = {"title": title, "context": None}
-      if extra_data:
-        requirement_content.update(**extra_data)
-      return self.object_generator.generate_object(
-          all_models.Requirement,
-          data={"requirement": requirement_content}
-      )[1]
-
-    def check(obj, expected):
+    def check(obj_type, obj_id, expected):
       """Check that how many revisions of an object current user can see."""
       response = self.api.get_query(
           all_models.Revision,
-          "resource_type={}&resource_id={}".format(obj.type, obj.id)
+          "resource_type={}&resource_id={}".format(obj_type, obj_id)
       )
-      self.assertEqual(response.status_code, 200)
+      self.assert200(response)
       self.assertEqual(
+          expected,
           len(response.json['revisions_collection']['revisions']),
-          expected
       )
 
-    self.api.set_user(self.users["admin"])
-    obj_1 = gen("Test Requirement 1")
+    with factories.single_commit():
+      requirement_1 = factories.RequirementFactory()
+      requirement_1.add_person_with_role_name(
+          self.users["admin"],
+          "Admin",
+      )
+      requirement_2 = factories.RequirementFactory()
+      requirement_2.add_person_with_role_name(
+          self.users["creator"],
+          "Admin",
+      )
+      requirement_2_acl = requirement_2.access_control_list[0].acl_item
+      factories.RevisionFactory(
+          obj=requirement_2_acl,
+          content=requirement_2_acl.log_json(),
+      )
+
+    requirement_1_id = requirement_1.id
+    requirement_2_id = requirement_2.id
+    requirement_2_acl_id = requirement_2_acl.id
 
     self.api.set_user(self.users["creator"])
-    acr_id = all_models.AccessControlRole.query.filter_by(
-        object_type="Requirement",
-        name="Admin"
-    ).first().id
-    linked_acl = {
-        "access_control_list": [
-            acl_helper.get_acl_json(acr_id, self.users["creator"].id)],
-    }
-    check(obj_1, 0)
-    obj_2 = gen("Test Requirement 2", linked_acl)
-    obj2_acl = obj_2.access_control_list[0][1]
-    check(obj_2, 1)
-    check(obj2_acl, 1)
+
+    # Global Creator has no access to Requirement 1.
+    check(requirement_1.type, requirement_1_id, expected=0)
+    # Global Creator has access to Requirement 2.
+    check(requirement_2.type, requirement_2_id, expected=1)
+    # Global Creator has access to Requirement 2 thus to its ACL too.
+    check(requirement_2_acl.type, requirement_2_acl_id, expected=1)
 
   @ddt.data("creator", "admin")
   def test_count_type_in_accordion(self, glob_role):

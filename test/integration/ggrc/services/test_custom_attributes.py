@@ -17,7 +17,6 @@ from ggrc import builder
 from ggrc.models import all_models
 from ggrc.models.mixins import customattributable
 
-from integration.ggrc.api_helper import Api
 from integration.ggrc.services import TestCase
 from integration.ggrc.generator import ObjectGenerator
 from integration.ggrc.models import factories
@@ -98,30 +97,6 @@ class TestGlobalCustomAttributes(ProductTestCase):
     self.assertEqual(len(product.custom_attribute_values), 1)
     self.assertEqual(product.custom_attribute_values[0].attribute_value,
                      "my custom attribute value")
-
-  @ddt.data(
-      ("control", "Control title")
-  )
-  @ddt.unpack
-  def test_create_from_ggrc(self, definition_type, title):
-    """Test create definition not allowed for GGRC."""
-    api = Api()
-    payload = [
-        {
-            "custom_attribute_definition": {
-                "attribute_type": "Text",
-                "context": {"id": None},
-                "definition_type": definition_type,
-                "helptext": "Some text",
-                "mandatory": False,
-                "modal_title": "Modal title",
-                "placeholder": "Placeholder",
-                "title": title
-            }
-        }
-    ]
-    response = api.post(all_models.CustomAttributeDefinition, payload)
-    self.assertEqual(response.status_code, 405)
 
   def test_custom_attribute_put_add(self):
     """Test edits with adding new CA values."""

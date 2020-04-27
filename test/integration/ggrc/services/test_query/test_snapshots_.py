@@ -176,18 +176,6 @@ class TestAuditSnapshotQueries(TestCase, WithQueryApi):
         {
             "object_name": "Snapshot",
             "filters": {
-                "expression": self._get_model_expression(),
-                "keys": [],
-                "order_by": {"keys": [], "order": "", "compare": None}
-            }
-        }
-    ])
-    self.assertEqual(len(result.json[0]["Snapshot"]["values"]), 10)
-
-    result = self._post([
-        {
-            "object_name": "Snapshot",
-            "filters": {
                 "expression": self._get_model_expression("OrgGroup"),
                 "keys": [],
                 "order_by": {"keys": [], "order": "", "compare": None}

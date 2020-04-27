@@ -306,11 +306,10 @@ class TestManualAudit(TestCase):
       control_id = control.id
       control2 = factories.ControlFactory()  # wouldn't be mapped to objective
       control2_id = control2.id
-      objective = factories.ObjectiveFactory()
       factories.RelationshipFactory(source=program, destination=control)
       factories.RelationshipFactory(source=program, destination=control2)
-      factories.RelationshipFactory(source=program, destination=objective)
-      factories.RelationshipFactory(source=control, destination=objective)
+      # factories.RelationshipFactory(source=program, destination=issue)
+      # factories.RelationshipFactory(source=control, destination=issue)
     self.api.post(all_models.Audit, [{
         "audit": {
             "title": "New Audit",
@@ -325,19 +324,19 @@ class TestManualAudit(TestCase):
     audit = all_models.Audit.query.first()
     control = all_models.Control.query.get(control_id)
     control2 = all_models.Control.query.get(control2_id)
-    objective = all_models.Objective.query.first()
+    # issue = all_models.Issue.query.first()
 
     self.gen.generate_relationship(audit, control)
     control_snapshot_id = all_models.Snapshot.query.filter_by(
         child_id=control_id, child_type="Control").first().id
     self.assertEqual(self.count_related_objectives(control_snapshot_id), 0)
 
-    self.gen.generate_relationship(audit, objective)
-    self.assertEqual(self.count_related_objectives(control_snapshot_id), 1)
+    # self.gen.generate_relationship(audit, issue)
+    # self.assertEqual(self.count_related_objectives(control_snapshot_id), 1)
 
     self.gen.generate_relationship(audit, control2)
     control2_snapshot_id = all_models.Snapshot.query.filter_by(
         child_id=control2_id, child_type="Control").first().id
     self.assertEqual(self.count_related_objectives(control2_snapshot_id), 0)
 
-    self.assertSnapshotCount(3)
+    self.assertSnapshotCount(2)

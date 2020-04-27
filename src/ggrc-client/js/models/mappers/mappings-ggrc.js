@@ -46,17 +46,17 @@ const createRule = {
   create: ['CycleTaskGroupObjectTask'],
 };
 
-const coreObjectConfig = {
-  ...createRule,
-  map: loDifference(businessObjects, ['Assessment']),
-  unmap: loDifference(businessObjects, ['Assessment', 'Audit']),
-  indirectMappings: ['Assessment', 'Person', 'TaskGroup', 'Workflow'],
-};
-
-const scopingObjectConfig = {
+const externalObjectConfig = {
   ...createRule,
   map: loDifference(businessObjects, [
     'Assessment',
+    ...externalBusinessObjects,
+    ...externalDirectiveObjects,
+    ...scopingObjects,
+  ]),
+  unmap: loDifference(businessObjects, [
+    'Assessment',
+    'Audit',
     ...externalBusinessObjects,
     ...externalDirectiveObjects,
     ...scopingObjects,
@@ -66,13 +66,6 @@ const scopingObjectConfig = {
     ...externalDirectiveObjects,
     ...scopingObjects,
   ],
-  unmap: loDifference(businessObjects, [
-    'Assessment',
-    'Audit',
-    ...externalBusinessObjects,
-    ...externalDirectiveObjects,
-    ...scopingObjects,
-  ]),
   externalUnmap: [
     ...externalBusinessObjects,
     ...externalDirectiveObjects,
@@ -110,136 +103,113 @@ export default {
     indirectMappings: ['Assessment', 'Audit', 'Person', 'TaskGroup',
       'Workflow'],
   },
-  Contract: {
-    ...createRule,
-    map: loDifference(businessObjects, ['Assessment', 'Contract']),
-    unmap: loDifference(businessObjects, ['Assessment', 'Audit', 'Contract']),
-    indirectMappings: ['Assessment', 'Person', 'TaskGroup', 'Workflow'],
-  },
   Control: {
     ...createRule,
-    map: loDifference(businessObjects,
-      ['Assessment', ...scopingObjects, ...externalDirectiveObjects, 'Risk']),
-    externalMap: [...scopingObjects, ...externalDirectiveObjects, 'Risk'],
-    unmap: loDifference(businessObjects, [
-      'Assessment',
-      'Audit',
-      ...scopingObjects,
-      ...externalDirectiveObjects,
-      'Risk',
-    ]),
-    externalUnmap: [...scopingObjects, ...externalDirectiveObjects, 'Risk'],
-    indirectMappings: ['Assessment', 'Person', 'TaskGroup', 'Workflow'],
-  },
-  Objective: {
-    ...coreObjectConfig,
-  },
-  Policy: {
-    ...createRule,
-    map: loDifference(businessObjects, ['Assessment', 'Policy']),
-    unmap: loDifference(businessObjects, ['Assessment', 'Audit', 'Policy']),
-    indirectMappings: ['Assessment', 'Person', 'TaskGroup', 'Workflow'],
-  },
-  Requirement: {
-    ...coreObjectConfig,
-  },
-  Regulation: {
-    ...createRule,
-    map: loDifference(businessObjects,
-      [...scopingObjects, 'Assessment', 'Regulation',
-        ...externalBusinessObjects]),
-    externalMap: [...scopingObjects, ...externalBusinessObjects],
-    unmap: loDifference(businessObjects, [
-      'Assessment',
-      'Audit',
-      'Regulation',
-      ...scopingObjects,
-      ...externalBusinessObjects,
-    ]),
-    externalUnmap: [...scopingObjects, ...externalBusinessObjects],
-    indirectMappings: ['Assessment', 'Person', 'TaskGroup', 'Workflow'],
+    map: ['Control', ...externalObjectConfig.map],
+    unmap: ['Control', ...externalObjectConfig.unmap],
+    externalMap: loDifference(externalObjectConfig.externalMap, ['Control']),
+    externalUnmap: loDifference(externalObjectConfig.externalUnmap,
+      ['Control']),
+    indirectMappings: externalObjectConfig.indirectMappings,
   },
   Risk: {
     ...createRule,
-    map: loDifference(businessObjects, ['Assessment',
-      ...scopingObjects,
-      ...externalDirectiveObjects, 'Control']),
-    externalMap: [...scopingObjects, ...externalDirectiveObjects, 'Control'],
-    unmap: loDifference(businessObjects, [
-      'Assessment',
-      'Audit',
-      ...scopingObjects,
-      ...externalDirectiveObjects,
-      'Control',
-    ]),
-    externalUnmap: [...scopingObjects, ...externalDirectiveObjects, 'Control'],
-    indirectMappings: ['Assessment', 'Person', 'TaskGroup', 'Workflow'],
+    map: ['Risk', ...externalObjectConfig.map],
+    unmap: ['Risk', ...externalObjectConfig.unmap],
+    externalMap: loDifference(externalObjectConfig.externalMap, ['Risk']),
+    externalUnmap: loDifference(externalObjectConfig.externalUnmap, ['Risk']),
+    indirectMappings: externalObjectConfig.indirectMappings,
+  },
+  Contract: {
+    ...createRule,
+    map: externalObjectConfig.map,
+    unmap: externalObjectConfig.unmap,
+    externalMap: loDifference(externalObjectConfig.externalMap, ['Contract']),
+    externalUnmap: loDifference(externalObjectConfig.externalUnmap,
+      ['Contract']),
+    indirectMappings: externalObjectConfig.indirectMappings,
+  },
+  Policy: {
+    ...createRule,
+    map: externalObjectConfig.map,
+    unmap: externalObjectConfig.unmap,
+    externalMap: loDifference(externalObjectConfig.externalMap, ['Policy']),
+    externalUnmap: loDifference(externalObjectConfig.externalUnmap, ['Policy']),
+    indirectMappings: externalObjectConfig.indirectMappings,
+  },
+  Objective: {
+    ...externalObjectConfig,
+  },
+  Requirement: {
+    ...externalObjectConfig,
+  },
+  Threat: {
+    ...externalObjectConfig,
+  },
+
+  // Directives
+  Regulation: {
+    ...createRule,
+    map: ['Standard', ...externalObjectConfig.map],
+    unmap: ['Standard', ...externalObjectConfig.unmap],
+    externalMap: [...scopingObjects, ...externalBusinessObjects],
+    externalUnmap: [...scopingObjects, ...externalBusinessObjects],
+    indirectMappings: externalObjectConfig.indirectMappings,
   },
   Standard: {
     ...createRule,
-    map: loDifference(businessObjects,
-      [...scopingObjects, 'Assessment', 'Standard',
-        ...externalBusinessObjects]),
+    map: ['Regulation', ...externalObjectConfig.map],
+    unmap: ['Regulation', ...externalObjectConfig.unmap],
     externalMap: [...scopingObjects, ...externalBusinessObjects],
-    unmap: loDifference(businessObjects, [
-      'Assessment',
-      'Audit',
-      'Standard',
-      ...scopingObjects,
-      ...externalBusinessObjects,
-    ]),
     externalUnmap: [...scopingObjects, ...externalBusinessObjects],
-    indirectMappings: ['Assessment', 'Person', 'TaskGroup', 'Workflow'],
-  },
-  Threat: {
-    ...coreObjectConfig,
+    indirectMappings: externalObjectConfig.indirectMappings,
   },
 
   // Scoping objects
   AccessGroup: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   AccountBalance: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   DataAsset: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   Facility: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   KeyReport: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   Market: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   Metric: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   OrgGroup: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   Process: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   Product: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   ProductGroup: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   Project: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   System: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   TechnologyEnvironment: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
   Vendor: {
-    ...scopingObjectConfig,
+    ...externalObjectConfig,
   },
 
   // Audit

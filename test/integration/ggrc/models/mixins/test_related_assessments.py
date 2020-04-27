@@ -196,23 +196,20 @@ class TestRelatedAssessments(TestAssessmentBase):
       audit_2 = factories.AuditFactory(title="Audit 2", program=program_1)
       audit_3 = factories.AuditFactory(title="Audit 3", program=program_2)
 
-      types = ["Control", "Control", "Control",
-               "Requirement", "Requirement", "Standard"]
+      types = ["Control", "Control", "Control", "Requirement", "Standard"]
       self._create_assessments(audit_1, types, offset=1)
 
       types = ["Control", "Control"]
       self._create_assessments(audit_2, types, offset=7)
 
-      types = ["Control", "Requirement"]
+      types = ["Control"]
       self._create_assessments(audit_3, types, offset=9)
 
       c1 = self._create_obj(factories.ControlFactory, "Control 1")
       c2 = self._create_obj(factories.ControlFactory, "Control 2")
-      s1 = self._create_obj(factories.RequirementFactory, "Requirement 1")
-      s2 = self._create_obj(factories.RequirementFactory, "Requirement 2")
 
     snapshots = []
-    snapshots.extend(self._create_snapshots(audit_1, [c1, c2, s1, s2]))
+    snapshots.extend(self._create_snapshots(audit_1, [c1, c2]))
 
     c2.description = "edited"
     # pylint: disable=protected-access
@@ -220,7 +217,7 @@ class TestRelatedAssessments(TestAssessmentBase):
     db.session.commit()
 
     snapshots.extend(self._create_snapshots(audit_2, [c1, c2]))
-    snapshots.extend(self._create_snapshots(audit_3, [c1, c2, s1, s2]))
+    snapshots.extend(self._create_snapshots(audit_3, [c1, c2]))
 
     for snapshot in snapshots:
       title = "Snapshot {} {}".format(
@@ -284,24 +281,16 @@ class TestRelatedAssessments(TestAssessmentBase):
           ("Assessment 1", "Snapshot Audit 1 Control 1"),
           ("Snapshot Audit 1 Control 2", "Assessment 2"),
       ]),
-      (["Assessment 1"], [  # Not related: assessment type != snapshot type
-          ("Assessment 1", "Snapshot Audit 1 Requirement 1"),
-          ("Assessment 2", "Snapshot Audit 1 Requirement 1"),
-      ]),
       (["Assessment 1"], [
           ("Assessment 1", "Snapshot Audit 1 Control 1"),
-          ("Assessment 1", "Snapshot Audit 1 Requirement 1"),
           ("Assessment 2", "Snapshot Audit 1 Control 2"),
           ("Assessment 7", "Snapshot Audit 2 Control 2"),
-          ("Assessment 8", "Snapshot Audit 3 Requirement 1"),
           ("Assessment 9", "Snapshot Audit 3 Control 2"),
       ]),
       (["Assessment 1"], [  # source and destination swapped
           ("Snapshot Audit 1 Control 1", "Assessment 1"),
-          ("Snapshot Audit 1 Requirement 1", "Assessment 1"),
           ("Snapshot Audit 1 Control 2", "Assessment 2"),
           ("Snapshot Audit 2 Control 2", "Assessment 7"),
-          ("Snapshot Audit 3 Requirement 1", "Assessment 8"),
           ("Snapshot Audit 3 Control 2", "Assessment 9"),
       ]),
 
@@ -319,26 +308,6 @@ class TestRelatedAssessments(TestAssessmentBase):
           ("Assessment 2", "Snapshot Audit 1 Control 1"),
       ]),
 
-      # Assessments 4 and 5 related to sames snapshots
-      # Src and dst swapped
-      (["Assessment 4", "Assessment 5"], [
-          ("Assessment 4", "Snapshot Audit 1 Requirement 1"),
-          ("Snapshot Audit 1 Requirement 1", "Assessment 5"),
-      ]),
-      (["Assessment 4", "Assessment 5"], [
-          ("Snapshot Audit 1 Requirement 1", "Assessment 4"),
-          ("Assessment 5", "Snapshot Audit 1 Requirement 1"),
-      ]),
-
-      # Assessment 1, 4, and 5 mapped to same Requirement
-      # Assessment 1 is excluded because it has a different type
-      (["Assessment 4", "Assessment 5"], [
-          ("Assessment 1", "Snapshot Audit 1 Requirement 2"),
-          ("Assessment 4", "Snapshot Audit 1 Requirement 1"),
-          ("Snapshot Audit 1 Requirement 1", "Assessment 1"),
-          ("Snapshot Audit 1 Requirement 1", "Assessment 5"),
-      ]),
-
       # Assessment 1, 2, and 3 related to the same snapshot.
       (["Assessment 1", "Assessment 2", "Assessment 3"], [
           ("Assessment 1", "Snapshot Audit 1 Control 1"),
@@ -353,7 +322,6 @@ class TestRelatedAssessments(TestAssessmentBase):
           ("Snapshot Audit 1 Control 1", "Assessment 2"),
           ("Assessment 7", "Snapshot Audit 2 Control 1"),
           ("Snapshot Audit 3 Control 1", "Assessment 9"),
-          ("Snapshot Audit 3 Control 1", "Assessment 10"),
       ]),
 
       # Assessments mapped to snapshots of two different related objects
@@ -379,11 +347,7 @@ class TestRelatedAssessments(TestAssessmentBase):
           ("Snapshot Audit 1 Control 1", "Assessment 2"),
           ("Assessment 7", "Snapshot Audit 2 Control 2"),
           ("Snapshot Audit 3 Control 1", "Assessment 9"),
-          ("Snapshot Audit 3 Control 1", "Assessment 10"),
-          ("Snapshot Audit 3 Control 2", "Assessment 10"),
           ("Control 2", "Control 1"),
-          ("Requirement 2", "Control 1"),
-          ("Requirement 1", "Control 1"),
       ]),
   ))
   @ddt.unpack

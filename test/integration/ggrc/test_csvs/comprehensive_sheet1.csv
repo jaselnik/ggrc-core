@@ -15,28 +15,6 @@ Person,name,email,company,non-existent-attribute,role,,,,,,,
 ,Someone.Else,someone.else@ggrc.com,,Administrator,,,,,,,,
 ,Another,another@user.com,,Administrator,,,,,,,,
 ,,,,,,,,,,,,
-Object type,"Must be unique.  Can be left empty for autogeneration.  If updating or deleting, code is required",,,,"options are:
-draft
-final
-effective
-ineffective",,,,,,,
-objective,code*,title*,description,admin,state,non-existent-attribute,,,,,,
-,obj-1,objective 1,,user1@ggrc.com,Draft,,,,,,,
-,obj-2,objective 2,,user1@ggrc.com,Draft,,,,,,,
-,obj-3,objective 3,,user1@ggrc.com,Active,,,,,,,
-,obj-4,objective 4,,user1@ggrc.com,Active,,,,,,,
-,obj-5,objective 5,,user1@ggrc.com,Active,,,,,,,
-,obj-6,objective 6,,user1@ggrc.com,Active,,,,,,,
-,obj-7,objective 7,,user1@ggrc.com,Active,,,,,,,
-,obj-8,objective 8,,user1@ggrc.com,Active,,,,,,,
-,obj-9,objective 7,,user1@ggrc.com,Active,,,,,,,
-,obj-10,objective 8,,user1@ggrc.com,Active,,,,,,,
-,obj-no-owner,objective 6,,,Draft,,,,,,,
-,obj-invalid-owner,objective 7,,non-existent@non-existent.com,Active,,,,,,,
-,obj-dup_title,objective 4,,user1@ggrc.com,Active,,,,,,,
-,obj-invalid-attribute,objective 8,,user1@ggrc.com,non-existent,,,,,,,
-,obj-req-attr-missing,,,user1@ggrc.com,Draft,,,,,,,
-,,,,,,,,,,,,
 Object type,"Must be unique.  Can be left empty for autogeneration.  If updating or deleting, code is required",Mandatory field,,"if owner is not provided, current user will be reated as owner of the object",default value 'draft' is selected,,required custom field,"options:
 a
 b
@@ -59,36 +37,6 @@ program,code*,title*,description,Program Managers,state,,my_text*,my_dropdown,my
 ,prog-invalid-attrb,pg4,test,user1@ggrc.com,non-existent,,custom edit success,a,2/16/2015,yes,,
 ,prog-req-attr-missing,,test,user1@ggrc.com,Active,,custom edit success,a,2/6/2015,no,,
 ,prog-req-custom-attr-missing,pg6,test,user1@ggrc.com,Draft,,,a,2/28/2015,no,,
-,,,,,,,,,,,,
-Object type,"Must be unique.  Can be left empty for autogeneration.  If updating or deleting, code is required",,,"Options are:
-draft
-final
-effective",,,,,,,,
-Policy,code*,title*,admin,state,description,non-existent-attribute,,,,,,
-,p1,policy 1,user@example.com,draft,,,,,,,,
-,p2,policy 2,user@example.com,draft,,,,,,,,
-,,Who let the dogs out,user@example.com,draft,,,,,,,,
-,p3,policy 3,user@example.com,Draft,"This is still
-a single
-line description",,,,,,,
-,p4,policy 4,miha@policy.com,Draft,"This should<br>
-be in two lines",,,,,,,
-,,Who let the dogs out,user@example.com,Draft,not my fault,,,,,,,
-,p5,policy 5,miha@policy.com,Draft,"This should<br>
-be in two lines",,,,,,,
-,p6,policy 6,user@example.com,Draft,not my fault,,,,,,,
-,p7,policy 7,miha@policy.com,Draft,"This should<br>
-be in two lines",,,,,,,
-,p8,policy 8,user@example.com,Draft,not my fault,,,,,,,
-,p9,policy 9,miha@policy.com,Draft,"This should<br>
-be in two lines",,,,,,,
-,p10,policy 10,user@example.com,Draft,not my fault,,,,,,,
-,owner-is-missing,some weird policy,,draft,,,,,,,,
-,owner-is-non-existent,another weird policy,nonexist@nonexit.com,draft,,,,,,,,
-,state-is-invalid,another weird policy,user@example.com,invalid,,,,,,,,
-,title-is-missing,,user@example.com,draft,"This is still
-a single
-line description",,,,,,,
 ,,,,,,,,,,,,
 Object type,"Must be unique.  Can be left empty for autogeneration.  If updating or deleting, code is required",,,,"Options are:
 draft
@@ -148,43 +96,4 @@ Standard,code*,title*,description,admin,state,non-existent-attribute,,,,,,
 ,std-13,std 13,no owner,,draft,,,,,,,
 ,std-14,,title missing,user@example.com,Active,,,,,,,
 ,std-15,std 15,invalid attribute,user@example.com,invalid,,,,,,,
-,,,,,,,,,,,,
-Object type,"Must be unique.  Can be left empty for autogeneration.  If updating or deleting, code is required",,,,,,,,,,,
-Contract,code*,title*,description,admin,state,non-existent-attribute,,,,,,
-,ctr1,1,,user@example.com,draft,,,,,,,
-,ctr2,2,,user@example.com,Active,,,,,,,
-,ctr3,3,,user@example.com,draft,,,,,,,
-,ctr4,4,,user@example.com,Active,,,,,,,
-,ctr5,5,,user@example.com,draft,,,,,,,
-,ctr6,6,,user@example.com,draft,,,,,,,
-,ctr7,7,,user@example.com,draft,,,,,,,
-,ctr8,8,,user@example.com,Active,,,,,,,
-,ctr9,9,,user@example.com,draft,,,,,,,
-,ctr10,10,,user@example.com,Active,,,,,,,
-,ctr11,11,,user@example.com,draft,,,,,,,
-,ctr1,1,duplicate,user@example.com,draft,,,,,,,
-,ctr12,12,invalid owner,invalid@invalid.com,Active,,,,,,,
-,ctr13,13,no owner,,draft,,,,,,,
-,ctr14,,title missing,user@example.com,Active,,,,,,,
-,ctr15,15,invalid attribute,user@example.com,invalid,,,,,,,
-,,,,,,,,,,,,
-
-Object type,"Must be unique.  Can be left empty for autogeneration.  If updating or deleting, code is required",,,,,,,,,,,
-Requirement,code*,title*,description,admin,state,non-existent-attribute,,,,,,
-,cl1,1,,user@example.com,draft,,,,,,,
-,cl2,2,,user@example.com,Active,,,,,,,
-,cl3,3,,user@example.com,draft,,,,,,,
-,cl4,4,,user@example.com,Active,,,,,,,
-,cl5,5,,user@example.com,draft,,,,,,,
-,cl6,6,,user@example.com,draft,,,,,,,
-,cl7,7,,user@example.com,draft,,,,,,,
-,cl8,8,,user@example.com,Active,,,,,,,
-,cl9,9,,user@example.com,draft,,,,,,,
-,cl10,10,,user@example.com,Active,,,,,,,
-,cl11,11,,user@example.com,draft,,,,,,,
-,cl1,1,duplicate,user@example.com,draft,,,,,,,
-,cl12,12,invalid owner,invalid@invalid.com,Active,,,,,,,
-,cl13,13,no owner,,draft,,,,,,,
-,cl14,,title missing,user@example.com,Active,,,,,,,
-,cl15,15,invalid attribute,user@example.com,invalid,,,,,,,
 ,,,,,,,,,,,,

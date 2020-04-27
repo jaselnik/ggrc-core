@@ -247,9 +247,9 @@ class TestExportMultipleObjects(TestCase):
 
       wf_factories.TaskGroupTaskFactory(task_group=task_group)
 
-      policy = factories.PolicyFactory()
-      policy_slug = policy.slug
-      factories.RelationshipFactory(source=task_group, destination=policy)
+      issue = factories.IssueFactory()
+      issue_slug = issue.slug
+      factories.RelationshipFactory(source=task_group, destination=issue)
 
       self.wf_generator.generate_cycle(workflow)
       self.wf_generator.activate_workflow(workflow)
@@ -260,13 +260,13 @@ class TestExportMultipleObjects(TestCase):
             "filters": {
                 "expression": {
                     "op": {"name": "relevant"},
-                    "object_name": "Policy",
-                    "slugs": [policy_slug],
+                    "object_name": "Issue",
+                    "slugs": [issue_slug],
                 },
             },
             "fields": "all",
         }, {
-            "object_name": "Policy",
+            "object_name": "Issue",
             "filters": {
                 "expression": {
                     "op": {"name": "relevant"},
@@ -282,7 +282,7 @@ class TestExportMultipleObjects(TestCase):
     response_data = response.data
 
     self.assertEqual(2, response_data.count("CYCLETASK-"))
-    self.assertEqual(3, response_data.count(policy_slug))
+    self.assertEqual(3, response_data.count(issue_slug))
 
   def test_wf_indirect_relevant_filters(self):  # pylint: disable=invalid-name
     """Test related filter for indirect relationships on wf objects."""
@@ -296,9 +296,9 @@ class TestExportMultipleObjects(TestCase):
       task_group2 = wf_factories.TaskGroupFactory(workflow=workflow)
       wf_factories.TaskGroupTaskFactory(task_group=task_group2)
 
-      policy = factories.PolicyFactory()
-      policy_slug = policy.slug
-      factories.RelationshipFactory(source=task_group1, destination=policy)
+      issue = factories.IssueFactory()
+      issue_slug = issue.slug
+      factories.RelationshipFactory(source=task_group1, destination=issue)
 
       self.wf_generator.generate_cycle(workflow)
       self.wf_generator.activate_workflow(workflow)
@@ -309,9 +309,9 @@ class TestExportMultipleObjects(TestCase):
           "fields": ["slug"],
           "filters": {
               "expression": {
-                  "object_name": "Policy",
+                  "object_name": "Issue",
                   "op": {"name": "relevant"},
-                  "slugs": [policy_slug],
+                  "slugs": [issue_slug],
               },
           },
       }
@@ -331,7 +331,7 @@ class TestExportMultipleObjects(TestCase):
     cycle_tasks = []
     for cycle_task in cycle.cycle_task_group_object_tasks:
       for related_object in cycle_task.related_objects():
-        if related_object.slug == policy_slug:
+        if related_object.slug == issue_slug:
           cycle_tasks.append(cycle_task)
           break
 
@@ -364,7 +364,7 @@ class TestExportMultipleObjects(TestCase):
     ]
     for object_name, slug, count in destinations:
       data = [{
-          "object_name": "Policy",
+          "object_name": "Issue",
           "fields": ["slug"],
           "filters": {
               "expression": {
@@ -377,6 +377,6 @@ class TestExportMultipleObjects(TestCase):
       response = self.export_csv(data)
       self.assert200(response)
       response_data = response.data
-      self.assertEqual(count, response_data.count(",POLICY-"),
+      self.assertEqual(count, response_data.count(",ISSUE-"),
                        "Count for " + object_name)
-      self.assertIn("," + policy_slug, response_data)
+      self.assertIn("," + issue_slug, response_data)
