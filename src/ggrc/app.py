@@ -16,8 +16,8 @@ from flask import Flask
 from flask import render_template
 from flask import request
 from flask import url_for
-from flask.ext.sqlalchemy import get_debug_queries
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import get_debug_queries
+from flask_sqlalchemy import SQLAlchemy
 from tabulate import tabulate
 
 from ggrc import db

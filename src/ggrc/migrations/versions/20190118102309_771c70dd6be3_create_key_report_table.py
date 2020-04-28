@@ -26,19 +26,19 @@ down_revision = 'c3224a449d11'
 
 # Here we store name of ACR, read, update, delete, mandatory flags
 KEY_REPORT_ACRS = {
-    ('Primary Contacts', '1', '1', '1', '0'),
-    ('Secondary Contacts', '1', '1', '1', '0'),
-    ('Admin', '1', '1', '1', '1'),
-    ('Product Managers', '1', '1', '1', '0'),
-    ('Technical Leads', '1', '1', '1', '0'),
-    ('Technical / Program Managers', '1', '1', '1', '0'),
-    ('Legal Counsels', '1', '1', '1', '0'),
-    ('System Owners', '1', '1', '1', '0'),
-    ('Assignee', '1', '1', '1', '1'),
-    ('Verifier', '1', '1', '1', '1'),
-    ('Compliance Contacts', '1', '1', '1', '0'),
-    ('Line of Defense One Contacts', '1', '1', '1', '0'),
-    ('Vice Presidents', '1', '1', '1', '0'),
+    ('Primary Contacts', True, True, True, False),
+    ('Secondary Contacts', True, True, True, False),
+    ('Admin', True, True, True, True),
+    ('Product Managers', True, True, True, False),
+    ('Technical Leads', True, True, True, False),
+    ('Technical / Program Managers', True, True, True, False),
+    ('Legal Counsels', True, True, True, False),
+    ('System Owners', True, True, True, False),
+    ('Assignee', True, True, True, True),
+    ('Verifier', True, True, True, True),
+    ('Compliance Contacts', True, True, True, False),
+    ('Line of Defense One Contacts', True, True, True, False),
+    ('Vice Presidents', True, True, True, False),
 }
 
 

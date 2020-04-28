@@ -21,6 +21,10 @@ class TestTableArgs(unittest.TestCase):
       "ObjectTemplates",
       "ExternalMapping",
   }
+  DP_MODELS.update({
+      "Regulation",
+      "Standard",
+  })
 
   def test_extra_args_included(self):
     """Table args for all models should contain extra args.

@@ -502,33 +502,34 @@ class ImportRowConverter(RowConverter):
   def process_row(self):
     """Parse, set, validate and commit data specified in self.row."""
     self._check_object_class()
-    self._handle_raw_data()
-    self._check_ignored_columns()
-    self._check_mandatory_fields()
-    self._check_updating_readonly_fields()
-    if self.ignore:
-      db.session.rollback()
-      return
-    if self.object_class == all_models.Comment:
-      self._update_new_comment_cache()
-    else:
-      self._update_new_obj_cache()
-    self._setup_object()
-    self._check_object()
-    try:
-      if self.ignore and self.obj in db.session:
-        db.session.expunge(self.obj)
-    except UnmappedInstanceError:
-      return
-    if self.block_converter.ignore:
-      return
+    with db.session.no_autoflush:
+      self._handle_raw_data()
+      self._check_ignored_columns()
+      self._check_mandatory_fields()
+      self._check_updating_readonly_fields()
+      if self.ignore:
+        db.session.rollback()
+        return
+      if self.object_class == all_models.Comment:
+        self._update_new_comment_cache()
+      else:
+        self._update_new_obj_cache()
+      self._setup_object()
+      self._check_object()
+      try:
+        if self.ignore and self.obj in db.session:
+          db.session.expunge(self.obj)
+      except UnmappedInstanceError:
+        return
+      if self.block_converter.ignore:
+        return
 
-    self._update_issue_tracker_to_import()
+      self._update_issue_tracker_to_import()
 
-    self.flush_object()
-    self.setup_secondary_objects()
-    self.setup_acl_secondary_objects()
-    self.commit_object()
+      self.flush_object()
+      self.setup_secondary_objects()
+      self.setup_acl_secondary_objects()
+      self.commit_object()
 
   def _check_object_class(self):
     """Validate if object class is external."""

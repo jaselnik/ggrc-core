@@ -4,7 +4,7 @@
 """Bootstrap for ggrc db."""
 import threading
 import flask
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 
 from ggrc.utils import benchmark
 

@@ -92,16 +92,17 @@ class TestAccessControlRoleable(TestCase):
   ])
   def test_initial_role_setup(self, model):
     """Check generating acl entries for {0.__name__}."""
-    obj = model()
-    generated_roles = [acl.ac_role for acl in obj.acr_acl_map.values()]
-    control_visible_roles = all_models.AccessControlRole.query.filter(
-        all_models.AccessControlRole.object_type == obj.type,
-        all_models.AccessControlRole.internal == 0,
-    ).all()
-    self.assertItemsEqual(
-        generated_roles,
-        control_visible_roles,
-    )
+    with db.session.no_autoflush:
+      obj = model()
+      generated_roles = [acl.ac_role for acl in obj.acr_acl_map.values()]
+      control_visible_roles = all_models.AccessControlRole.query.filter(
+          all_models.AccessControlRole.object_type == obj.type,
+          all_models.AccessControlRole.internal == 0,
+      ).all()
+      self.assertItemsEqual(
+          generated_roles,
+          control_visible_roles,
+      )
 
   def test_with_dict(self):
     """Test access_control_list setter with a basic dict object.
@@ -114,17 +115,18 @@ class TestAccessControlRoleable(TestCase):
             "id": self.person.id
         }
     }]
-    obj = all_models.Control(
-        title="New Control",
-        access_control_list=acl_list
-    )
-    self.assertIsNotNone(obj.access_control_list)
-    person, acl = obj.access_control_list[0]
-    self.assertIsNotNone(acl)
-    self.assertIsInstance(acl, all_models.AccessControlList)
-    self.assertEqual(person.id, self.person.id)
-    self.assertEqual(acl.ac_role.id, self.role.id)
-    self.assertEqual(acl.object, obj)
+    with db.session.no_autoflush:
+      obj = all_models.Control(
+          title="New Control",
+          access_control_list=acl_list
+      )
+      self.assertIsNotNone(obj.access_control_list)
+      person, acl = obj.access_control_list[0]
+      self.assertIsNotNone(acl)
+      self.assertIsInstance(acl, all_models.AccessControlList)
+      self.assertEqual(person.id, self.person.id)
+      self.assertEqual(acl.ac_role.id, self.role.id)
+      self.assertEqual(acl.object, obj)
 
   def test_with_dict_objs_multiple(self):
     """Test access_control_list setter without ids"""

@@ -91,6 +91,8 @@ class Identifiable(object):
 
   @declared_attr
   def __table_args__(cls):  # pylint: disable=no-self-argument
+    if getattr(cls, '__abstract_table__', False):
+      return None
     extra_table_args = AttributeInfo.gather_attrs(cls, '_extra_table_args')
     table_args = []
     table_dict = {}

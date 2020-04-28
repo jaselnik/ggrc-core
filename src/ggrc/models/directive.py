@@ -164,6 +164,8 @@ class Regulation(review.Reviewable,
 
   _table_plural = 'regulations'
 
+  __abstract_table__ = True
+
   VALID_KINDS = ("Regulation",)
 
   _aliases = {
@@ -190,6 +192,8 @@ class Standard(review.Reviewable,
   }
 
   _table_plural = 'standards'
+
+  __abstract_table__ = True
 
   VALID_KINDS = ("Standard",)
 

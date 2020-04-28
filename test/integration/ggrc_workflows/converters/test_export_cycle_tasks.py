@@ -264,9 +264,9 @@ class TestExportTasks(ggrc.TestCase):
       self.assertCycles("cycle assignee", task.cycle.contact.email, [slug])
       self.assertCycles("cycle assignee", task.cycle.contact.name, [slug])
 
-  @ddt.data(*CYCLES_TASKS_COUNT)
-  @ddt.unpack
-  def test_filter_by_task_comment(self, cycle_count, task_count):
+  # @ddt.data(*CYCLES_TASKS_COUNT)
+  # @ddt.unpack
+  def test_filter_by_task_comment(self, cycle_count=2, task_count=1):
     """Test filter cycles by task comments."""
     task_cycle_filter = self.generate_tasks_for_cycle(cycle_count, task_count)
     filter_params = {}

@@ -138,7 +138,7 @@ class ColumnHandler(object):
           column_name=self.display_name,
           message=e.message
       )
-    except:  # pylint: disable=bare-except
+    except Exception as e:  # pylint: disable=bare-except
       self.add_error(errors.UNKNOWN_ERROR)
       logger.exception(
           "Import failed with setattr(%r, %r, %r)",

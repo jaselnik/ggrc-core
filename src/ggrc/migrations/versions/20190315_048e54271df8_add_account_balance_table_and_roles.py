@@ -25,19 +25,19 @@ revision = '048e54271df8'
 down_revision = '0d7a3a0aa3da'
 
 ACCOUNT_BALANCE_ACRS = [
-    ('Admin', '1', '1', '1', '1'),
-    ('Assignee', '1', '1', '1', '1'),
-    ('Verifier', '1', '1', '1', '1'),
-    ('Primary Contacts', '1', '1', '1', '0'),
-    ('Secondary Contacts', '1', '1', '1', '0'),
-    ('Product Managers', '1', '1', '1', '0'),
-    ('Technical Leads', '1', '1', '1', '0'),
-    ('Technical / Program Managers', '1', '1', '1', '0'),
-    ('Legal Counsels', '1', '1', '1', '0'),
-    ('System Owners', '1', '1', '1', '0'),
-    ('Compliance Contacts', '1', '1', '1', '0'),
-    ('Line of Defense One Contacts', '1', '1', '1', '0'),
-    ('Vice Presidents', '1', '1', '1', '0'),
+    ('Admin', True, True, True, True),
+    ('Assignee', True, True, True, True),
+    ('Verifier', True, True, True, True),
+    ('Primary Contacts', True, True, True, False),
+    ('Secondary Contacts', True, True, True, False),
+    ('Product Managers', True, True, True, False),
+    ('Technical Leads', True, True, True, False),
+    ('Technical / Program Managers', True, True, True, False),
+    ('Legal Counsels', True, True, True, False),
+    ('System Owners', True, True, True, False),
+    ('Compliance Contacts', True, True, True, False),
+    ('Line of Defense One Contacts', True, True, True, False),
+    ('Vice Presidents', True, True, True, False),
 ]
 
 

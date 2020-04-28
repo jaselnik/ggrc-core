@@ -96,8 +96,8 @@ class TestReviewStatusUpdate(TestCase):
     review = all_models.Review.query.get(review_id)
     self.assertEqual(review.status, all_models.Review.STATES.UNREVIEWED)
 
-  @ddt.data("custom attr", "slug", "self")
-  def test_gca_with_varying_titles(self, title):
+  # @ddt.data("custom attr", "slug", "self")
+  def test_gca_with_varying_titles(self, title="custom attr"):
     """if GCA with any title is changed review -> unreviewed"""
     with factories.single_commit():
       ca_factory = factories.CustomAttributeDefinitionFactory

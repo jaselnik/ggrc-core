@@ -22,7 +22,7 @@ from urllib import urlencode
 import flask
 from flask import url_for, request, current_app, has_request_context
 from flask.views import View
-from flask.ext.sqlalchemy import Pagination
+from flask_sqlalchemy import Pagination
 import sqlalchemy as sa
 import sqlalchemy.orm.exc
 from sqlalchemy.orm import load_only
@@ -463,55 +463,55 @@ class Resource(ModelView):
         if method in ('POST', 'PUT', 'DELETE')\
            and 'X-Requested-By' not in request.headers:
           raise BadRequest('X-Requested-By header is REQUIRED.')
-
-      with benchmark("dispatch_request > Try"):
-        try:
-          if method == 'GET':
-            if self.pk in kwargs and kwargs[self.pk] is not None:
-              return self.get(*args, **kwargs)
-            return self.collection_get()
-          elif method == 'HEAD':
-            if self.pk in kwargs and kwargs[self.pk] is not None:
-              return self.head(*args, **kwargs)
-            raise MethodNotAllowed()
-          elif method == 'POST':
-            if self.pk in kwargs and kwargs[self.pk] is not None:
-              return self.post(*args, **kwargs)
-            return self.collection_post()
-          elif method == 'PUT':
-            return self.put(*args, **kwargs)
-          elif method == 'PATCH':
-            return self.patch()
-          elif method == 'DELETE':
-            return self.delete(*args, **kwargs)
-          else:
-            raise NotImplementedError()
-        except (IntegrityError, ValidationError, ValueError) as err:
-          logger.exception(err)
-          message = translate_message(err)
-          raise BadRequest(message)
-        except HTTPException as error:
-          logger.exception(error)
-          code = error.code or 500
-          # Since HTTPException may have both 4xx or 5xx codes
-          alternative_message = ggrc_errors.INTERNAL_SERVER_ERROR
-          if code < 500:
-            alternative_message = ggrc_errors.BAD_REQUEST_MESSAGE
-          message = error.description or alternative_message
-          return format_api_error_response(code, message)
-        except Exception as err:  # pylint: disable=broad-except
-          logger.exception(err)
-          err.message = ggrc_errors.INTERNAL_SERVER_ERROR
-          raise
-        finally:
-          if hasattr(flask.g, 'rev_content'):
-            del flask.g.rev_content
-          # When running integration tests, cache sometimes does not clear
-          # correctly
-          if getattr(settings, 'TESTING', False):
-            cache = Cache.get_cache()
-            if cache:
-              cache.clear()
+      with db.session.no_autoflush:
+        with benchmark("dispatch_request > Try"):
+          try:
+            if method == 'GET':
+              if self.pk in kwargs and kwargs[self.pk] is not None:
+                return self.get(*args, **kwargs)
+              return self.collection_get()
+            elif method == 'HEAD':
+              if self.pk in kwargs and kwargs[self.pk] is not None:
+                return self.head(*args, **kwargs)
+              raise MethodNotAllowed()
+            elif method == 'POST':
+              if self.pk in kwargs and kwargs[self.pk] is not None:
+                return self.post(*args, **kwargs)
+              return self.collection_post()
+            elif method == 'PUT':
+              return self.put(*args, **kwargs)
+            elif method == 'PATCH':
+              return self.patch()
+            elif method == 'DELETE':
+              return self.delete(*args, **kwargs)
+            else:
+              raise NotImplementedError()
+          except (IntegrityError, ValidationError, ValueError) as err:
+            logger.exception(err)
+            message = translate_message(err)
+            raise BadRequest(message)
+          except HTTPException as error:
+            logger.exception(error)
+            code = error.code or 500
+            # Since HTTPException may have both 4xx or 5xx codes
+            alternative_message = ggrc_errors.INTERNAL_SERVER_ERROR
+            if code < 500:
+              alternative_message = ggrc_errors.BAD_REQUEST_MESSAGE
+            message = error.description or alternative_message
+            return format_api_error_response(code, message)
+          except Exception as err:  # pylint: disable=broad-except
+            logger.exception(err)
+            err.message = ggrc_errors.INTERNAL_SERVER_ERROR
+            raise
+          finally:
+            if hasattr(flask.g, 'rev_content'):
+              del flask.g.rev_content
+            # When running integration tests, cache sometimes does not clear
+            # correctly
+            if getattr(settings, 'TESTING', False):
+              cache = Cache.get_cache()
+              if cache:
+                cache.clear()
 
   def post(self, *args, **kwargs):
     """POST operation handler."""
@@ -1173,6 +1173,7 @@ class Resource(ModelView):
       objects = []
       sources = []
 
+      # with db.session.no_autoflush:
       for wrapped_src in body:
         src = self._unwrap_collection_post_src(wrapped_src)
         obj = self._get_model_instance(src)
@@ -1183,7 +1184,6 @@ class Resource(ModelView):
           object_for_json = {} if no_result else self.object_for_json(obj)
           res.append((200, object_for_json))
           continue
-
         with benchmark("Deserialize object"):
           self.json_create(obj, src)
         with benchmark("Send model POSTed event"):
