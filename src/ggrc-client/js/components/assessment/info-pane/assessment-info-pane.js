@@ -65,6 +65,7 @@ import {
   REFRESH_RELATED,
   REFRESHED,
   DESTINATION_UNMAPPED,
+  REFRESH_ITEMS_LIST,
 } from '../../../events/event-types';
 import {isAllowedFor} from '../../../permission';
 import {
@@ -676,6 +677,11 @@ export default canComponent.extend({
         pubSub.dispatch({
           type: 'refetchOnce',
           modelNames: relatedAssessmentsTypes,
+        });
+        pubSub.dispatch({
+          ...REFRESH_ITEMS_LIST,
+          modelName: 'Assessment',
+          currentFilter: null,
         });
         stopFn();
       }).fail((object, xhr) => {

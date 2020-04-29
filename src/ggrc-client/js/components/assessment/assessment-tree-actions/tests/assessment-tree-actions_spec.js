@@ -102,10 +102,10 @@ describe('assessment-tree-actions component', () => {
       async () => {
         spyOn(CurrentPageUtils, 'isMyAssessments').and.returnValue(true);
         getCountForCompletionSpy.and.returnValue(Promise.resolve(5));
-        const currentFilter = {id: 1};
-        await viewModel.setShowBulkCompletion(currentFilter);
+        viewModel.currentFilter = {id: 1};
+        await viewModel.setShowBulkCompletion();
         expect(getCountForCompletionSpy)
-          .toHaveBeenCalledWith(null, currentFilter);
+          .toHaveBeenCalledWith(null, viewModel.currentFilter);
       });
   });
 
@@ -135,9 +135,7 @@ describe('assessment-tree-actions component', () => {
           modelName: 'Assessment',
           currentFilter,
         });
-
-        expect(viewModel.setShowBulkCompletion)
-          .toHaveBeenCalledWith(currentFilter);
+        expect(viewModel.setShowBulkCompletion).toHaveBeenCalled();
       });
       it('does not call setShowBulkCompletion() for Audit model ' +
        'on Audit page', () => {
