@@ -362,15 +362,23 @@ class TestBulkOperations(ggrc.TestCase):
       self.assertEqual(assmt.status, "Completed")
 
   @ddt.data(
-      ("Text", "abc", "abc"),
-      ("Rich Text", "abc", "abc"),
-      ("Date", "7/15/2015", "2015-07-15"),
-      ("Checkbox", "1", "1"),
-      ("Checkbox", "0", "0"),
-      ("Map:Person", "test@test.com", "test@test.com"),
+      ("Text", "Text", "abc", "abc"),
+      ("Rich Text", "Rich Text", "abc", "abc"),
+      ("Date", "Date", "7/15/2015", "2015-07-15"),
+      ("Checkbox", "Checkbox", "1", "1"),
+      ("Checkbox", "Checkbox", "0", "0"),
+      ("Checkbox", "checkbox", "0", "0"),
+      ("Map:Person", "Map:Person", "test@test.com", "test@test.com"),
+      ("Map:Person", "map:person", "test@test.com", "test@test.com"),
   )
   @ddt.unpack
-  def test_attributes_values(self, attribute_type, value, expected_value):
+  def test_attributes_values(
+      self,
+      attribute_type,
+      request_type,
+      value,
+      expected_value,
+  ):
     """Test complete asmts set cavs with attribute_type {0}."""
     # pylint: disable=too-many-locals
     asmts = []
@@ -396,7 +404,7 @@ class TestBulkOperations(ggrc.TestCase):
             "values": [{
                 "value": value,
                 "title": "test_lca",
-                "type": attribute_type,
+                "type": request_type,
                 "definition_id": asmt.id,
                 "extra": {},
             }],
@@ -437,7 +445,7 @@ class TestBulkOperations(ggrc.TestCase):
         }, {
             "assessment": {"id": asmt1.id, "slug": asmt1.slug},
             "values": [{
-                "value": True,
+                "value": "1",
                 "title": "test_lca",
                 "type": "Checkbox",
                 "definition_id": asmt1.id,
@@ -453,7 +461,7 @@ class TestBulkOperations(ggrc.TestCase):
     cav = models.CustomAttributeValue.query.filter_by(
         custom_attribute_id=cad_id,
     ).first()
-    self.assertTrue(cav.attribute_value)
+    self.assertEqual("1", cav.attribute_value)
     self.assertEqual(
         models.Assessment.query.get(asmt1_id).status,
         "In Progress",
