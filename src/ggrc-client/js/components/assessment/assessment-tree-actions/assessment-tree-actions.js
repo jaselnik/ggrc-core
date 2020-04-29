@@ -75,8 +75,11 @@ export default canComponent.extend({
         this.viewModel.setShowBulkCompletion();
       }
     },
-    '{pubSub} beforeLoadItems'() {
-      this.viewModel.showBulkCompletion = false;
+    '{pubSub} beforeLoadItems'(scope, {modelName}) {
+      if (modelName === 'Assessment' &&
+      (isMyAssessments() || isAuditPage())) {
+        this.viewModel.showBulkCompletion = false;
+      }
     },
   },
 });
