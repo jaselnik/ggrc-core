@@ -204,6 +204,40 @@ class TestMatrix(ggrc.TestCase):
     }
     self.assert_request(expected_response)
 
+  def test_order_by(self):
+    """Test search returns a proper sort of assessments data"""
+    with factories.single_commit():
+      self.asmt1.title = "B assessment"
+      asmt2 = factories.AssessmentFactory(
+          title="C assessment",
+          assessment_type="Control",
+          sox_302_enabled=True,
+      )
+      asmt3 = factories.AssessmentFactory(
+          title="A assessment",
+          assessment_type="Control",
+          sox_302_enabled=True,
+      )
+      for asmt in [self.asmt1, asmt2, asmt3]:
+        factories.CustomAttributeDefinitionFactory(
+            definition_id=asmt.id,
+            **self._get_payload("Text")
+        )
+    query = [{
+        "object_name": "Assessment",
+        "type": "ids",
+        "filters": {"expression": {}},
+        "order_by": [{"name": "title", "desc": True}]
+    }]
+    assessments = self._generate_assessment_response(asmt2, self.asmt1, asmt3)
+    response = self.client.post(
+        self.ENDPOINT_URL,
+        data=json.dumps(query),
+        headers=self.headers,
+    )
+    self.assert200(response)
+    self.assertEqual(assessments, response.json["assessments"])
+
   def test_same_cads_one_with_value(self):
     """Test query 2 same cads and 1 with value mapped to 2 diff asmts"""
     with factories.single_commit():
