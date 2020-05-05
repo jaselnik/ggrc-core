@@ -99,7 +99,7 @@ def _get_or_generate_cad_stub(
           "mandatory": cad.mandatory,
           "attribute_type": cad.attribute_type,
           "default_value": cad.default_value,
-          "values": {}
+          "values": {},
       },
   )
   stub["values"][assessment_id] = {
@@ -113,18 +113,24 @@ def _get_or_generate_cad_stub(
   return stub
 
 
-def _prepare_attributes_and_assessments(all_cads):
+def _prepare_attributes_and_assessments(all_cads, asmts_ids):
   # pylint: disable=invalid-name
   """
   Prepare attributes and assessments stubs data.
 
   Args:
     all_cads: iterated objects of cads joined with assessments
+    asmts_ids: list of ordered and filtered int asssessments ids
   Returns:
     response of attributes in OrderedDict form and list of assessments stubs
   """
   attributes = collections.OrderedDict()
   assessments = collections.OrderedDict()
+
+  # We should preset all asmt ids to the ordereddict to save ordering
+  for asmt_id in asmts_ids:
+    assessments[asmt_id] = None
+
   for (asmt_id, asmt_slug, asmt_title, asmt_type,
        asmt_status, cad, cav_value, cav_person_id) in all_cads:
     if cad:
@@ -187,7 +193,10 @@ def get_data(asmt_ids):
 
   """
   all_cads = _query_all_cads_asmt_matches(asmt_ids)
-  attributes, assessments = _prepare_attributes_and_assessments(all_cads)
+  attributes, assessments = _prepare_attributes_and_assessments(
+      all_cads,
+      asmt_ids,
+  )
   response = {
       "attributes": attributes,
       "assessments": assessments,
