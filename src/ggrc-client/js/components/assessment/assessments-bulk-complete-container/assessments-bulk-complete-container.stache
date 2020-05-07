@@ -24,5 +24,6 @@
           </button>
       </div> 
     </div>
+    <assessments-bulk-complete-table assessmentsList:from="assessmentsList" attributesList:from="attributesList" />
   {{/if}}
 </div>

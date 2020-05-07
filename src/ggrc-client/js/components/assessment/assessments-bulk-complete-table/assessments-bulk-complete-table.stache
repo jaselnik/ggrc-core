@@ -1,0 +1,43 @@
+{{!
+    Copyright (C) 2020 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<div>
+  <table>
+    <thead>
+      <tr>
+        <th>
+          <table>
+            <tr>
+              <td>Title</td>
+              <td>Status</td>
+            </tr>
+          </table>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each assessmentsList}}
+        <tr>
+          <th>
+            <table>
+              <tr>
+                <td>
+                  <a href="/assessments/{{id}}" target="_blank">
+                    {{title}}
+                  </a>
+                </td>
+                <td>
+                  <span class="state-value-dot {{addclass 'state' status}}">
+                    {{status}}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </th>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
