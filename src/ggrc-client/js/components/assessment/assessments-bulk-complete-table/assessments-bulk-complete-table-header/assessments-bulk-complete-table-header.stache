@@ -4,22 +4,20 @@
 }}
 
 <tr>
-  <th>
-    <table>
-      <tr>
-        <td>Title</td>
-        <td>Status</td>
-      </tr>
-    </table>
+  <th class="assessments-bulk-complete-table__column_sticky">
+    <div class="assessments-bulk-complete-table__cell">
+      Title
+    </div>
+    <div class="assessments-bulk-complete-table__cell">
+      Status
+    </div>
   </th>
   {{#headersData}}
-    <th>
-      <div>
-        {{#if mandatory}}
-          <i class="fa fa-asterisk field__mandatory"></i>
-        {{/if}}
-        {{title}}
-      </div>
+    <th class="assessments-bulk-complete-table__cell">
+      {{#if mandatory}}
+        <i class="fa fa-asterisk field__mandatory"></i>
+      {{/if}}
+      {{title}}
     </th>
   {{/headersData}}
 </tr>

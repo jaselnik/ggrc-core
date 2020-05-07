@@ -3,7 +3,7 @@
     Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 }}
 
-<div>
+<div class="assessments-bulk-complete-table__content">
   <table>
     <thead>
       <assessments-bulk-complete-table-header headersData:from="headersData" />

@@ -12,6 +12,9 @@ const ViewModel = canDefineMap.extend({seal: false}, {
   rowData: {
     value: () => [],
   },
+  isReadyForCompletion: {
+    value: false,
+  },
 });
 
 export default canComponent.extend({

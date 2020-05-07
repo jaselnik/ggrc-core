@@ -4,24 +4,23 @@
 }}
 
 <tr>
-  <th>
-    <table>
-      <tr>
-        <td>
-          <a href="/assessments/{{rowData.asmtId}}" target="_blank">
-            {{rowData.asmtTitle}}
-          </a>
-        </td>
-        <td>
-          <span class="state-value-dot {{addclass 'state' rowData.asmtStatus}}">
-            {{rowData.asmtStatus}}
-          </span>
-        </td>
-      </tr>
-    </table>
+  <th class="assessments-bulk-complete-table__column_sticky">
+    <div class="assessments-bulk-complete-table__cell">
+      {{#if isReadyForCompletion}}
+        <i class="fa fa-check blue"></i>
+      {{/if}}
+      <a href="/assessments/{{rowData.asmtId}}" target="_blank">
+        {{rowData.asmtTitle}}
+      </a>
+    </div>
+    <div class="assessments-bulk-complete-table__cell">
+      <span class="state-value-dot {{addclass 'state' rowData.asmtStatus}}">
+        {{rowData.asmtStatus}}
+      </span>
+    </div>
   </th>
   {{#each rowData.attributes}}
-    <td>
+    <td class="assessments-bulk-complete-table__cell">
       {{#if isApplicable}}
         {{value}}
       {{else}}

@@ -1,0 +1,100 @@
+/*
+ * Copyright (C) 2020 Google Inc.
+ * Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+ */
+
+ @mixin reset-default-table-styles {
+  table, caption, tbody, tfoot, thead, tr, th, td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+    box-sizing: border-box;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+}
+
+assessments-bulk-complete-table {
+  @include reset-default-table-styles;
+}
+
+.assessments-bulk-complete-table__content {
+  margin: 8px 40px;
+  padding-bottom: 8px;
+  font-size: 13px;
+  text-align: left;
+  overflow-x: scroll;
+
+  tbody {
+    background-color: $white;
+  }
+
+  thead {
+    background-color: $contentBgnd;
+  }
+
+  tr {
+    display: flex;
+  }
+
+  .assessments-bulk-complete-table__cell {
+    position: relative;
+    min-width: 200px;
+    max-width: 200px;
+    padding: 15px 20px 15px 30px;
+    word-break: break-word;
+  }
+}
+
+assessments-bulk-complete-table-header {
+  display: table-header-group;
+
+  .assessments-bulk-complete-table__column_sticky {
+    display: flex;
+    position: sticky;
+    left: 0;
+    background: linear-gradient(90deg,
+      rgba(224, 224, 224, 1) 99%,
+      rgba(204, 204, 204, 0.9) 99%,
+      rgba(224, 224, 224, 1) 100%);
+    z-index: 5;
+  }
+
+  .field__mandatory {
+    position: absolute;
+    top: 18px;
+    left: 15px;
+    margin: 0;
+  }
+}
+
+assessments-bulk-complete-table-row {
+  display: table-row;
+  line-height: 16px;
+  border-bottom: 1px solid $itemBorder;
+
+  .assessments-bulk-complete-table__column_sticky {
+    display: flex;
+    position: sticky;
+    left: 0;
+    background: linear-gradient(90deg,
+      rgba(255, 255, 255, 1) 99%,
+      rgba(204, 204, 204, 0.9) 99%,
+      rgba(255, 255, 255, 1) 100%);
+    z-index: 5;
+  }
+
+  .fa-check {
+    position: absolute;
+    top: 17px;
+    left: 14px;
+    font-size: 12px;
+  }
+}
