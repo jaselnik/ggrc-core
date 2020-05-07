@@ -1,0 +1,28 @@
+{{!
+    Copyright (C) 2020 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<tr>
+  <th>
+    <table>
+      <tr>
+        <td>
+          <a href="/assessments/{{rowData.asmtId}}" target="_blank">
+            {{rowData.asmtTitle}}
+          </a>
+        </td>
+        <td>
+          <span class="state-value-dot {{addclass 'state' rowData.asmtStatus}}">
+            {{rowData.asmtStatus}}
+          </span>
+        </td>
+      </tr>
+    </table>
+  </th>
+  {{#each rowData.attributes}}
+    <td>
+      {{value}}
+    </td>
+  {{/each}}
+</tr>

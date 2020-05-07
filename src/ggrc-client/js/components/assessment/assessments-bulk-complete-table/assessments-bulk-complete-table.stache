@@ -9,25 +9,8 @@
       <assessments-bulk-complete-table-header headersData:from="headersData" />
     </thead>
     <tbody>
-      {{#each assessmentsList}}
-        <tr>
-          <th>
-            <table>
-              <tr>
-                <td>
-                  <a href="/assessments/{{id}}" target="_blank">
-                    {{title}}
-                  </a>
-                </td>
-                <td>
-                  <span class="state-value-dot {{addclass 'state' status}}">
-                    {{status}}
-                  </span>
-                </td>
-              </tr>
-            </table>
-          </th>
-        </tr>
+      {{#each rowsData}}
+        <assessments-bulk-complete-table-row rowData:from="{.}" />
       {{/each}}
     </tbody>
   </table>
