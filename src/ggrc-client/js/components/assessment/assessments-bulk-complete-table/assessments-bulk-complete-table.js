@@ -9,6 +9,7 @@ import canStache from 'can-stache';
 import template from './assessments-bulk-complete-table.stache';
 import './assessments-bulk-complete-table-header/assessments-bulk-complete-table-header';
 import './assessments-bulk-complete-table-row/assessments-bulk-complete-table-row';
+import {getCustomAttributeType} from '../../../plugins/utils/ca-utils';
 
 const ViewModel = canDefineMap.extend({seal: false}, {
   assessmentsList: {
@@ -19,12 +20,10 @@ const ViewModel = canDefineMap.extend({seal: false}, {
   },
   headersData: {
     get() {
-      return this.attributesList.map((attribute) => {
-        return {
-          title: attribute.title,
-          mandatory: attribute.mandatory,
-        };
-      });
+      return this.attributesList.map((attribute) => ({
+        title: attribute.title,
+        mandatory: attribute.mandatory,
+      }));
     },
   },
   rowsData: {
@@ -33,29 +32,89 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     },
   },
   buildRowsData() {
-    let data = [];
+    const rowsData = [];
 
     this.assessmentsList.forEach((assessment) => {
-      const asmtData = {
-        asmtTitle: assessment.title,
+      const assessmentData = {
         asmtId: assessment.id,
+        asmtTitle: assessment.title,
         asmtStatus: assessment.status,
         asmtType: assessment.assessment_type,
       };
-      let attrData = [];
+      const attributesData = [];
+
       this.attributesList.forEach((attribute) => {
-        attrData.push({
-          attrTitle: attribute.title,
-          value: attribute.values[assessment.id]
-            ? attribute.values[assessment.id].value
-            : 'Not applicable',
+        let id = null;
+        let value = null;
+        let optionsList = [];
+        let optionsConfig = new Map();
+        let isApplicable = false;
+        const type = getCustomAttributeType(attribute.attribute_type);
+        const defaultValue = this.prepareAttributeValue(type,
+          attribute.default_value);
+
+        const assessmentAttributeData = attribute.values[assessment.id];
+        if (assessmentAttributeData) {
+          id = assessmentAttributeData.attribute_definition_id;
+          value = assessmentAttributeData.attribute_person_id
+            || this.prepareAttributeValue(type,
+              assessmentAttributeData.value);
+          ({optionsList, optionsConfig} = this.prepareMultiChoiceOptions(
+            assessmentAttributeData.multi_choice_options,
+            assessmentAttributeData.multi_choice_mandatory)
+          );
+          isApplicable = true;
+        }
+
+        attributesData.push({
+          id,
+          type,
+          value,
+          defaultValue,
+          isApplicable,
+          title: attribute.title,
+          mandatory: attribute.mandatory,
+          multiChoiceOptions: {
+            values: optionsList,
+            config: optionsConfig,
+          },
+          modified: false,
+          validation: {
+            mandatory: attribute.mandatory,
+            valid: !attribute.mandatory,
+            requiresAttachment: false,
+            hasMissingInfo: false,
+          },
         });
       });
 
-      data.push({attributes: attrData, ...asmtData});
+      rowsData.push({attributes: attributesData, ...assessmentData});
     });
 
-    return data;
+    return rowsData;
+  },
+  prepareAttributeValue(type, value) {
+    switch (type) {
+      case 'checkbox':
+        return value === '1';
+      case 'date':
+        return value || null;
+      default:
+        return value;
+    }
+  },
+  prepareMultiChoiceOptions(multiChoiceOptions, multiChoiceMandatory) {
+    const optionsList = this.convertToArray(multiChoiceOptions);
+    const optionsStates = this.convertToArray(multiChoiceMandatory);
+    const optionsConfig = optionsStates.reduce((config, state, index) => {
+      const optionValue = optionsList[index];
+      return config.set(optionValue, Number(state));
+    }, new Map());
+
+    return {optionsList, optionsConfig};
+  },
+  convertToArray(value) {
+    return typeof value === 'string' ? value.split(',') : [];
   },
 });
 

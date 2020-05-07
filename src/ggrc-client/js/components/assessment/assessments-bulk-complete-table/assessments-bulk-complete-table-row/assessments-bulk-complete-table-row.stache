@@ -22,7 +22,11 @@
   </th>
   {{#each rowData.attributes}}
     <td>
-      {{value}}
+      {{#if isApplicable}}
+        {{value}}
+      {{else}}
+        <span class="empty-message">Not applicable</span>
+      {{/if}}
     </td>
   {{/each}}
 </tr>
