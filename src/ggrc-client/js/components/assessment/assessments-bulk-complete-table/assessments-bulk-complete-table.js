@@ -7,6 +7,7 @@ import canComponent from 'can-component';
 import canDefineMap from 'can-define/map/map';
 import canStache from 'can-stache';
 import template from './assessments-bulk-complete-table.stache';
+import './assessments-bulk-complete-table-header/assessments-bulk-complete-table-header';
 
 const ViewModel = canDefineMap.extend({seal: false}, {
   assessmentsList: {
@@ -14,6 +15,16 @@ const ViewModel = canDefineMap.extend({seal: false}, {
   },
   attributesList: {
     value: () => [],
+  },
+  headersData: {
+    get() {
+      return this.attributesList.map((attribute) => {
+        return {
+          title: attribute.title,
+          mandatory: attribute.mandatory,
+        };
+      });
+    },
   },
 });
 

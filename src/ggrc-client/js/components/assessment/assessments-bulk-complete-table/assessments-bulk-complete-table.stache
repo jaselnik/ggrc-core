@@ -6,16 +6,7 @@
 <div>
   <table>
     <thead>
-      <tr>
-        <th>
-          <table>
-            <tr>
-              <td>Title</td>
-              <td>Status</td>
-            </tr>
-          </table>
-        </th>
-      </tr>
+      <assessments-bulk-complete-table-header headersData:from="headersData" />
     </thead>
     <tbody>
       {{#each assessmentsList}}

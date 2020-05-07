@@ -1,0 +1,25 @@
+{{!
+    Copyright (C) 2020 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<tr>
+  <th>
+    <table>
+      <tr>
+        <td>Title</td>
+        <td>Status</td>
+      </tr>
+    </table>
+  </th>
+  {{#headersData}}
+    <th>
+      <div>
+        {{#if mandatory}}
+          <i class="fa fa-asterisk field__mandatory"></i>
+        {{/if}}
+        {{title}}
+      </div>
+    </th>
+  {{/headersData}}
+</tr>
