@@ -45,6 +45,7 @@ assessments-bulk-complete-table {
   }
 
   .assessments-bulk-complete-table__cell {
+    display: flex;
     position: relative;
     min-width: 270px;
     max-width: 270px;
@@ -116,6 +117,8 @@ assessments-bulk-complete-table-row {
   }
 
   custom-attributes-field {
+    flex: 1;
+
     input[type="checkbox"] {
       margin: 0;
       vertical-align: top;

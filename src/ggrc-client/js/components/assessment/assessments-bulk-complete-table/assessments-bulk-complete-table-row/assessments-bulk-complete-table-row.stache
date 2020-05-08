@@ -33,6 +33,18 @@
           on:vm:valueChanged="attributeValueChanged(scope.event.value, scope.index)"
           class="form-field__content custom-attribute-{{type}}"
         />
+        {{#if attachments}}
+          <div class="form-field__validation-hint-placeholder">
+            <button type="button"
+              class="btn btn-small btn-link btn-link-nopadding">
+              {{#if validation.hasMissingInfo}}
+                Add info
+              {{else}}
+                Edit info
+              {{/if}}
+            </button>
+          </div>
+        {{/if}}
       {{else}}
         <span class="empty-message">Not applicable</span>
       {{/if}}

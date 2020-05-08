@@ -39,6 +39,8 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         asmtTitle: assessment.title,
         asmtStatus: assessment.status,
         asmtType: assessment.assessment_type,
+        urlsCount: assessment.urls_count,
+        filesCount: assessment.files_count,
       };
       const attributesData = [];
 
@@ -48,6 +50,11 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         let optionsList = [];
         let optionsConfig = new Map();
         let isApplicable = false;
+        let errorsMap = {
+          file: false,
+          url: false,
+          comment: false,
+        };
         const type = getCustomAttributeType(attribute.attribute_type);
         const defaultValue = this.prepareAttributeValue(type,
           attribute.default_value);
@@ -63,6 +70,16 @@ const ViewModel = canDefineMap.extend({seal: false}, {
             assessmentAttributeData.multi_choice_mandatory)
           );
           isApplicable = true;
+
+          if (assessmentAttributeData.preconditions_failed) {
+            const errors =
+              assessmentAttributeData.preconditions_failed.serialize();
+            errorsMap = {
+              file: errors.includes('evidence'),
+              url: errors.includes('url'),
+              comment: errors.includes('comment'),
+            };
+          }
         }
 
         attributesData.push({
@@ -71,12 +88,14 @@ const ViewModel = canDefineMap.extend({seal: false}, {
           value,
           defaultValue,
           isApplicable,
+          errorsMap,
           title: attribute.title,
           mandatory: attribute.mandatory,
           multiChoiceOptions: {
             values: optionsList,
             config: optionsConfig,
           },
+          attachments: null,
           modified: false,
           validation: {
             mandatory: attribute.mandatory,
@@ -98,6 +117,8 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         return value === '1';
       case 'date':
         return value || null;
+      case 'dropdown':
+        return value || '';
       case 'multiselect':
         return value || '';
       case 'person':
