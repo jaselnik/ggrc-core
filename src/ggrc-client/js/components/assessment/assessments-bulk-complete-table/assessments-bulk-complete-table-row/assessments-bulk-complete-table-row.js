@@ -8,6 +8,7 @@ import canDefineMap from 'can-define/map/map';
 import canStache from 'can-stache';
 import canBatch from 'can-event/batch/batch';
 import template from './assessments-bulk-complete-table-row.stache';
+import pubSub from '../../../../pub-sub';
 import {getPlainText} from '../../../../plugins/ggrc-utils';
 import {ddValidationValueToMap} from '../../../../plugins/utils/ca-utils';
 
@@ -15,8 +16,8 @@ const ViewModel = canDefineMap.extend({seal: false}, {
   rowData: {
     value: () => ({}),
   },
-  isReadyForCompletion: {
-    value: false,
+  pubSub: {
+    value: () => pubSub,
   },
   isFileRequired: {
     get() {
@@ -112,10 +113,24 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         : count;
     }, 0);
   },
+  checkAssessmentReadinessToComplete() {
+    const isReadyToComplete = this.rowData.attributes.every(({validation}) => {
+      return validation.valid === true;
+    });
+
+    return isReadyToComplete;
+  },
   attributeValueChanged(value, index) {
     const attribute = this.rowData.attributes[index];
     attribute.value = value;
+    attribute.modified = true;
     this.validateAttribute(attribute);
+    this.rowData.isReadyToComplete = this.checkAssessmentReadinessToComplete();
+
+    pubSub.dispatch({
+      type: 'attributeModified',
+      assessmentData: this.rowData,
+    });
   },
 });
 
@@ -128,6 +143,15 @@ export default canComponent.extend({
       this.viewModel.rowData.attributes.forEach((attribute) => {
         this.viewModel.validateAttribute(attribute);
       });
+      this.viewModel.rowData.isReadyToComplete =
+        this.viewModel.checkAssessmentReadinessToComplete();
+
+      if (this.viewModel.rowData.isReadyToComplete) {
+        pubSub.dispatch({
+          type: 'assessmentReadyToComplete',
+          assessmentId: this.viewModel.rowData.asmtId,
+        });
+      }
     },
   },
 });

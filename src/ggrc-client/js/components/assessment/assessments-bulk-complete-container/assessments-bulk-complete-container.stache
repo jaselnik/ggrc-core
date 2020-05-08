@@ -15,12 +15,12 @@
             Exit bulk completion
           </button>
 
-          <button type="button" disabled class="btn btn-white">
+          <button type="button" {{#unless isAttributeModified}}disabled{{/unless}} class="btn btn-white">
             Save answers
           </button>
 
-          <button type="button" disabled class="btn btn-darkBlue">
-            Complete
+          <button type="button" {{#unless isCompleteButtonEnabled}}disabled{{/unless}} class="btn btn-darkBlue">
+            Complete ({{countAssessmentsToComplete}})
           </button>
       </div> 
     </div>

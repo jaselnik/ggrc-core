@@ -3,10 +3,10 @@
     Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 }}
 
-<tr class="assessments-bulk-complete-table__row">
+<tr class="assessments-bulk-complete-table__row {{#if rowData.isReadyToComplete}}assessments-bulk-complete-table__row_ready{{/if}}">
   <th class="assessments-bulk-complete-table__column_sticky">
     <div class="assessments-bulk-complete-table__cell">
-      {{#if isReadyForCompletion}}
+      {{#if rowData.isReadyToComplete}}
         <i class="fa fa-check blue field__ready"></i>
       {{/if}}
       <a href="/assessments/{{rowData.asmtId}}" target="_blank">

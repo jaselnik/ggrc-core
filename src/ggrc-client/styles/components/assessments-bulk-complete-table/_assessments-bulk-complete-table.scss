@@ -95,15 +95,28 @@ assessments-bulk-complete-table-row {
   line-height: 16px;
   border-bottom: 1px solid $itemBorder;
 
-  .assessments-bulk-complete-table__column_sticky {
-    display: flex;
-    position: sticky;
-    left: 0;
-    background: linear-gradient(90deg,
-      rgba(255, 255, 255, 1) 99%,
+  .assessments-bulk-complete-table {
+    &__row_ready {
+    background-color: #f6fafd;
+
+    .assessments-bulk-complete-table__column_sticky {
+      background: linear-gradient(90deg,
+      rgba(246, 250, 253, 1) 99%,
       rgba(204, 204, 204, 0.9) 99%,
-      rgba(255, 255, 255, 1) 100%);
-    z-index: 50;
+      rgba(246, 250, 253, 1) 100%);
+    }
+  }
+
+    &__column_sticky {
+      display: flex;
+      position: sticky;
+      left: 0;
+      background: linear-gradient(90deg,
+        rgba(255, 255, 255, 1) 99%,
+        rgba(204, 204, 204, 0.9) 99%,
+        rgba(255, 255, 255, 1) 100%);
+      z-index: 50;
+    }
   }
 
   form-validation-icon {

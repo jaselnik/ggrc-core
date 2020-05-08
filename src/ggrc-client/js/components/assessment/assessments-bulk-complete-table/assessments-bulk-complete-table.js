@@ -41,6 +41,7 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         asmtType: assessment.assessment_type,
         urlsCount: assessment.urls_count,
         filesCount: assessment.files_count,
+        isReadyToComplete: false,
       };
       const attributesData = [];
 
