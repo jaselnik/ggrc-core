@@ -36,7 +36,9 @@
         {{#if attachments}}
           <div class="form-field__validation-hint-placeholder">
             <button type="button"
-              class="btn btn-small btn-link btn-link-nopadding">
+              class="btn btn-small btn-link btn-link-nopadding"
+              on:el:click="showRequiredInfo(.)"
+            >
               {{#if validation.hasMissingInfo}}
                 Add info
               {{else}}

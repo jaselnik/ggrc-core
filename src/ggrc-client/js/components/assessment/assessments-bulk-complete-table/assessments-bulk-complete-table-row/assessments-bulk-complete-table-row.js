@@ -7,10 +7,11 @@ import canComponent from 'can-component';
 import canDefineMap from 'can-define/map/map';
 import canStache from 'can-stache';
 import canBatch from 'can-event/batch/batch';
+import loFind from 'lodash/find';
 import template from './assessments-bulk-complete-table-row.stache';
 import pubSub from '../../../../pub-sub';
 import {getPlainText} from '../../../../plugins/ggrc-utils';
-import {ddValidationValueToMap} from '../../../../plugins/utils/ca-utils';
+import {ddValidationValueToMap, getLCAPopupTitle} from '../../../../plugins/utils/ca-utils';
 
 const ViewModel = canDefineMap.extend({seal: false}, {
   rowData: {
@@ -32,6 +33,9 @@ const ViewModel = canDefineMap.extend({seal: false}, {
 
       return requiredUrlsCount > this.rowData.urlsCount;
     },
+  },
+  requiredInfoModal: {
+    value: () => ({}),
   },
   validateAttribute(attribute) {
     if (!attribute.isApplicable) {
@@ -66,6 +70,10 @@ const ViewModel = canDefineMap.extend({seal: false}, {
       };
       validation.valid = !hasMissingInfo;
       validation.hasMissingInfo = hasMissingInfo;
+
+      if (attribute.modified) {
+        this.showRequiredInfo(attribute);
+      }
     } else {
       attribute.attachments = null;
       validation.valid = validation.mandatory ? attribute.value !== '' : true;
@@ -132,6 +140,42 @@ const ViewModel = canDefineMap.extend({seal: false}, {
       assessmentData: this.rowData,
     });
   },
+  showRequiredInfo(attribute) {
+    const requiredInfo = this.getRequiredInfoStates(attribute);
+    const modalTitle = `Required ${getLCAPopupTitle(requiredInfo)}`;
+    const attachments = attribute.attachments;
+
+    canBatch.start();
+
+    this.requiredInfoModal.title = modalTitle;
+    this.requiredInfoModal.content = {
+      attribute: {
+        id: attribute.id,
+        title: attribute.title,
+        value: attribute.value,
+      },
+      requiredInfo,
+      urls: attachments.urls,
+      files: attachments.files,
+      comment: attachments.comment,
+    };
+    this.requiredInfoModal.state.open = true;
+
+    canBatch.stop();
+  },
+  updateRequiredInfo(attributeId, changes) {
+    const attribute = loFind(this.rowData.attributes, (attribute) =>
+      attribute.id === attributeId);
+    const attachments = attribute.attachments;
+
+    canBatch.start();
+
+    attachments.comment = changes.comment;
+    attachments.urls.replace(changes.urls);
+    attachments.files.replace(changes.files);
+
+    canBatch.stop();
+  },
 });
 
 export default canComponent.extend({
@@ -151,6 +195,15 @@ export default canComponent.extend({
           type: 'assessmentReadyToComplete',
           assessmentId: this.viewModel.rowData.asmtId,
         });
+      }
+    },
+    '{pubSub} requiredInfoSave'(pubSub, {attributeId, changes}) {
+      const isAttributeInRow = this.viewModel.rowData.attributes.serialize()
+        .map((attribute) => attribute.id)
+        .includes(attributeId);
+
+      if (isAttributeInRow) {
+        this.viewModel.updateRequiredInfo(attributeId, changes);
       }
     },
   },

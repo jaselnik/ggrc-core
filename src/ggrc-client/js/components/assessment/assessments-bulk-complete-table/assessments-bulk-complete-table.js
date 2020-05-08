@@ -9,6 +9,7 @@ import canStache from 'can-stache';
 import template from './assessments-bulk-complete-table.stache';
 import './assessments-bulk-complete-table-header/assessments-bulk-complete-table-header';
 import './assessments-bulk-complete-table-row/assessments-bulk-complete-table-row';
+import '../../required-info-modal/required-info-modal';
 import {getCustomAttributeType} from '../../../plugins/utils/ca-utils';
 
 const ViewModel = canDefineMap.extend({seal: false}, {
@@ -23,6 +24,21 @@ const ViewModel = canDefineMap.extend({seal: false}, {
   },
   rowsData: {
     value: () => [],
+  },
+  requiredInfoModal: {
+    value: () => ({
+      title: '',
+      state: {
+        open: false,
+      },
+      content: {
+        attribute: null,
+        requiredInfo: null,
+        comment: null,
+        urls: [],
+        files: [],
+      },
+    }),
   },
   buildHeadersData() {
     return this.attributesList.map((attribute) => ({
