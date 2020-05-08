@@ -5,7 +5,7 @@
 
 <div class="flex-box flex-col">
   <spinner-component toggle:from="isLoading" size:from="'large'" class="bulk-complete-spinner"/>
-  {{^if isLoading}}
+  {{#if isDataLoaded}}
     <div class="flex-box flex-row bulk-complete-header">
       <div class="alert alert-nomargin bulk-complete-header__alert">
            Below are listed SOX 302 certifications in statuses "Not Started", "In Progress", "Rework Needed" that are assigned on you.
