@@ -5,7 +5,7 @@
 
 import Component from '../assessments-bulk-complete-table';
 import {getComponentVM} from '../../../../../js_specs/spec-helpers';
-import * as CAUtils from '../../../../plugins/utils/ca-utils';
+import * as CaUtils from '../../../../plugins/utils/ca-utils';
 
 describe('assessments-bulk-complete-table component', () => {
   let viewModel;
@@ -14,7 +14,7 @@ describe('assessments-bulk-complete-table component', () => {
     viewModel = getComponentVM(Component);
   });
 
-  describe('headersData getter', () => {
+  describe('buildHeadersData() method', () => {
     it('returns formed array for headers data', () => {
       viewModel.attributesList = [{
         title: 'Title1',
@@ -26,7 +26,7 @@ describe('assessments-bulk-complete-table component', () => {
         default_value: '',
       }];
 
-      expect(viewModel.headersData.serialize()).toEqual([{
+      expect(viewModel.buildHeadersData().serialize()).toEqual([{
         title: 'Title1',
         mandatory: true,
       }, {
@@ -43,11 +43,15 @@ describe('assessments-bulk-complete-table component', () => {
         title: 'Asmt1',
         status: 'In Progress',
         assessment_type: 'Control',
+        urls_count: 1,
+        files_count: 0,
       }, {
         id: 2,
         title: 'Asmt2',
         status: 'Not Started',
         assessment_type: 'Vendor',
+        urls_count: 0,
+        files_count: 2,
       }];
 
       viewModel.attributesList = [{
@@ -63,16 +67,17 @@ describe('assessments-bulk-complete-table component', () => {
             multi_choice_options: '',
             multi_choice_mandatory: null,
             definition_id: 1,
+            preconditions_failed: null,
           },
         },
       }];
 
-      spyOn(CAUtils, 'getCustomAttributeType').and.returnValue('input');
+      spyOn(CaUtils, 'getCustomAttributeType').and.returnValue('input');
 
       spyOn(viewModel, 'prepareAttributeValue')
         .withArgs('input', '')
         .and.returnValue('')
-        .withArgs('input', 'Some text')
+        .withArgs('input', 'Some text', null)
         .and.returnValue('Some text');
 
       spyOn(viewModel, 'prepareMultiChoiceOptions')
@@ -87,6 +92,8 @@ describe('assessments-bulk-complete-table component', () => {
         asmtTitle: 'Asmt1',
         asmtStatus: 'In Progress',
         asmtType: 'Control',
+        urlsCount: 1,
+        filesCount: 0,
         attributes: [{
           id: 4483,
           type: 'input',
@@ -99,6 +106,7 @@ describe('assessments-bulk-complete-table component', () => {
             values: [],
             config: new Map(),
           },
+          attachments: null,
           modified: false,
           validation: {
             mandatory: false,
@@ -106,12 +114,19 @@ describe('assessments-bulk-complete-table component', () => {
             requiresAttachment: false,
             hasMissingInfo: false,
           },
+          errorsMap: {
+            file: false,
+            url: false,
+            comment: false,
+          },
         }],
       }, {
         asmtId: 2,
         asmtTitle: 'Asmt2',
         asmtStatus: 'Not Started',
         asmtType: 'Vendor',
+        urlsCount: 0,
+        filesCount: 2,
         attributes: [{
           id: null,
           type: 'input',
@@ -124,12 +139,18 @@ describe('assessments-bulk-complete-table component', () => {
             values: [],
             config: new Map(),
           },
+          attachments: null,
           modified: false,
           validation: {
             mandatory: false,
             valid: true,
             requiresAttachment: false,
             hasMissingInfo: false,
+          },
+          errorsMap: {
+            file: false,
+            url: false,
+            comment: false,
           },
         }],
       }]);
@@ -158,9 +179,49 @@ describe('assessments-bulk-complete-table component', () => {
       });
     });
 
-    describe('if type is not "checkbox" or "date"', () => {
+    describe('if type is "dropdown"', () => {
       it('should return value', () => {
-        expect(viewModel.prepareAttributeValue('person', 123)).toBe(123);
+        expect(viewModel.prepareAttributeValue('dropdown', '1,2,3'))
+          .toBe('1,2,3');
+      });
+
+      it('should return ""', () => {
+        expect(viewModel.prepareAttributeValue('dropdown', '')).toBe('');
+      });
+    });
+
+    describe('if type is "multiselect"', () => {
+      it('should return value', () => {
+        expect(viewModel.prepareAttributeValue('multiselect', '1,2,3'))
+          .toBe('1,2,3');
+      });
+
+      it('should return ""', () => {
+        expect(viewModel.prepareAttributeValue('multiselect', '')).toBe('');
+      });
+    });
+
+    describe('if type is "person"', () => {
+      it('should return formed array with needed data about person', () => {
+        expect(viewModel.prepareAttributeValue('person', null, 384))
+          .toEqual([{
+            id: 384,
+            type: 'Person',
+            href: '/api/people/384',
+            context_id: null,
+          }]);
+      });
+
+      it('should return "null"', () => {
+        expect(viewModel.prepareAttributeValue('person', null, null))
+          .toBeNull();
+      });
+    });
+
+    describe('for default block', () => {
+      it('should return value', () => {
+        expect(viewModel.prepareAttributeValue('input', 'Some text'))
+          .toBe('Some text');
       });
     });
   });
@@ -195,6 +256,38 @@ describe('assessments-bulk-complete-table component', () => {
 
     it('returns empty array if parameter is not "string" type', () => {
       expect(viewModel.convertToArray(123)).toEqual([]);
+    });
+  });
+
+  describe('init() method', () => {
+    let rowsData;
+
+    beforeEach(() => {
+      viewModel.headersData = [];
+      viewModel.rowsData = [];
+      spyOn(viewModel, 'buildHeadersData').and.returnValue(['LCA1, LCA2']);
+      rowsData = [{
+        attributes: [{
+          id: 1,
+          type: 'input',
+        }, {
+          id: 2,
+          type: 'text',
+        }],
+      }];
+      spyOn(viewModel, 'buildRowsData').and.returnValue(rowsData);
+    });
+
+    it('sets result of buildHeadersData() to headersData attribute', () => {
+      viewModel.init();
+
+      expect(viewModel.headersData.serialize()).toEqual(['LCA1, LCA2']);
+    });
+
+    it('sets result of buildRowsData() to rowsData attribute', () => {
+      viewModel.init();
+
+      expect(viewModel.rowsData.serialize()).toEqual(rowsData);
     });
   });
 });
