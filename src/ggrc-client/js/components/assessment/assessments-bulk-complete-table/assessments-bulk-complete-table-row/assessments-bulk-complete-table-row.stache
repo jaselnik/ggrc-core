@@ -7,7 +7,7 @@
   <th class="assessments-bulk-complete-table__column_sticky">
     <div class="assessments-bulk-complete-table__cell">
       {{#if isReadyForCompletion}}
-        <i class="fa fa-check blue"></i>
+        <i class="fa fa-check blue field__ready"></i>
       {{/if}}
       <a href="/assessments/{{rowData.asmtId}}" target="_blank">
         {{rowData.asmtTitle}}
@@ -23,12 +23,14 @@
   {{#each rowData.attributes}}
     <td class="assessments-bulk-complete-table__cell">
       {{#if isApplicable}}
+        <form-validation-icon validation:from="validation" />
         <custom-attributes-field
           isLocalCa:from="true"
           type:from="type"
           value:bind="value"
           fieldId:from="id"
           options:from="multiChoiceOptions.values"
+          on:vm:valueChanged="attributeValueChanged(scope.event.value, scope.index)"
           class="form-field__content custom-attribute-{{type}}"
         />
       {{else}}

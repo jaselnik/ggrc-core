@@ -19,17 +19,16 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     value: () => [],
   },
   headersData: {
-    get() {
-      return this.attributesList.map((attribute) => ({
-        title: attribute.title,
-        mandatory: attribute.mandatory,
-      }));
-    },
+    value: () => [],
   },
   rowsData: {
-    get() {
-      return this.buildRowsData();
-    },
+    value: () => [],
+  },
+  buildHeadersData() {
+    return this.attributesList.map((attribute) => ({
+      title: attribute.title,
+      mandatory: attribute.mandatory,
+    }));
   },
   buildRowsData() {
     const rowsData = [];
@@ -81,7 +80,7 @@ const ViewModel = canDefineMap.extend({seal: false}, {
           modified: false,
           validation: {
             mandatory: attribute.mandatory,
-            valid: !attribute.mandatory,
+            valid: (isApplicable ? !attribute.mandatory : true),
             requiresAttachment: false,
             hasMissingInfo: false,
           },
@@ -126,6 +125,10 @@ const ViewModel = canDefineMap.extend({seal: false}, {
   },
   convertToArray(value) {
     return typeof value === 'string' ? value.split(',') : [];
+  },
+  init() {
+    this.headersData = this.buildHeadersData();
+    this.rowsData = this.buildRowsData();
   },
 });
 

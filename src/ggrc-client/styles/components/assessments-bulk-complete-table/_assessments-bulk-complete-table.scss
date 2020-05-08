@@ -105,7 +105,24 @@ assessments-bulk-complete-table-row {
     z-index: 50;
   }
 
-  .fa-check {
+  form-validation-icon {
+    position: absolute;
+    top: 8px;
+    left: 4px;
+
+    .fa {
+      font-size: 12px;
+    }
+  }
+
+  custom-attributes-field {
+    input[type="checkbox"] {
+      margin: 0;
+      vertical-align: top;
+    }
+  }
+
+  .field__ready {
     position: absolute;
     top: 17px;
     left: 14px;
