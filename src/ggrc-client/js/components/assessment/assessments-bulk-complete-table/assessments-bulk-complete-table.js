@@ -56,9 +56,9 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         const assessmentAttributeData = attribute.values[assessment.id];
         if (assessmentAttributeData) {
           id = assessmentAttributeData.attribute_definition_id;
-          value = assessmentAttributeData.attribute_person_id
-            || this.prepareAttributeValue(type,
-              assessmentAttributeData.value);
+          value = this.prepareAttributeValue(type,
+            assessmentAttributeData.value,
+            assessmentAttributeData.attribute_person_id);
           ({optionsList, optionsConfig} = this.prepareMultiChoiceOptions(
             assessmentAttributeData.multi_choice_options,
             assessmentAttributeData.multi_choice_mandatory)
@@ -93,12 +93,23 @@ const ViewModel = canDefineMap.extend({seal: false}, {
 
     return rowsData;
   },
-  prepareAttributeValue(type, value) {
+  prepareAttributeValue(type, value, personId = null) {
     switch (type) {
       case 'checkbox':
         return value === '1';
       case 'date':
         return value || null;
+      case 'multiselect':
+        return value || '';
+      case 'person':
+        return personId
+          ? [{
+            id: personId,
+            type: 'Person',
+            href: `/api/people/${personId}`,
+            context_id: null,
+          }]
+          : null;
       default:
         return value;
     }

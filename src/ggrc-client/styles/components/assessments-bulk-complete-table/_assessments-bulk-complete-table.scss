@@ -40,16 +40,30 @@ assessments-bulk-complete-table {
     background-color: $contentBgnd;
   }
 
-  tr {
+  .assessments-bulk-complete-table__row {
     display: flex;
   }
 
   .assessments-bulk-complete-table__cell {
     position: relative;
-    min-width: 200px;
-    max-width: 200px;
+    min-width: 270px;
+    max-width: 270px;
     padding: 15px 20px 15px 30px;
     word-break: break-word;
+
+    .ui-autocomplete,
+    .dropdown-wrap-text__body,
+    .multiselect-dropdown__body {
+      z-index: 45;
+    }
+
+    .datepicker__calendar {
+      z-index: 45;
+
+      &--top {
+        bottom: auto;
+      }
+    }
   }
 }
 
@@ -64,7 +78,7 @@ assessments-bulk-complete-table-header {
       rgba(224, 224, 224, 1) 99%,
       rgba(204, 204, 204, 0.9) 99%,
       rgba(224, 224, 224, 1) 100%);
-    z-index: 5;
+    z-index: 50;
   }
 
   .field__mandatory {
@@ -88,7 +102,7 @@ assessments-bulk-complete-table-row {
       rgba(255, 255, 255, 1) 99%,
       rgba(204, 204, 204, 0.9) 99%,
       rgba(255, 255, 255, 1) 100%);
-    z-index: 5;
+    z-index: 50;
   }
 
   .fa-check {
