@@ -23,30 +23,53 @@ const ViewModel = canDefineMap.extend({seal: false}, {
   isFileRequired: {
     get() {
       const requiredFilesCount = this.getRequiredInfoCountByType('attachment');
+      const currentFilesCount = this.getCurrentFilesCount();
 
-      return requiredFilesCount > this.rowData.filesCount;
+      return requiredFilesCount > currentFilesCount;
     },
   },
   isUrlRequired: {
     get() {
       const requiredUrlsCount = this.getRequiredInfoCountByType('url');
+      const currentUrlsCount = this.getCurrentUrlsCount();
 
-      return requiredUrlsCount > this.rowData.urlsCount;
+      return requiredUrlsCount > currentUrlsCount;
     },
   },
   requiredInfoModal: {
     value: () => ({}),
   },
-  validateAttribute(attribute) {
-    if (!attribute.isApplicable) {
-      return;
-    }
+  getRequiredInfoCountByType(requiredInfoType) {
+    return this.getApplicableDropdownAttributes().reduce((count, attribute) => {
+      return this.getRequiredInfoStates(attribute)[requiredInfoType]
+        ? count + 1
+        : count;
+    }, 0);
+  },
+  getCurrentFilesCount() {
+    return this.getApplicableDropdownAttributes().reduce((count, attribute) =>
+      count + attribute.attachments.files.length, this.rowData.filesCount);
+  },
+  getCurrentUrlsCount() {
+    return this.getApplicableDropdownAttributes().reduce((count, attribute) =>
+      count + attribute.attachments.urls.length, this.rowData.urlsCount);
+  },
+  getApplicableDropdownAttributes() {
+    return this.rowData.attributes.filter(
+      (attribute) => attribute.isApplicable && attribute.type === 'dropdown');
+  },
+  validateAllAttributes() {
+    this.rowData.attributes.forEach((attribute) => {
+      if (!attribute.isApplicable) {
+        return;
+      }
 
-    if (attribute.type === 'dropdown') {
-      this.performDropdownValidation(attribute);
-    } else {
-      this.performDefaultValidation(attribute);
-    }
+      if (attribute.type === 'dropdown') {
+        this.performDropdownValidation(attribute);
+      } else {
+        this.performDefaultValidation(attribute);
+      }
+    });
   },
   performDropdownValidation(attribute) {
     const {comment, attachment, url} = this.getRequiredInfoStates(attribute);
@@ -60,28 +83,28 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     const hasMissingFile = attachment && this.isFileRequired;
     const hasMissingUrl = url && this.isUrlRequired;
     const hasMissingComment = comment && attribute.errorsMap.comment;
-    const hasMissingInfo = hasMissingFile || hasMissingUrl || hasMissingComment;
 
     if (requiresAttachment) {
-      attribute.attachments = {
-        files: [],
-        urls: [],
-        comment: null,
-      };
+      const hasMissingInfo = hasMissingFile
+        || hasMissingUrl
+        || hasMissingComment;
+
+      const {comment, urls, files} = attribute.attachments;
+      const hasUnsavedAttachments = comment !== null
+        || urls.length > 0
+        || files.length > 0;
+
       validation.valid = !hasMissingInfo;
       validation.hasMissingInfo = hasMissingInfo;
-
-      if (attribute.modified) {
-        this.showRequiredInfo(attribute);
-      }
+      validation.hasUnsavedAttachments = hasUnsavedAttachments;
     } else {
-      attribute.attachments = null;
       validation.valid = validation.mandatory ? attribute.value !== '' : true;
       validation.hasMissingInfo = false;
+      validation.hasUnsavedAttachments = false;
     }
 
     attribute.errorsMap = {
-      file: hasMissingFile,
+      attachment: hasMissingFile,
       url: hasMissingUrl,
       comment: hasMissingComment,
     };
@@ -111,16 +134,6 @@ const ViewModel = canDefineMap.extend({seal: false}, {
       .get(attribute.value);
     return ddValidationValueToMap(optionBitmask);
   },
-  getRequiredInfoCountByType(requiredInfoType) {
-    const attributesWithDropdown = this.rowData.attributes.filter(
-      (attribute) => attribute.isApplicable && attribute.type === 'dropdown');
-
-    return attributesWithDropdown.reduce((count, attribute) => {
-      return this.getRequiredInfoStates(attribute)[requiredInfoType]
-        ? count + 1
-        : count;
-    }, 0);
-  },
   checkAssessmentReadinessToComplete() {
     const isReadyToComplete = this.rowData.attributes.every(({validation}) => {
       return validation.valid === true;
@@ -132,7 +145,24 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     const attribute = this.rowData.attributes[index];
     attribute.value = value;
     attribute.modified = true;
-    this.validateAttribute(attribute);
+
+    attribute.attachments = {
+      files: [],
+      urls: [],
+      comment: null,
+    };
+
+    if (attribute.type === 'dropdown'
+      && this.getRequiredInfoStates(attribute).comment) {
+      attribute.errorsMap.comment = true;
+    }
+
+    this.validateAllAttributes();
+
+    if (attribute.validation.hasMissingInfo) {
+      this.showRequiredInfo(attribute);
+    }
+
     this.rowData.isReadyToComplete = this.checkAssessmentReadinessToComplete();
 
     pubSub.dispatch({
@@ -141,8 +171,8 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     });
   },
   showRequiredInfo(attribute) {
-    const requiredInfo = this.getRequiredInfoStates(attribute);
-    const modalTitle = `Required ${getLCAPopupTitle(requiredInfo)}`;
+    const requiredInfoConfig = this.getRequiredInfoConfig(attribute);
+    const modalTitle = `Required ${getLCAPopupTitle(requiredInfoConfig)}`;
     const attachments = attribute.attachments;
 
     canBatch.start();
@@ -154,7 +184,7 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         title: attribute.title,
         value: attribute.value,
       },
-      requiredInfo,
+      requiredInfo: requiredInfoConfig,
       urls: attachments.urls,
       files: attachments.files,
       comment: attachments.comment,
@@ -174,7 +204,37 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     attachments.urls.replace(changes.urls);
     attachments.files.replace(changes.files);
 
+    attribute.modified = true;
+    attribute.errorsMap.comment = attachments.comment === null;
+
     canBatch.stop();
+
+    this.validateAllAttributes();
+    this.rowData.isReadyToComplete = this.checkAssessmentReadinessToComplete();
+
+    pubSub.dispatch({
+      type: 'attributeModified',
+      assessmentData: this.rowData,
+    });
+  },
+  getRequiredInfoConfig(attribute) {
+    const {comment, attachment, url} = this.getRequiredInfoStates(attribute);
+
+    const showFile = attachment
+      ? this.isFileRequired || attribute.attachments.files.length !== 0
+      : false;
+    const showUrl = url
+      ? this.isUrlRequired || attribute.attachments.urls.length !== 0
+      : false;
+    const showComment = comment
+      ? attribute.errorsMap.comment || attribute.attachments.comment !== null
+      : false;
+
+    return {
+      attachment: showFile,
+      url: showUrl,
+      comment: showComment,
+    };
   },
 });
 
@@ -184,9 +244,7 @@ export default canComponent.extend({
   ViewModel,
   events: {
     init() {
-      this.viewModel.rowData.attributes.forEach((attribute) => {
-        this.viewModel.validateAttribute(attribute);
-      });
+      this.viewModel.validateAllAttributes();
       this.viewModel.rowData.isReadyToComplete =
         this.viewModel.checkAssessmentReadinessToComplete();
 

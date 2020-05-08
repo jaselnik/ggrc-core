@@ -68,7 +68,7 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         let optionsConfig = new Map();
         let isApplicable = false;
         let errorsMap = {
-          file: false,
+          attachment: false,
           url: false,
           comment: false,
         };
@@ -92,7 +92,7 @@ const ViewModel = canDefineMap.extend({seal: false}, {
             const errors =
               assessmentAttributeData.preconditions_failed.serialize();
             errorsMap = {
-              file: errors.includes('evidence'),
+              attachment: errors.includes('evidence'),
               url: errors.includes('url'),
               comment: errors.includes('comment'),
             };
@@ -112,13 +112,18 @@ const ViewModel = canDefineMap.extend({seal: false}, {
             values: optionsList,
             config: optionsConfig,
           },
-          attachments: null,
+          attachments: {
+            files: [],
+            urls: [],
+            comment: null,
+          },
           modified: false,
           validation: {
             mandatory: attribute.mandatory,
             valid: (isApplicable ? !attribute.mandatory : true),
             requiresAttachment: false,
             hasMissingInfo: false,
+            hasUnsavedAttachments: false,
           },
         });
       });
