@@ -13,6 +13,9 @@ import * as QueryApiUtils from '../../../../plugins/utils/query-api-utils';
 import pubSub from '../../../../pub-sub';
 import * as ModalsUtils from '../../../../plugins/utils/modals';
 import * as CaUtils from '../../../../plugins/utils/ca-utils';
+import * as ModalsUtils from '../../../../plugins/utils/modals';
+import {backendGdriveClient} from '../../../../plugins/ggrc-gapi-client';
+import * as NotifiersUtils from '../../../../plugins/utils/notifiers-utils';
 
 describe('assessments-bulk-complete-container component', () => {
   let viewModel;
@@ -112,6 +115,168 @@ describe('assessments-bulk-complete-container component', () => {
       expect(viewModel.isLoading).toBe(false);
     });
   });
+  describe('onCompleteClick() method', () => {
+    beforeEach(() => {
+      spyOn(ModalsUtils, 'confirm');
+    });
+
+    it('calls confirm() method', () => {
+      viewModel.onCompleteClick();
+      expect(ModalsUtils.confirm).toHaveBeenCalled();
+    });
+  });
+
+  describe('completeAssessments() method', () => {
+    let backendGdriveClientSpy;
+
+    beforeEach(() => {
+      backendGdriveClientSpy = spyOn(backendGdriveClient, 'withAuth');
+      spyOn(viewModel, 'cleanUpGridAfterCompletion');
+      spyOn(viewModel, 'trackBackgroundTask');
+      viewModel.assessmentsCountsToComplete = 1;
+    });
+
+    it('cleans up grid after successful complete', async () => {
+      backendGdriveClientSpy.and.returnValue(Promise.resolve({id: 1}));
+      await viewModel.completeAssessments();
+
+      expect(viewModel.assessmentsCountsToComplete).toEqual(0);
+      expect(viewModel.cleanUpGridAfterCompletion).toHaveBeenCalled();
+    });
+
+    it('notifies about error when complete operation ' +
+      'does not return background task id', async () => {
+      backendGdriveClientSpy.and.returnValue(Promise.resolve({}));
+      spyOn(NotifiersUtils, 'notifier');
+      await viewModel.completeAssessments();
+
+      expect(NotifiersUtils.notifier).toHaveBeenCalled();
+      expect(viewModel.cleanUpGridAfterCompletion).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('buildBulkRequest() method', () => {
+    it('returns correct request data for complete', () => {
+      const readyToCompleteAsmts = [1];
+      viewModel.assessmentIdsToComplete = new Set(readyToCompleteAsmts);
+      viewModel.rowsData = [{
+        asmtId: 1,
+        asmtSlug: 'ASSESSMENT-1',
+        asmtTitle: 'Asmt1',
+        asmtStatus: 'In Progress',
+        asmtType: 'Control',
+        attributes: [{
+          id: 4483,
+          type: 'input',
+          value: 'Some text',
+          defaultValue: '',
+          isApplicable: true,
+          title: 'LCA Text',
+          mandatory: false,
+          multiChoiceOptions: {
+            values: [],
+            config: new Map(),
+          },
+          attachments: null,
+          modified: true,
+          validation: {
+            mandatory: false,
+            valid: true,
+            requiresAttachment: false,
+            hasMissingInfo: false,
+          },
+        }],
+      }, {
+        asmtId: 2,
+        asmtTitle: 'Asmt2',
+        asmtSlug: 'ASSESSMENT-2',
+        asmtStatus: 'Not Started',
+        asmtType: 'Vendor',
+        attributes: [{
+          id: 4484,
+          type: 'input',
+          value: 'Some text2',
+          defaultValue: '',
+          isApplicable: true,
+          title: 'LCA Text',
+          mandatory: false,
+          multiChoiceOptions: {
+            values: [],
+            config: new Map(),
+          },
+          attachments: null,
+          modified: true,
+          validation: {
+            mandatory: false,
+            valid: true,
+            requiresAttachment: false,
+            hasMissingInfo: false,
+          },
+        }],
+      }];
+
+      const request = viewModel.buildBulkRequest();
+
+      expect(request).toEqual({
+        assessments_ids: readyToCompleteAsmts,
+        attributes: [{
+          assessment: {id: 1, slug: 'ASSESSMENT-1'},
+          values: [{
+            value: 'Some text',
+            type: 'input',
+            id: 4483,
+            title: 'LCA Text',
+            definition_id: 1,
+            extra: {},
+          }],
+        }, {
+          assessment: {id: 2, slug: 'ASSESSMENT-2'},
+          values: [{
+            value: 'Some text2',
+            type: 'input',
+            id: 4484,
+            title: 'LCA Text',
+            definition_id: 2,
+            extra: {},
+          }],
+        }],
+      });
+    });
+  });
+
+  describe('cleanUpGridAfterCompletion() method', () => {
+    it('cleans up "rowsData" from completed assessments ', () => {
+      viewModel.assessmentIdsToComplete = new Set([1, 3]);
+      viewModel.rowsData = [{
+        asmtId: 1,
+        title: 'asmt 1',
+      }, {
+        asmtId: 2,
+        title: 'asmt 2',
+      }, {
+        asmtId: 3,
+        title: 'asmt 3',
+      }];
+      viewModel.cleanUpGridAfterCompletion();
+
+      expect(viewModel.assessmentIdsToComplete.size).toEqual(0);
+      expect(viewModel.rowsData.length).toEqual(1);
+    });
+
+    it('sets "isGridEmpty" to true when all assessments were completed', () => {
+      viewModel.assessmentIdsToComplete = new Set([1, 2]);
+      viewModel.rowsData = [{
+        asmtId: 1,
+        title: 'asmt 1',
+      }, {
+        asmtId: 2,
+        title: 'asmt 2',
+      }];
+      viewModel.cleanUpGridAfterCompletion();
+
+      expect(viewModel.isGridEmpty).toBeTruthy();
+    });
+  });
 
   describe('exitBulkCompletionMode() method', () => {
     let event;
@@ -175,6 +340,7 @@ describe('assessments-bulk-complete-container component', () => {
         viewModel.assessmentsList = [{
           id: 1,
           title: 'Asmt1',
+          slug: 'ASSESSMENT-1',
           status: 'In Progress',
           assessment_type: 'Control',
           urls_count: 1,
@@ -182,6 +348,7 @@ describe('assessments-bulk-complete-container component', () => {
         }, {
           id: 2,
           title: 'Asmt2',
+          slug: 'ASSESSMENT-2',
           status: 'Not Started',
           assessment_type: 'Vendor',
           urls_count: 0,
@@ -225,6 +392,7 @@ describe('assessments-bulk-complete-container component', () => {
           asmtId: 1,
           asmtTitle: 'Asmt1',
           asmtStatus: 'In Progress',
+          asmtSlug: 'ASSESSMENT-1',
           asmtType: 'Control',
           urlsCount: 1,
           filesCount: 0,
@@ -263,6 +431,7 @@ describe('assessments-bulk-complete-container component', () => {
         }, {
           asmtId: 2,
           asmtTitle: 'Asmt2',
+          asmtSlug: 'ASSESSMENT-2',
           asmtStatus: 'Not Started',
           asmtType: 'Vendor',
           urlsCount: 0,
