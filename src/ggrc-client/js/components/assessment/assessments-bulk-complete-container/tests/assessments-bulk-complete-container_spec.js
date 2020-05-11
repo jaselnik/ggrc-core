@@ -4,6 +4,7 @@
 */
 
 import canMap from 'can-map';
+import canList from 'can-list';
 import Component from '../assessments-bulk-complete-container';
 import {getComponentVM} from '../../../../../js_specs/spec-helpers';
 import * as RequestUtils from '../../../../plugins/utils/request-utils';
@@ -13,7 +14,6 @@ import * as QueryApiUtils from '../../../../plugins/utils/query-api-utils';
 import pubSub from '../../../../pub-sub';
 import * as ModalsUtils from '../../../../plugins/utils/modals';
 import * as CaUtils from '../../../../plugins/utils/ca-utils';
-import * as ModalsUtils from '../../../../plugins/utils/modals';
 import {backendGdriveClient} from '../../../../plugins/ggrc-gapi-client';
 import * as NotifiersUtils from '../../../../plugins/utils/notifiers-utils';
 
@@ -250,12 +250,15 @@ describe('assessments-bulk-complete-container component', () => {
       viewModel.rowsData = [{
         asmtId: 1,
         title: 'asmt 1',
+        attributes: new canList(),
       }, {
         asmtId: 2,
         title: 'asmt 2',
+        attributes: new canList(),
       }, {
         asmtId: 3,
         title: 'asmt 3',
+        attributes: new canList(),
       }];
       viewModel.cleanUpGridAfterCompletion();
 

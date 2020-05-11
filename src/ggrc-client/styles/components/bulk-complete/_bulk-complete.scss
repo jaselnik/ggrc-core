@@ -3,7 +3,7 @@
  * Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
  */
 
- .bulk-complete-header {
+.bulk-complete-header {
     padding: 0 40px;
     position: sticky;
     justify-content: space-between;
@@ -29,14 +29,14 @@
             }
         }
     }
- }
+}
 
- .bulk-complete-spinner {
-     margin: 0 auto;
-     color: $gray;
+.bulk-complete-spinner {
+    margin: 0 auto;
+    color: $gray;
  }
  
- .bulk-complete-empty-grid {
+.bulk-complete-empty-grid {
     display: flex;
     flex-direction: column;
     position: absolute;

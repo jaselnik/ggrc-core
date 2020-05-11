@@ -2,6 +2,7 @@
     Copyright (C) 2020 Google Inc.
     Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 }}
+
 {{#unless isGridEmpty}}
   <div class="flex-box flex-col">
     <spinner-component toggle:from="isLoading" size:from="'large'" class="bulk-complete-spinner"/>
