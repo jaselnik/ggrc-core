@@ -9,6 +9,7 @@ import re
 import flask
 import sqlalchemy as sa
 from sqlalchemy.orm import validates
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.sql.schema import UniqueConstraint
 from werkzeug import exceptions
 
@@ -16,8 +17,12 @@ from ggrc import builder
 from ggrc import db
 from ggrc.access_control import role as acr
 from ggrc.cache import memcache
-from ggrc.models import mixins
-from ggrc.models import reflection
+from ggrc.models.revision import Revision
+from ggrc.models import (
+    mixins,
+    reflection,
+    deferred,
+)
 from ggrc.models.exceptions import ValidationError
 from ggrc.models.mixins import attributevalidator
 from ggrc.models.mixins import base
@@ -202,6 +207,131 @@ class CustomAttributeDefinitionBase(attributevalidator.AttributeValidator,
       raise ValueError(
           errors.DUPLICATE_CUSTOM_ROLE.format(role_name=name)
       )
+
+
+class CustomAttributeDefinitionFK(object):
+
+  @declared_attr
+  def custom_attribute_definition_id(cls):  # pylint: disable=no-self-argument
+    return deferred.deferred(
+        db.Column(
+            db.Integer,
+            db.ForeignKey(
+                'custom_attribute_definitions.id',
+                ondelete='SET NULL',
+            ),
+            nullable=True,
+        ),
+        cls.__name__,
+    )
+
+  @declared_attr
+  def custom_attribute_definition(cls):  # pylint: disable=no-self-argument
+    return db.relationship(
+        'CustomAttributeDefinition',
+        uselist=False,
+    )
+
+  # REST properties
+  _api_attrs = reflection.ApiAttributes(
+      "assignee_type",
+      reflection.Attribute(
+          "custom_attribute_revision",
+          create=False,
+          update=False,
+      ),
+      reflection.Attribute(
+          "custom_attribute_revision_upd",
+          read=False,
+      ),
+  )
+
+  _aliases = {
+      "custom_attribute_definition": "custom_attribute_definition",
+  }
+
+  @classmethod
+  def eager_query(cls, **kwargs):
+    query = super(CustomAttributeDefinitionFK, cls).eager_query(**kwargs)
+    return query.options(
+        sa.orm.joinedload('revision'),
+        sa.orm.joinedload('custom_attribute_definition')
+            .undefer_group('CustomAttributeDefinition_complete'),
+    )
+
+  def log_json(self):
+    """Log custom attribute revisions."""
+    res = super(CustomAttributeDefinitionFK, self).log_json()
+    res["custom_attribute_revision"] = self.custom_attribute_revision
+    return res
+
+  @builder.simple_property
+  def custom_attribute_revision(self):
+    """Get the historical value of the relevant CA value."""
+    if not self.revision:
+      return None
+    revision = self.revision.content
+    cav_stored_value = revision['attribute_value']
+    cad = self.custom_attribute_definition
+    return {
+        'custom_attribute': {
+            'id': cad.id if cad else None,
+            'title': cad.title if cad else 'DELETED DEFINITION',
+        },
+        'custom_attribute_stored_value': cav_stored_value,
+    }
+
+  def custom_attribute_revision_upd(self, value):
+    """Create a Comment-CA mapping with current CA value stored."""
+    ca_revision_dict = value.get('custom_attribute_revision_upd')
+    if not ca_revision_dict:
+      return
+    ca_val_dict = self._get_ca_value(ca_revision_dict)
+
+    ca_val_id = ca_val_dict['id']
+    ca_val_revision = Revision.query.filter_by(
+        resource_type='CustomAttributeValue',
+        resource_id=ca_val_id,
+    ).order_by(
+        Revision.created_at.desc(),
+    ).limit(1).first()
+    if not ca_val_revision:
+      raise exceptions.BadRequest(
+          "No Revision found for CA value with id provided under "
+          "'custom_attribute_value': {}".format(ca_val_dict),
+      )
+
+    self.revision_id = ca_val_revision.id
+    self.revision = ca_val_revision
+
+    # Here *attribute*_id is assigned to *definition*_id, strange but,
+    # as you can see in src/ggrc/models/custom_attribute_value.py
+    # custom_attribute_id is link to custom_attribute_definitions.id
+    # possible best way is use definition id from request:
+    # ca_revision_dict["custom_attribute_definition"]["id"]
+    # but needs to be checked that is always exist in request
+    self.custom_attribute_definition_id = ca_val_revision.content.get(
+        'custom_attribute_id',
+    )
+
+    self.custom_attribute_definition = CustomAttributeDefinition.query.get(
+        self.custom_attribute_definition_id,
+    )
+
+  @staticmethod
+  def _get_ca_value(ca_revision_dict):
+    """Get CA value dict from json and do a basic validation."""
+    ca_val_dict = ca_revision_dict.get('custom_attribute_value')
+    if not ca_val_dict:
+      raise ValueError(
+          "CA value expected under 'custom_attribute_value': "
+          "{}".format(ca_revision_dict),
+      )
+    if not ca_val_dict.get('id'):
+      raise ValueError(
+          "CA value id expected under 'id': {}".format(ca_val_dict),
+      )
+    return ca_val_dict
 
 
 class CustomAttributeDefinition(WithExternalMapping,
