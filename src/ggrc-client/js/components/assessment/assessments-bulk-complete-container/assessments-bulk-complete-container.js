@@ -12,10 +12,14 @@ import {request} from '../../../plugins/utils/request-utils';
 import {getFiltersForCompletion} from '../../../plugins/utils/bulk-update-service';
 import {buildParam} from '../../../plugins/utils/query-api-utils';
 import {isMyAssessments} from '../../../plugins/utils/current-page-utils';
-import '../assessments-bulk-complete-table/assessments-bulk-complete-table';
 import './assessments-bulk-complete-popover/assessments-bulk-complete-popover';
 import './assessments-bulk-complete-popover/assessments-bulk-complete-popover-content';
 import {confirm} from '../../../plugins/utils/modals';
+import '../assessments-bulk-complete-table/assessments-bulk-complete-table-header/assessments-bulk-complete-table-header';
+import '../assessments-bulk-complete-table/assessments-bulk-complete-table-row/assessments-bulk-complete-table-row';
+import '../../required-info-modal/required-info-modal';
+import {getCustomAttributeType} from '../../../plugins/utils/ca-utils';
+import '../../required-info-modal/required-info-modal';
 
 const ViewModel = canDefineMap.extend({
   currentFilter: {
@@ -59,6 +63,27 @@ const ViewModel = canDefineMap.extend({
   countAssessmentsToComplete: {
     value: 0,
   },
+  headersData: {
+    value: () => [],
+  },
+  rowsData: {
+    value: () => [],
+  },
+  requiredInfoModal: {
+    value: () => ({
+      title: '',
+      state: {
+        open: false,
+      },
+      content: {
+        attribute: null,
+        requiredInfo: null,
+        comment: null,
+        urls: [],
+        files: [],
+      },
+    }),
+  },
   buildAsmtListRequest() {
     let relevant = null;
     if (!isMyAssessments()) {
@@ -84,6 +109,137 @@ const ViewModel = canDefineMap.extend({
     this.attributesList = attributes;
     this.isLoading = false;
     this.isDataLoaded = true;
+    this.headersData = this.buildHeadersData();
+    this.rowsData = this.buildRowsData();
+  },
+  buildHeadersData() {
+    return this.attributesList.map((attribute) => ({
+      title: attribute.title,
+      mandatory: attribute.mandatory,
+    }));
+  },
+  buildRowsData() {
+    const rowsData = [];
+
+    this.assessmentsList.forEach((assessment) => {
+      const assessmentData = {
+        asmtId: assessment.id,
+        asmtTitle: assessment.title,
+        asmtStatus: assessment.status,
+        asmtType: assessment.assessment_type,
+        urlsCount: assessment.urls_count,
+        filesCount: assessment.files_count,
+        isReadyToComplete: false,
+      };
+      const attributesData = [];
+
+      this.attributesList.forEach((attribute) => {
+        let id = null;
+        let value = null;
+        let optionsList = [];
+        let optionsConfig = new Map();
+        let isApplicable = false;
+        let errorsMap = {
+          attachment: false,
+          url: false,
+          comment: false,
+        };
+        const type = getCustomAttributeType(attribute.attribute_type);
+        const defaultValue = this.prepareAttributeValue(type,
+          attribute.default_value);
+
+        const assessmentAttributeData = attribute.values[assessment.id];
+        if (assessmentAttributeData) {
+          id = assessmentAttributeData.attribute_definition_id;
+          value = this.prepareAttributeValue(type,
+            assessmentAttributeData.value,
+            assessmentAttributeData.attribute_person_id);
+          ({optionsList, optionsConfig} = this.prepareMultiChoiceOptions(
+            assessmentAttributeData.multi_choice_options,
+            assessmentAttributeData.multi_choice_mandatory)
+          );
+          isApplicable = true;
+
+          if (assessmentAttributeData.preconditions_failed) {
+            const errors =
+              assessmentAttributeData.preconditions_failed.serialize();
+            errorsMap = {
+              attachment: errors.includes('evidence'),
+              url: errors.includes('url'),
+              comment: errors.includes('comment'),
+            };
+          }
+        }
+
+        attributesData.push({
+          id,
+          type,
+          value,
+          defaultValue,
+          isApplicable,
+          errorsMap,
+          title: attribute.title,
+          mandatory: attribute.mandatory,
+          multiChoiceOptions: {
+            values: optionsList,
+            config: optionsConfig,
+          },
+          attachments: {
+            files: [],
+            urls: [],
+            comment: null,
+          },
+          modified: false,
+          validation: {
+            mandatory: attribute.mandatory,
+            valid: (isApplicable ? !attribute.mandatory : true),
+            requiresAttachment: false,
+            hasMissingInfo: false,
+            hasUnsavedAttachments: false,
+          },
+        });
+      });
+
+      rowsData.push({attributes: attributesData, ...assessmentData});
+    });
+
+    return rowsData;
+  },
+  prepareAttributeValue(type, value, personId = null) {
+    switch (type) {
+      case 'checkbox':
+        return value === '1';
+      case 'date':
+        return value || null;
+      case 'dropdown':
+        return value || '';
+      case 'multiselect':
+        return value || '';
+      case 'person':
+        return personId
+          ? [{
+            id: personId,
+            type: 'Person',
+            href: `/api/people/${personId}`,
+            context_id: null,
+          }]
+          : null;
+      default:
+        return value;
+    }
+  },
+  prepareMultiChoiceOptions(multiChoiceOptions, multiChoiceMandatory) {
+    const optionsList = this.convertToArray(multiChoiceOptions);
+    const optionsStates = this.convertToArray(multiChoiceMandatory);
+    const optionsConfig = optionsStates.reduce((config, state, index) => {
+      const optionValue = optionsList[index];
+      return config.set(optionValue, Number(state));
+    }, new Map());
+
+    return {optionsList, optionsConfig};
+  },
+  convertToArray(value) {
+    return typeof value === 'string' ? value.split(',') : [];
   },
   exitBulkCompletionMode() {
     const disableBulkCompletionMode = () => pubSub.dispatch({

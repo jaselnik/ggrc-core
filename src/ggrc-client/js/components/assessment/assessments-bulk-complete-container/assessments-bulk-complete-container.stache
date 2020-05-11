@@ -24,6 +24,26 @@
           </button>
       </div> 
     </div>
-    <assessments-bulk-complete-table assessmentsList:from="assessmentsList" attributesList:from="attributesList" />
+    <div class="assessments-bulk-complete-table">
+      <table>
+        <thead>
+          <assessments-bulk-complete-table-header headersData:from="headersData" />
+        </thead>
+        <tbody>
+          {{#each rowsData}}
+            <assessments-bulk-complete-table-row
+              rowData:from="{.}"
+              requiredInfoModal:from="requiredInfoModal"
+            />
+          {{/each}}
+          <required-info-modal
+            title:from="requiredInfoModal.title"
+            state:from="requiredInfoModal.state"
+            content:from="requiredInfoModal.content"
+            on:vm:submit="saveRequiredInfo(scope.event)"
+          />
+        </tbody>
+      </table>
+    </div>
   {{/if}}
 </div>

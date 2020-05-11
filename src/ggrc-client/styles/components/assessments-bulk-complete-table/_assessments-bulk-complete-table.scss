@@ -21,11 +21,8 @@
   }
 }
 
-assessments-bulk-complete-table {
+.assessments-bulk-complete-table{
   @include reset-default-table-styles;
-}
-
-.assessments-bulk-complete-table__content {
   margin: 8px 40px;
   padding-bottom: 8px;
   font-size: 13px;
