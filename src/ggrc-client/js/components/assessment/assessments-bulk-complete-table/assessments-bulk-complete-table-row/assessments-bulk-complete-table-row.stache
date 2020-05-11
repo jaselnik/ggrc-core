@@ -1,0 +1,31 @@
+{{!
+    Copyright (C) 2020 Google Inc.
+    Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
+}}
+
+<tr>
+  <th class="assessments-bulk-complete-table__column_sticky">
+    <div class="assessments-bulk-complete-table__cell">
+      {{#if isReadyForCompletion}}
+        <i class="fa fa-check blue"></i>
+      {{/if}}
+      <a href="/assessments/{{rowData.asmtId}}" target="_blank">
+        {{rowData.asmtTitle}}
+      </a>
+    </div>
+    <div class="assessments-bulk-complete-table__cell">
+      <span class="state-value-dot {{addclass 'state' rowData.asmtStatus}}">
+        {{rowData.asmtStatus}}
+      </span>
+    </div>
+  </th>
+  {{#each rowData.attributes}}
+    <td class="assessments-bulk-complete-table__cell">
+      {{#if isApplicable}}
+        {{value}}
+      {{else}}
+        <span class="empty-message">Not applicable</span>
+      {{/if}}
+    </td>
+  {{/each}}
+</tr>
