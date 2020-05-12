@@ -16,7 +16,10 @@
               Exit bulk completion
             </button>
 
-            <button type="button" {{#unless isAttributeModified}}disabled{{/unless}} class="btn btn-white">
+            <button type="button" 
+              {{#unless isSaveAnswersButtonEnabled}}disabled{{/unless}} 
+              class="btn btn-white"
+              on:el:click="onSaveAnswersClick()">
               Save answers
             </button>
 

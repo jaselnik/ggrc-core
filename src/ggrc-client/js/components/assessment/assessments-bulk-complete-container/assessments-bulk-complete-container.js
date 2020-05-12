@@ -32,6 +32,14 @@ const COMPLETION_MESSAGES = {
   fail: `Failed to complete certifications in bulk. 
    Please refresh the page and start bulk complete again.`,
 };
+const SAVE_ANSWERS_MESSAGES = {
+  start: `Saving answers to the certifications. 
+   Once it is done you will get a notification. 
+   You can continue working with the app.`,
+  success: 'Answers to the certifications are saved successfully.',
+  fail: `Failed to save certifications' answers.
+   Please try to save them again.`,
+};
 
 const ViewModel = canDefineMap.extend({
   currentFilter: {
@@ -60,6 +68,12 @@ const ViewModel = canDefineMap.extend({
   },
   isAttributeModified: {
     value: false,
+  },
+  isSaveAnswersButtonEnabled: {
+    get() {
+      return this.isAttributeModified
+      && !this.isBackgroundTaskInProgress;
+    },
   },
   isCompleteButtonEnabled: {
     get() {
@@ -99,6 +113,23 @@ const ViewModel = canDefineMap.extend({
         files: [],
       },
     }),
+  },
+  onSaveAnswersClick() {
+    backendGdriveClient.withAuth(
+      () => ggrcPost(
+        '/api/bulk_operations/cavs/save',
+        this.buildBulkRequest(true)),
+      {responseJSON: {message: 'Unable to Authorize'}})
+      .then(({id}) => {
+        if (id) {
+          this.isAttributeModified = false;
+          this.isBackgroundTaskInProgress = true;
+          this.trackBackgroundTask(id, SAVE_ANSWERS_MESSAGES);
+          this.cleanUpGridAfterSaveAnswers();
+        } else {
+          notifier('error', SAVE_ANSWERS_MESSAGES.fail);
+        }
+      });
   },
   onCompleteClick() {
     confirm({
@@ -166,7 +197,8 @@ const ViewModel = canDefineMap.extend({
         }
       });
 
-      if (attributesList.length || this.assessmentIdsToComplete.has(asmtId)) {
+      if (attributesList.length ||
+        (!isSaveAnswersRequest && this.assessmentIdsToComplete.has(asmtId))) {
         const assessmentAttributes = {
           assessment: {id: asmtId, slug: asmtSlug},
           values: attributesList,
@@ -206,6 +238,16 @@ const ViewModel = canDefineMap.extend({
     }
 
     this.assessmentIdsToComplete = new Set();
+    this.rowsData = rowsData;
+  },
+  cleanUpGridAfterSaveAnswers() {
+    const rowsData = this.rowsData
+      .forEach((asmt) => {
+        asmt.attributes = asmt.attributes.attr().map((attr) => {
+          attr.modified = false;
+          return attr;
+        });
+      });
     this.rowsData = rowsData;
   },
   trackBackgroundTask(taskId, messages) {
