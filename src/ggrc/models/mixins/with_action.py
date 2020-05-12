@@ -238,31 +238,66 @@ class WithAction(object):
   class EvidenceAction(BaseAction):
     """Evidence action"""
 
-    AddRelatedTuple = namedtuple("AddRelated", ["id",
-                                                "type",
-                                                "kind",
-                                                "link",
-                                                "title",
-                                                "source_gdrive_id"])
+    AddRelatedTuple = namedtuple(
+        "AddRelated",
+        [
+            "id",
+            "type",
+            "kind",
+            "link",
+            "title",
+            "custom_attribute_definition_id",
+            "source_gdrive_id",
+        ],
+    )
 
-    def add_related_wrapper(self, id, type, kind, link,
-                            title, source_gdrive_id=''):
+    def add_related_wrapper(
+          self,
+          id,
+          type,
+          kind,
+          link,
+          title,
+          custom_attribute_definition_id=None,
+          source_gdrive_id='',
+    ):
       """Used to add 'default' value to the named tuple
 
       In case of Evidence.FILE source_gdrive_id is mandatory
       """
-      return self.AddRelatedTuple(id, type, kind, link,
-                                  title, source_gdrive_id)
+      return self.AddRelatedTuple(
+          id,
+          type,
+          kind,
+          link,
+          title,
+          custom_attribute_definition_id,
+          source_gdrive_id,
+      )
 
     AddRelated = add_related_wrapper
     AddRelated._fields = AddRelatedTuple._fields
 
     def _create(self, parent, action):
-      obj = Evidence(link=action.link,
-                     title=action.title,
-                     kind=action.kind,
-                     source_gdrive_id=action.source_gdrive_id,
-                     context=parent.context)
+      # create object
+      cad_id = action.custom_attribute_definition_id
+      if not cad_id:
+        obj = Evidence(
+            link=action.link,
+            title=action.title,
+            kind=action.kind,
+            source_gdrive_id=action.source_gdrive_id,
+            context=parent.context,
+        )
+      else:
+        obj = Evidence(
+            link=action.link,
+            title=action.title,
+            kind=action.kind,
+            source_gdrive_id=action.source_gdrive_id,
+            custom_attribute_definition_id=cad_id,
+            context=parent.context,
+        )
       return obj
 
     def remove_related(self, parent, _action):

@@ -11,16 +11,11 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import validates
-from werkzeug.exceptions import BadRequest
 
 from ggrc import builder
 from ggrc import db
-from ggrc.models.custom_attribute_definition import (
-    CustomAttributeDefinition,
-    CustomAttributeDefinitionFK,
-)
+from ggrc.models import custom_attribute_definition
 from ggrc.models.deferred import deferred
-from ggrc.models.revision import Revision
 from ggrc.models.mixins import base, synchronizable
 from ggrc.models.mixins import Base
 from ggrc.models.mixins import Described
@@ -202,7 +197,7 @@ def get_objects_to_reindex(obj):
 
 
 class Comment(
-    CustomAttributeDefinitionFK,
+    custom_attribute_definition.CustomAttributeDefinitionFK,
     Roleable,
     Relatable,
     Described,
@@ -216,15 +211,6 @@ class Comment(
   __tablename__ = "comments"
 
   assignee_type = db.Column(db.String, nullable=False, default=u"")
-  revision_id = deferred(db.Column(
-      db.Integer,
-      db.ForeignKey('revisions.id', ondelete='SET NULL'),
-      nullable=True,
-  ), 'Comment')
-  revision = db.relationship(
-      'Revision',
-      uselist=False,
-  )
 
   initiator_instance_id = db.Column(db.Integer, nullable=True)
   initiator_instance_type = db.Column(db.String, nullable=True)

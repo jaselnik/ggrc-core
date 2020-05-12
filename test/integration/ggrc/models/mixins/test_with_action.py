@@ -118,6 +118,49 @@ class TestDocumentWithActionMixin(TestCase, WithQueryApi):
     self.assertEqual(relationship.destination_id, evidence.id)
     self.assertEqual(relationship.source_id, assessment.id)
 
+  def test_add_evidence_cad(self):
+    """Test add custom attribute evidence action."""
+    with factories.single_commit():
+      assessment = factories.AssessmentFactory()
+      ca_def = factories.CustomAttributeDefinitionFactory(
+          title="dd cad evidence",
+          definition_type="assessment",
+          attribute_type="Dropdown",
+          multi_choice_options="1,2,3",
+      )
+      context = factories.ContextFactory(related_object=assessment)
+      assessment.context = context
+    response = self.api.put(
+        assessment,
+        {
+            "actions": {
+                "add_related": [
+                    {
+                        "id": None,
+                        "type": "Evidence",
+                        "link": "google.com",
+                        "title": "google.com",
+                        "kind": all_models.Evidence.URL,
+                        "custom_attribute_definition_id": ca_def.id,
+                    },
+                ],
+            },
+        },
+    )
+    self.assert200(response)
+
+    relationship = _get_relationship(
+        "Assessment",
+        response.json["assessment"]["id"],
+    )
+    self.assertIsNotNone(relationship)
+    evidence = all_models.Evidence.query.get(relationship.destination_id)
+    self.assertEqual(evidence.link, "google.com")
+    self.assertEqual(evidence.kind, all_models.Evidence.URL)
+    self.assertEqual(evidence.context_id, assessment.context_id)
+    self.assertEqual(evidence.custom_attribute_definition_id, ca_def.id)
+
+
   def test_map_document_issue(self):
     """Test map document action on issue."""
     issue = factories.IssueFactory()

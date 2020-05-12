@@ -11,10 +11,13 @@ from ggrc.access_control.roleable import Roleable
 from ggrc.builder import simple_property
 from ggrc.fulltext import mixin
 from ggrc.models.deferred import deferred
-from ggrc.models import comment
-from ggrc.models import exceptions
-from ggrc.models import mixins
-from ggrc.models import reflection
+from ggrc.models import (
+    comment,
+    exceptions,
+    mixins,
+    reflection,
+    custom_attribute_definition,
+)
 from ggrc.models.mixins import before_flush_handleable as bfh
 from ggrc.models.mixins import base
 from ggrc.models.mixins.statusable import Statusable
@@ -26,11 +29,21 @@ from ggrc.fulltext import attributes
 from ggrc.services import signals
 
 
-class Evidence(Roleable, Relatable, mixins.Titled,
-               bfh.BeforeFlushHandleable, Statusable,
-               mixins.WithLastDeprecatedDate, comment.Commentable,
-               WithAutoDeprecation, mixin.Indexed, base.ContextRBAC,
-               mixins.Slugged, db.Model):
+class Evidence(
+    custom_attribute_definition.CustomAttributeDefinitionFK,
+    Roleable,
+    Relatable,
+    mixins.Titled,
+    bfh.BeforeFlushHandleable,
+    Statusable,
+    mixins.WithLastDeprecatedDate,
+    comment.Commentable,
+    WithAutoDeprecation,
+    mixin.Indexed,
+    base.ContextRBAC,
+    mixins.Slugged,
+    db.Model,
+):
   """Evidence (Audit-scope URLs, FILE's) model."""
   __tablename__ = "evidence"
 

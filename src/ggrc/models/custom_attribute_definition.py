@@ -212,6 +212,24 @@ class CustomAttributeDefinitionBase(attributevalidator.AttributeValidator,
 class CustomAttributeDefinitionFK(object):
 
   @declared_attr
+  def revision_id(cls):  # pylint: disable=no-self-argument
+    return deferred.deferred(
+        db.Column(
+            db.Integer,
+            db.ForeignKey('revisions.id', ondelete='SET NULL'),
+            nullable=True,
+        ),
+        'Comment',
+    )
+
+  @declared_attr
+  def revision(cls):  # pylint: disable=no-self-argument
+    return db.relationship(
+        'Revision',
+        uselist=False,
+    )
+
+  @declared_attr
   def custom_attribute_definition_id(cls):  # pylint: disable=no-self-argument
     return deferred.deferred(
         db.Column(
