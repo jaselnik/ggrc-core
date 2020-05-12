@@ -115,6 +115,19 @@ describe('assessments-bulk-complete-container component', () => {
       expect(viewModel.isLoading).toBe(false);
     });
   });
+
+  describe('onSaveAnswersClick() method', () => {
+    it('sets "isAttributeModified" to false', async () => {
+      viewModel.isAttributeModified = true;
+      spyOn(backendGdriveClient, 'withAuth')
+        .and.returnValue(Promise.resolve({id: 1}));
+      spyOn(viewModel, 'trackBackgroundTask');
+      await viewModel.onSaveAnswersClick();
+
+      expect(viewModel.isAttributeModified).toBeFalsy();
+    });
+  });
+
   describe('onCompleteClick() method', () => {
     beforeEach(() => {
       spyOn(ModalsUtils, 'confirm');
