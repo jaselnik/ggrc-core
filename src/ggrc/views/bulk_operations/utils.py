@@ -7,8 +7,10 @@ import collections
 
 import sqlalchemy as sa
 
+import ggrc.builder.json
 from ggrc import db
 from ggrc.models import all_models
+from ggrc.utils import as_json
 
 
 CAD = all_models.CustomAttributeDefinition
@@ -37,10 +39,18 @@ def _query_all_cads_asmt_matches(asmt_ids):
       CAD,
       CAV.attribute_value,
       CAV.attribute_object_id,
+      all_models.Comment,
+      all_models.Evidence,
   ).outerjoin(
       CAD, CAD.definition_id == all_models.Assessment.id
   ).outerjoin(
       CAV, CAD.id == CAV.custom_attribute_id,
+  ).outerjoin(
+      all_models.Comment,
+      CAD.id == all_models.Comment.custom_attribute_definition_id,
+  ).outerjoin(
+      all_models.Evidence,
+      CAD.id == all_models.Evidence.custom_attribute_definition_id,
   ).filter(
       all_models.Assessment.id.in_(asmt_ids),
       sa.or_(
@@ -74,6 +84,8 @@ def _get_or_generate_cad_stub(
     cav_value,
     cav_person_id,
     assessment_id,
+    comment,
+    evidence,
     attributes,
     unique_key,
 ):
@@ -102,14 +114,29 @@ def _get_or_generate_cad_stub(
           "values": {},
       },
   )
-  stub["values"][assessment_id] = {
-      "value": cav_value,
-      "attribute_person_id": cav_person_id,
-      "definition_id": assessment_id,
-      "attribute_definition_id": cad.id,
-      "multi_choice_options": cad.multi_choice_options,
-      "multi_choice_mandatory": cad.multi_choice_mandatory,
-  }
+  if not stub["values"].get(assessment_id):
+    stub["values"][assessment_id] = {
+        "value": cav_value,
+        "attribute_person_id": cav_person_id,
+        "definition_id": assessment_id,
+        "attribute_definition_id": cad.id,
+        "multi_choice_options": cad.multi_choice_options,
+        "multi_choice_mandatory": cad.multi_choice_mandatory,
+        "comments": [],
+        "files": [],
+        "urls": [],
+    }
+  if comment:
+    json_obj = ggrc.builder.json.publish(comment)
+    ggrc.builder.json.publish_representation(json_obj)
+    stub["values"][assessment_id]["comments"].append(json_obj)
+  if evidence:
+    json_obj = ggrc.builder.json.publish(comment)
+    ggrc.builder.json.publish_representation(json_obj)
+    if evidence.kind == evidence.URL:
+      stub["values"][assessment_id]["urls"].append(json_obj)
+    elif evidence.kind == evidence.FILE:
+      stub["values"][assessment_id]["files"].append(json_obj)
   return stub
 
 
@@ -131,8 +158,8 @@ def _prepare_attributes_and_assessments(all_cads, asmts_ids):
   for asmt_id in asmts_ids:
     assessments[asmt_id] = None
 
-  for (asmt_id, asmt_slug, asmt_title, asmt_type,
-       asmt_status, cad, cav_value, cav_person_id) in all_cads:
+  for (asmt_id, asmt_slug, asmt_title, asmt_type, asmt_status,
+       cad, cav_value, cav_person_id, comment, evidence) in all_cads:
     if cad:
       unique_key = _generate_unique_cad_key(cad)
       attributes[unique_key] = _get_or_generate_cad_stub(
@@ -140,6 +167,8 @@ def _prepare_attributes_and_assessments(all_cads, asmts_ids):
           cav_value,
           cav_person_id,
           asmt_id,
+          comment,
+          evidence,
           attributes,
           unique_key,
       )

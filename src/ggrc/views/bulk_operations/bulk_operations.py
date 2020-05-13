@@ -3,7 +3,6 @@
 
 """This module provides endpoints to calc cavs in bulk"""
 
-import json
 import logging
 
 import flask
@@ -19,7 +18,10 @@ from ggrc.bulk_operations import csvbuilder
 from ggrc.login import login_required
 from ggrc.models import background_task
 from ggrc.notifications import bulk_notifications
-from ggrc.utils import benchmark
+from ggrc.utils import (
+    benchmark,
+    as_json,
+)
 from ggrc.views import converters
 from ggrc.views.bulk_operations import utils as bulk_utils
 from ggrc.query import default_handler
@@ -59,7 +61,7 @@ def bulk_cavs_search():
   response = bulk_utils.get_data(
       default_handler.DefaultHandler(data).get_results()[0]["ids"]
   )
-  return flask.Response(json.dumps(response), mimetype='application/json')
+  return flask.Response(as_json(response), mimetype='application/json')
 
 
 def _detect_files(data):
