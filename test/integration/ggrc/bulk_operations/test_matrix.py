@@ -7,6 +7,8 @@ import json
 
 import ddt
 
+from ggrc.models import all_models
+
 from integration import ggrc
 from integration.ggrc.models import factories
 
@@ -25,6 +27,11 @@ class TestMatrix(ggrc.TestCase):
         assessment_type="Control",
         sox_302_enabled=True,
     )
+    self.query = [{
+        "object_name": "Assessment",
+        "type": "ids",
+        "filters": {"expression": {}},
+    }]
 
   @staticmethod
   def _get_text_payload():
@@ -49,7 +56,7 @@ class TestMatrix(ggrc.TestCase):
     return {
         "title": "CAD Rich Text",
         "attribute_type": "Rich Text",
-        "definition_type": "Assessment",
+        "definition_type": "assessment",
     }
 
   @staticmethod
@@ -62,7 +69,7 @@ class TestMatrix(ggrc.TestCase):
     return {
         "title": "CAD Date",
         "attribute_type": "Date",
-        "definition_type": "Assessment",
+        "definition_type": "assessment",
     }
 
   @staticmethod
@@ -75,7 +82,7 @@ class TestMatrix(ggrc.TestCase):
     return {
         "title": "CAD Dropdown",
         "attribute_type": "Dropdown",
-        "definition_type": "Assessment",
+        "definition_type": "assessment",
         "multi_choice_options": "1,3,2",
     }
 
@@ -89,7 +96,7 @@ class TestMatrix(ggrc.TestCase):
     return {
         "title": "CAD Multiselect",
         "attribute_type": "Multiselect",
-        "definition_type": "Assessment",
+        "definition_type": "assessment",
         "multi_choice_options": "1,3,2",
     }
 
@@ -103,7 +110,7 @@ class TestMatrix(ggrc.TestCase):
     return {
         "title": "CAD Checkbox",
         "attribute_type": "Checkbox",
-        "definition_type": "Assessment",
+        "definition_type": "assessment",
     }
 
   @staticmethod
@@ -116,7 +123,7 @@ class TestMatrix(ggrc.TestCase):
     return {
         "title": "CAD Person",
         "attribute_type": "Map:Person",
-        "definition_type": "Assessment",
+        "definition_type": "assessment",
     }
 
   @classmethod
@@ -149,20 +156,15 @@ class TestMatrix(ggrc.TestCase):
         "slug": asmt.slug,
         "title": asmt.title,
         "status": asmt.status,
+        "urls_count": len(asmt.evidences_url),
+        "files_count": len(asmt.evidences_file),
     } for asmt in assessments]
 
   def assert_request(self, expected_response):
     """Check if data in response is the same with expected."""
-    query = [{
-        "object_name": "Assessment",
-        "type": "ids",
-        "filters": {
-            "expression": {},
-        },
-    }]
     response = self.client.post(
         self.ENDPOINT_URL,
-        data=json.dumps(query),
+        data=json.dumps(self.query),
         headers=self.headers
     )
     self.assert200(response)
@@ -193,6 +195,7 @@ class TestMatrix(ggrc.TestCase):
                 str(self.asmt1.id): {
                     "value": None,
                     "attribute_person_id": None,
+                    "preconditions_failed": None,
                     "definition_id": self.asmt1.id,
                     "attribute_definition_id": cad.id,
                     "multi_choice_options": cad.multi_choice_options,
@@ -268,6 +271,7 @@ class TestMatrix(ggrc.TestCase):
                 str(self.asmt1.id): {
                     "value": "test_value",
                     "attribute_person_id": None,
+                    "preconditions_failed": None,
                     "definition_id": self.asmt1.id,
                     "attribute_definition_id": cad1.id,
                     "multi_choice_options": cad1.multi_choice_options,
@@ -276,6 +280,7 @@ class TestMatrix(ggrc.TestCase):
                 str(asmt2.id): {
                     "value": None,
                     "attribute_person_id": None,
+                    "preconditions_failed": None,
                     "definition_id": asmt2.id,
                     "attribute_definition_id": cad2.id,
                     "multi_choice_options": cad2.multi_choice_options,
@@ -320,6 +325,7 @@ class TestMatrix(ggrc.TestCase):
                 str(self.asmt1.id): {
                     "value": None,
                     "attribute_person_id": None,
+                    "preconditions_failed": None,
                     "definition_id": self.asmt1.id,
                     "attribute_definition_id": cad1.id,
                     "multi_choice_options": None,
@@ -335,6 +341,7 @@ class TestMatrix(ggrc.TestCase):
                 str(asmt2.id): {
                     "value": None,
                     "attribute_person_id": None,
+                    "preconditions_failed": None,
                     "definition_id": asmt2.id,
                     "attribute_definition_id": cad2.id,
                     "multi_choice_options": None,
@@ -380,6 +387,7 @@ class TestMatrix(ggrc.TestCase):
                 str(self.asmt1.id): {
                     "value": None,
                     "attribute_person_id": None,
+                    "preconditions_failed": None,
                     "definition_id": self.asmt1.id,
                     "attribute_definition_id": text_cad.id,
                     "multi_choice_options": None,
@@ -395,6 +403,7 @@ class TestMatrix(ggrc.TestCase):
                 str(asmt2.id): {
                     "value": None,
                     "attribute_person_id": None,
+                    "preconditions_failed": None,
                     "definition_id": asmt2.id,
                     "attribute_definition_id": checkbox_cad.id,
                     "multi_choice_options": None,
@@ -430,6 +439,7 @@ class TestMatrix(ggrc.TestCase):
                 str(self.asmt1.id): {
                     "value": "Person",
                     "attribute_person_id": person.id,
+                    "preconditions_failed": None,
                     "definition_id": self.asmt1.id,
                     "attribute_definition_id": cad.id,
                     "multi_choice_options": cad.multi_choice_options,
@@ -471,6 +481,7 @@ class TestMatrix(ggrc.TestCase):
                 str(self.asmt1.id): {
                     "value": None,
                     "attribute_person_id": None,
+                    "preconditions_failed": None,
                     "definition_id": self.asmt1.id,
                     "attribute_definition_id": cad.id,
                     "multi_choice_options": cad.multi_choice_options,
@@ -503,6 +514,7 @@ class TestMatrix(ggrc.TestCase):
                 str(self.asmt1.id): {
                     "value": None,
                     "attribute_person_id": None,
+                    "preconditions_failed": None,
                     "definition_id": self.asmt1.id,
                     "attribute_definition_id": cad1.id,
                     "multi_choice_options": cad1.multi_choice_options,
@@ -518,6 +530,7 @@ class TestMatrix(ggrc.TestCase):
                 str(self.asmt1.id): {
                     "value": None,
                     "attribute_person_id": None,
+                    "preconditions_failed": None,
                     "definition_id": self.asmt1.id,
                     "attribute_definition_id": cad2.id,
                     "multi_choice_options": cad2.multi_choice_options,
@@ -528,3 +541,81 @@ class TestMatrix(ggrc.TestCase):
         "assessments": self._generate_assessment_response(self.asmt1),
     }
     self.assert_request(expected_response)
+
+  @ddt.data(
+      ("4,4", ['url']),
+      ("2,2", ['evidence']),
+      ("1,1", ['comment']),
+  )
+  @ddt.unpack
+  def test_precondition_failed(
+      self,
+      multi_choice_mandatory,
+      preconditions_failed,
+  ):
+    """Test search matrix with precondition failed cad"""
+    with factories.single_commit():
+      cad = factories.CustomAttributeDefinitionFactory(
+          definition_id=self.asmt1.id,
+          multi_choice_mandatory=multi_choice_mandatory,
+          **self._get_payload("Dropdown")
+      )
+      factories.CustomAttributeValueFactory(
+          custom_attribute=cad,
+          attributable=self.asmt1,
+          attribute_value="1",
+      )
+    expected_response = {
+        "attributes": [{
+            "title": cad.title,
+            "mandatory": cad.mandatory,
+            "attribute_type": cad.attribute_type,
+            "default_value": cad.default_value,
+            "values": {
+                str(self.asmt1.id): {
+                    "value": "1",
+                    "attribute_person_id": None,
+                    "preconditions_failed": preconditions_failed,
+                    "definition_id": self.asmt1.id,
+                    "attribute_definition_id": cad.id,
+                    "multi_choice_options": cad.multi_choice_options,
+                    "multi_choice_mandatory": cad.multi_choice_mandatory,
+                },
+            },
+        }],
+        "assessments": self._generate_assessment_response(self.asmt1),
+    }
+    self.assert_request(expected_response)
+
+  @ddt.data(all_models.Evidence.URL, all_models.Evidence.FILE)
+  def test_asmt_has_evidences(self, kind):
+    """Test search matrix assessments with evidences"""
+    with factories.single_commit():
+      cad = factories.CustomAttributeDefinitionFactory(
+          definition_id=self.asmt1.id,
+          multi_choice_mandatory="4,4",
+          **self._get_payload("Dropdown")
+      )
+      factories.CustomAttributeValueFactory(
+          custom_attribute=cad,
+          attributable=self.asmt1,
+          attribute_value="1",
+      )
+    asmt_id = self.asmt1.id
+    new_evidence = factories.EvidenceFactory(kind=kind)
+    response = self.api.put(self.asmt1, {
+        "actions": {"add_related": [
+            {"id": new_evidence.id, "type": "Evidence"},
+        ]},
+    })
+    self.assertEqual(response.status_code, 200)
+    assessments = self._generate_assessment_response(
+        all_models.Assessment.query.get(asmt_id),
+    )
+    response = self.client.post(
+        self.ENDPOINT_URL,
+        headers=self.headers,
+        data=json.dumps(self.query),
+    )
+    self.assert200(response)
+    self.assertEqual(assessments, response.json["assessments"])
