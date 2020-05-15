@@ -12,6 +12,7 @@
       <a href="/assessments/{{rowData.asmtId}}" target="_blank">
         {{rowData.asmtTitle}}
       </a>
+      <assessments-bulk-complete-popover rowData:from="rowData"/>
     </div>
     <div class="assessments-bulk-complete-table__cell">
       <span class="state-value-dot {{addclass 'state' rowData.asmtStatus}}">
