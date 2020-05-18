@@ -28,16 +28,7 @@ def _query_all_cads_asmt_matches(asmt_ids):
   """
   if not asmt_ids:
     return []
-  all_cads = db.session.query(
-      all_models.Assessment.id,
-      all_models.Assessment.slug,
-      all_models.Assessment.title,
-      all_models.Assessment.assessment_type,
-      all_models.Assessment.status,
-      CAD,
-      CAV.attribute_value,
-      CAV.attribute_object_id,
-  ).outerjoin(
+  all_cads = db.session.query(all_models.Assessment, CAD, CAV).outerjoin(
       CAD, CAD.definition_id == all_models.Assessment.id
   ).outerjoin(
       CAV, CAD.id == CAV.custom_attribute_id,
@@ -71,8 +62,7 @@ def _generate_unique_cad_key(cad):
 # pylint: disable=too-many-arguments
 def _get_or_generate_cad_stub(
     cad,
-    cav_value,
-    cav_person_id,
+    cav,
     assessment_id,
     attributes,
     unique_key,
@@ -84,8 +74,7 @@ def _get_or_generate_cad_stub(
 
   Args:
     cad: specific custom attribute on which stub will be prepared
-    cav_value: custom attribute value
-    cav_person_id: person_id which is not null for Map:Person type cavs
+    cav: specific custom attribute value instance for the related cad
     assessment_id: Custom attribute definition_id
     attributes: dict with the all the new attribute stubs
     unique_key: unique custom attribute key on which value will be saved
@@ -102,9 +91,17 @@ def _get_or_generate_cad_stub(
           "values": {},
       },
   )
+  cav_value = None
+  cav_attribute_object_id = None
+  cav_preconditions_failed = None
+  if cav:
+    cav_value = cav.attribute_value
+    cav_attribute_object_id = cav.attribute_object_id
+    cav_preconditions_failed = cav.preconditions_failed
   stub["values"][assessment_id] = {
       "value": cav_value,
-      "attribute_person_id": cav_person_id,
+      "attribute_person_id": cav_attribute_object_id,
+      "preconditions_failed": cav_preconditions_failed,
       "definition_id": assessment_id,
       "attribute_definition_id": cad.id,
       "multi_choice_options": cad.multi_choice_options,
@@ -131,25 +128,26 @@ def _prepare_attributes_and_assessments(all_cads, asmts_ids):
   for asmt_id in asmts_ids:
     assessments[asmt_id] = None
 
-  for (asmt_id, asmt_slug, asmt_title, asmt_type,
-       asmt_status, cad, cav_value, cav_person_id) in all_cads:
+  for (asmt, cad, cav) in all_cads:
     if cad:
       unique_key = _generate_unique_cad_key(cad)
       attributes[unique_key] = _get_or_generate_cad_stub(
           cad,
-          cav_value,
-          cav_person_id,
-          asmt_id,
+          cav,
+          asmt.id,
           attributes,
           unique_key,
       )
-    assessments[asmt_id] = {
-        "assessment_type": asmt_type,
-        "id": asmt_id,
-        "slug": asmt_slug,
-        "title": asmt_title,
-        "status": asmt_status,
-    }
+    if not assessments.get(asmt.id):
+      assessments[asmt.id] = {
+          "assessment_type": asmt.assessment_type,
+          "id": asmt.id,
+          "slug": asmt.slug,
+          "title": asmt.title,
+          "status": asmt.status,
+          "urls_count": len(asmt.evidences_url),
+          "files_count": len(asmt.evidences_file),
+      }
   return attributes.values(), assessments.values()
 
 
