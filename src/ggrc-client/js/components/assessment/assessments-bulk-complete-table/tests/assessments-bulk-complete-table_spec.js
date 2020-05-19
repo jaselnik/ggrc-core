@@ -94,6 +94,7 @@ describe('assessments-bulk-complete-table component', () => {
         asmtType: 'Control',
         urlsCount: 1,
         filesCount: 0,
+        isReadyToComplete: false,
         attributes: [{
           id: 4483,
           type: 'input',
@@ -106,16 +107,21 @@ describe('assessments-bulk-complete-table component', () => {
             values: [],
             config: new Map(),
           },
-          attachments: null,
+          attachments: {
+            files: [],
+            urls: [],
+            comment: null,
+          },
           modified: false,
           validation: {
             mandatory: false,
             valid: true,
             requiresAttachment: false,
             hasMissingInfo: false,
+            hasUnsavedAttachments: false,
           },
           errorsMap: {
-            file: false,
+            attachment: false,
             url: false,
             comment: false,
           },
@@ -127,6 +133,7 @@ describe('assessments-bulk-complete-table component', () => {
         asmtType: 'Vendor',
         urlsCount: 0,
         filesCount: 2,
+        isReadyToComplete: false,
         attributes: [{
           id: null,
           type: 'input',
@@ -139,16 +146,21 @@ describe('assessments-bulk-complete-table component', () => {
             values: [],
             config: new Map(),
           },
-          attachments: null,
+          attachments: {
+            files: [],
+            urls: [],
+            comment: null,
+          },
           modified: false,
           validation: {
             mandatory: false,
             valid: true,
             requiresAttachment: false,
             hasMissingInfo: false,
+            hasUnsavedAttachments: false,
           },
           errorsMap: {
-            file: false,
+            attachment: false,
             url: false,
             comment: false,
           },
