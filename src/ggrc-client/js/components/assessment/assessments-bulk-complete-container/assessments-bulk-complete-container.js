@@ -34,6 +34,9 @@ const ViewModel = canDefineMap.extend({
   isLoading: {
     value: false,
   },
+  isDataLoaded: {
+    value: false,
+  },
   buildAsmtListRequest() {
     let relevant = null;
     if (!isMyAssessments()) {
@@ -58,6 +61,7 @@ const ViewModel = canDefineMap.extend({
     this.assessmentsList = assessments;
     this.attributesList = attributes;
     this.isLoading = false;
+    this.isDataLoaded = true;
   },
 });
 

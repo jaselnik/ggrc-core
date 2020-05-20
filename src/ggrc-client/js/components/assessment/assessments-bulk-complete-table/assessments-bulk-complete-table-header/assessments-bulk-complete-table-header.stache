@@ -3,7 +3,7 @@
     Licensed under http://www.apache.org/licenses/LICENSE-2.0 <see LICENSE file>
 }}
 
-<tr>
+<tr class="assessments-bulk-complete-table__row">
   <th class="assessments-bulk-complete-table__column_sticky">
     <div class="assessments-bulk-complete-table__cell">
       Title

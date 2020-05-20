@@ -19,17 +19,16 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     value: () => [],
   },
   headersData: {
-    get() {
-      return this.attributesList.map((attribute) => ({
-        title: attribute.title,
-        mandatory: attribute.mandatory,
-      }));
-    },
+    value: () => [],
   },
   rowsData: {
-    get() {
-      return this.buildRowsData();
-    },
+    value: () => [],
+  },
+  buildHeadersData() {
+    return this.attributesList.map((attribute) => ({
+      title: attribute.title,
+      mandatory: attribute.mandatory,
+    }));
   },
   buildRowsData() {
     const rowsData = [];
@@ -40,6 +39,8 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         asmtTitle: assessment.title,
         asmtStatus: assessment.status,
         asmtType: assessment.assessment_type,
+        urlsCount: assessment.urls_count,
+        filesCount: assessment.files_count,
       };
       const attributesData = [];
 
@@ -49,6 +50,11 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         let optionsList = [];
         let optionsConfig = new Map();
         let isApplicable = false;
+        let errorsMap = {
+          file: false,
+          url: false,
+          comment: false,
+        };
         const type = getCustomAttributeType(attribute.attribute_type);
         const defaultValue = this.prepareAttributeValue(type,
           attribute.default_value);
@@ -56,14 +62,24 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         const assessmentAttributeData = attribute.values[assessment.id];
         if (assessmentAttributeData) {
           id = assessmentAttributeData.attribute_definition_id;
-          value = assessmentAttributeData.attribute_person_id
-            || this.prepareAttributeValue(type,
-              assessmentAttributeData.value);
+          value = this.prepareAttributeValue(type,
+            assessmentAttributeData.value,
+            assessmentAttributeData.attribute_person_id);
           ({optionsList, optionsConfig} = this.prepareMultiChoiceOptions(
             assessmentAttributeData.multi_choice_options,
             assessmentAttributeData.multi_choice_mandatory)
           );
           isApplicable = true;
+
+          if (assessmentAttributeData.preconditions_failed) {
+            const errors =
+              assessmentAttributeData.preconditions_failed.serialize();
+            errorsMap = {
+              file: errors.includes('evidence'),
+              url: errors.includes('url'),
+              comment: errors.includes('comment'),
+            };
+          }
         }
 
         attributesData.push({
@@ -72,16 +88,18 @@ const ViewModel = canDefineMap.extend({seal: false}, {
           value,
           defaultValue,
           isApplicable,
+          errorsMap,
           title: attribute.title,
           mandatory: attribute.mandatory,
           multiChoiceOptions: {
             values: optionsList,
             config: optionsConfig,
           },
+          attachments: null,
           modified: false,
           validation: {
             mandatory: attribute.mandatory,
-            valid: !attribute.mandatory,
+            valid: (isApplicable ? !attribute.mandatory : true),
             requiresAttachment: false,
             hasMissingInfo: false,
           },
@@ -93,12 +111,25 @@ const ViewModel = canDefineMap.extend({seal: false}, {
 
     return rowsData;
   },
-  prepareAttributeValue(type, value) {
+  prepareAttributeValue(type, value, personId = null) {
     switch (type) {
       case 'checkbox':
         return value === '1';
       case 'date':
         return value || null;
+      case 'dropdown':
+        return value || '';
+      case 'multiselect':
+        return value || '';
+      case 'person':
+        return personId
+          ? [{
+            id: personId,
+            type: 'Person',
+            href: `/api/people/${personId}`,
+            context_id: null,
+          }]
+          : null;
       default:
         return value;
     }
@@ -115,6 +146,10 @@ const ViewModel = canDefineMap.extend({seal: false}, {
   },
   convertToArray(value) {
     return typeof value === 'string' ? value.split(',') : [];
+  },
+  init() {
+    this.headersData = this.buildHeadersData();
+    this.rowsData = this.buildRowsData();
   },
 });
 
