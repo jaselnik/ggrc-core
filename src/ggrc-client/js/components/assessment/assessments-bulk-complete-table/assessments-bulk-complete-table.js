@@ -9,6 +9,7 @@ import canStache from 'can-stache';
 import template from './assessments-bulk-complete-table.stache';
 import './assessments-bulk-complete-table-header/assessments-bulk-complete-table-header';
 import './assessments-bulk-complete-table-row/assessments-bulk-complete-table-row';
+import '../../required-info-modal/required-info-modal';
 import {getCustomAttributeType} from '../../../plugins/utils/ca-utils';
 
 const ViewModel = canDefineMap.extend({seal: false}, {
@@ -23,6 +24,21 @@ const ViewModel = canDefineMap.extend({seal: false}, {
   },
   rowsData: {
     value: () => [],
+  },
+  requiredInfoModal: {
+    value: () => ({
+      title: '',
+      state: {
+        open: false,
+      },
+      content: {
+        attribute: null,
+        requiredInfo: null,
+        comment: null,
+        urls: [],
+        files: [],
+      },
+    }),
   },
   buildHeadersData() {
     return this.attributesList.map((attribute) => ({
@@ -41,6 +57,7 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         asmtType: assessment.assessment_type,
         urlsCount: assessment.urls_count,
         filesCount: assessment.files_count,
+        isReadyToComplete: false,
       };
       const attributesData = [];
 
@@ -51,7 +68,7 @@ const ViewModel = canDefineMap.extend({seal: false}, {
         let optionsConfig = new Map();
         let isApplicable = false;
         let errorsMap = {
-          file: false,
+          attachment: false,
           url: false,
           comment: false,
         };
@@ -75,7 +92,7 @@ const ViewModel = canDefineMap.extend({seal: false}, {
             const errors =
               assessmentAttributeData.preconditions_failed.serialize();
             errorsMap = {
-              file: errors.includes('evidence'),
+              attachment: errors.includes('evidence'),
               url: errors.includes('url'),
               comment: errors.includes('comment'),
             };
@@ -95,13 +112,18 @@ const ViewModel = canDefineMap.extend({seal: false}, {
             values: optionsList,
             config: optionsConfig,
           },
-          attachments: null,
+          attachments: {
+            files: [],
+            urls: [],
+            comment: null,
+          },
           modified: false,
           validation: {
             mandatory: attribute.mandatory,
             valid: (isApplicable ? !attribute.mandatory : true),
             requiresAttachment: false,
             hasMissingInfo: false,
+            hasUnsavedAttachments: false,
           },
         });
       });

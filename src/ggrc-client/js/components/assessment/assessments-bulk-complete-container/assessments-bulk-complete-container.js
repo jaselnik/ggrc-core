@@ -7,6 +7,7 @@ import canDefineMap from 'can-define/map/map';
 import canComponent from 'can-component';
 import canStache from 'can-stache';
 import template from './assessments-bulk-complete-container.stache';
+import pubSub from '../../../pub-sub';
 import {request} from '../../../plugins/utils/request-utils';
 import {getFiltersForCompletion} from '../../../plugins/utils/bulk-update-service';
 import {buildParam} from '../../../plugins/utils/query-api-utils';
@@ -36,6 +37,23 @@ const ViewModel = canDefineMap.extend({
   },
   isDataLoaded: {
     value: false,
+  },
+  pubSub: {
+    value: () => pubSub,
+  },
+  isAttributeModified: {
+    value: false,
+  },
+  isCompleteButtonEnabled: {
+    get() {
+      return this.countAssessmentsToComplete > 0;
+    },
+  },
+  assessmentIdsToComplete: {
+    value: () => new Set(),
+  },
+  countAssessmentsToComplete: {
+    value: 0,
   },
   buildAsmtListRequest() {
     let relevant = null;
@@ -73,6 +91,23 @@ export default canComponent.extend({
     inserted() {
       this.viewModel.buildAsmtListRequest();
       this.viewModel.loadItems();
+    },
+    '{pubSub} attributeModified'(pubSub, {assessmentData}) {
+      this.viewModel.isAttributeModified = true;
+
+      if (assessmentData.isReadyToComplete) {
+        this.viewModel.assessmentIdsToComplete.add(assessmentData.asmtId);
+      } else {
+        this.viewModel.assessmentIdsToComplete.delete(assessmentData.asmtId);
+      }
+
+      this.viewModel.countAssessmentsToComplete =
+        this.viewModel.assessmentIdsToComplete.size;
+    },
+    '{pubSub} assessmentReadyToComplete'(pubSub, {assessmentId}) {
+      this.viewModel.assessmentIdsToComplete.add(assessmentId);
+      this.viewModel.countAssessmentsToComplete =
+        this.viewModel.assessmentIdsToComplete.size;
     },
   },
 });

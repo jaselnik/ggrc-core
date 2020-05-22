@@ -10,8 +10,16 @@
     </thead>
     <tbody>
       {{#each rowsData}}
-        <assessments-bulk-complete-table-row rowData:from="{.}" />
+        <assessments-bulk-complete-table-row
+          rowData:from="{.}"
+          requiredInfoModal:from="requiredInfoModal"
+        />
       {{/each}}
+      <required-info-modal
+        title:from="requiredInfoModal.title"
+        state:from="requiredInfoModal.state"
+        content:from="requiredInfoModal.content"
+      />
     </tbody>
   </table>
 </div>

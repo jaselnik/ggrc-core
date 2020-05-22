@@ -9,47 +9,62 @@ import '../comment/comment-input';
 import '../url-edit-control/url-edit-control';
 
 import canComponent from 'can-component';
+import canDefineMap from 'can-define/map/map';
 import canStache from 'can-stache';
-import canMap from 'can-map';
 import template from './required-info-modal.stache';
 import {uploadFiles} from '../../plugins/utils/gdrive-picker-utils';
 import {connectionLostNotifier} from '../../plugins/utils/notifiers-utils';
 import {isConnectionLost} from '../../plugins/utils/errors-utils';
 import {getPlainText} from '../../plugins/ggrc-utils';
+import pubSub from '../../pub-sub';
 
-const viewModel = canMap.extend({
-  define: {
-    content: {
-      set(content) {
-        this.attr('commentValue', content.attr('commentValue'));
-        this.attr('urlsList').replace(content.attr('urls'));
-        this.attr('filesList').replace(content.attr('files'));
+const ViewModel = canDefineMap.extend({seal: false}, {
+  content: {
+    set(content) {
+      /**
+       * In order to not modify "content" fields (affect parent component),
+       *  need to prepare a copy of them
+       */
+      this.comment = content.comment;
+      this.urlsList.replace(content.urls);
+      this.filesList.replace(content.files);
 
-        return content;
-      },
-    },
-    dropdownOptions: {
-      get() {
-        return [this.attr('content.field.value')];
-      },
+      return content;
     },
   },
-  title: '',
+  dropdownOptions: {
+    get() {
+      return [this.content.attribute.value];
+    },
+  },
+  title: {
+    value: '',
+  },
   state: {
-    open: false,
+    value: () => ({
+      open: false,
+    }),
   },
-  // in order to not modify "content" fields (affect parent component),
-  // need to prepare a copy of them
-  urlsList: [],
-  filesList: [],
-  commentValue: null,
-  urlsEditMode: false,
-  noItemsText: '',
+  urlsList: {
+    value: () => [],
+  },
+  filesList: {
+    value: () => [],
+  },
+  comment: {
+    value: null,
+  },
+  urlsEditMode: {
+    value: false,
+  },
+  noItemsText: {
+    value: '',
+  },
   setUrlEditMode(value) {
-    this.attr('urlsEditMode', value);
+    this.urlsEditMode = value;
   },
   addUrl(url) {
-    this.attr('urlsList').push({url});
+    this.urlsList.push(url);
     this.setUrlEditMode(false);
   },
   async addFiles() {
@@ -61,7 +76,7 @@ const viewModel = canMap.extend({
         link: alternateLink,
       }));
 
-      this.attr('filesList').push(...filesList);
+      this.filesList.push(...filesList);
     } catch (err) {
       if (isConnectionLost()) {
         connectionLostNotifier();
@@ -69,16 +84,15 @@ const viewModel = canMap.extend({
     }
   },
   onSave() {
-    const commentValue = this.attr('commentValue');
-    const hasText = getPlainText(commentValue).trim().length !== 0;
+    const hasText = getPlainText(this.comment).length !== 0;
 
-    this.dispatch({
-      type: 'submit',
-      fieldId: this.attr('content.field.id'),
+    pubSub.dispatch({
+      type: 'requiredInfoSave',
+      attributeId: this.content.attribute.id,
       changes: {
-        commentValue: hasText ? commentValue : null,
-        files: this.attr('filesList'),
-        urls: this.attr('urlsList'),
+        comment: hasText ? this.comment : null,
+        files: this.filesList,
+        urls: this.urlsList,
       },
     });
 
@@ -86,15 +100,15 @@ const viewModel = canMap.extend({
   },
   closeModal() {
     this.setUrlEditMode(false);
-    this.attr('state.open', false);
+    this.state.open = false;
   },
   removeItemByIndex(collectionName, index) {
-    this.attr(collectionName).splice(index, 1);
+    this[collectionName].splice(index, 1);
   },
 });
 
 export default canComponent.extend({
   tag: 'required-info-modal',
   view: canStache(template),
-  viewModel,
+  ViewModel,
 });

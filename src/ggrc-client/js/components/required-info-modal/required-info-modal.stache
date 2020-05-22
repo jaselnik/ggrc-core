@@ -10,10 +10,10 @@
     <form class="simple-modal__body">
       <div class="simple-modal__section">
         <div class="field__title form-field__title">
-          <label class="field__title-text">{{content.field.title}}</label>
+          <label class="field__title-text">{{content.attribute.title}}</label>
         </div>
         <dropdown-form-field
-          value:from="content.field.value"
+          value:from="content.attribute.value"
           options:from="dropdownOptions"
           disabled:from="true" />
       </div>
@@ -21,7 +21,7 @@
       {{#if content.requiredInfo.comment}}
         <div class="simple-modal__section">
           <div class="simple-modal__section-title">Comment</div>
-          <comment-input value:bind="commentValue" />
+          <comment-input value:bind="comment" />
         </div>
       {{/if}}
 
@@ -64,7 +64,7 @@
       {{#if content.requiredInfo.url}}
         <div class="simple-modal__section">
           <div class="simple-modal__section-title">Evidence url</div>
-          {{#each urlsList}}
+          {{#each (urlsList, url = value)}}
             <div class="action-toolbar">
               <div class="action-toolbar__content-item">
                 <div class="document-object-item">
