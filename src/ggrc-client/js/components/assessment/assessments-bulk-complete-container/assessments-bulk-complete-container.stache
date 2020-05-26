@@ -11,7 +11,7 @@
            Below are listed SOX 302 certifications in statuses "Not Started", "In Progress", "Rework Needed" that are assigned on you.
       </div>
       <div class="bulk-complete-header__action">
-          <button type="button" class="btn btn-white">
+          <button type="button" class="btn btn-white" on:el:click="exitBulkCompletionMode()">
             Exit bulk completion
           </button>
 

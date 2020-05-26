@@ -15,9 +15,13 @@ import {isMyAssessments} from '../../../plugins/utils/current-page-utils';
 import '../assessments-bulk-complete-table/assessments-bulk-complete-table';
 import './assessments-bulk-complete-popover/assessments-bulk-complete-popover';
 import './assessments-bulk-complete-popover/assessments-bulk-complete-popover-content';
+import {confirm} from '../../../plugins/utils/modals';
 
 const ViewModel = canDefineMap.extend({
   currentFilter: {
+    value: null,
+  },
+  _beforeUnloadHandler: {
     value: null,
   },
   parentInstance: {
@@ -81,6 +85,24 @@ const ViewModel = canDefineMap.extend({
     this.isLoading = false;
     this.isDataLoaded = true;
   },
+  exitBulkCompletionMode() {
+    const disableBulkCompletionMode = () => pubSub.dispatch({
+      type: 'updateBulkCompleteMode',
+      enable: false,
+    });
+    if (this.isAttributeModified) {
+      confirm({
+        modal_title: 'Warning',
+        modal_description: `Changes you made might not be saved.<br>
+         Do you want to exit the bulk completion mode?`,
+        button_view: '/modals/confirm-cancel-buttons.stache',
+        modal_confirm: 'Proceed',
+        extraCssClass: 'exit-bulk-completion-modal',
+      }, disableBulkCompletionMode);
+    } else {
+      disableBulkCompletionMode();
+    }
+  },
 });
 
 export default canComponent.extend({
@@ -91,6 +113,19 @@ export default canComponent.extend({
     inserted() {
       this.viewModel.buildAsmtListRequest();
       this.viewModel.loadItems();
+      const beforeUnloadHandler = (event) => {
+        if (this.viewModel.isAttributeModified) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      };
+      this.viewModel._beforeUnloadHandler = beforeUnloadHandler.bind(this);
+      window.addEventListener('beforeunload',
+        this.viewModel._beforeUnloadHandler);
+    },
+    removed() {
+      window.removeEventListener('beforeunload',
+        this.viewModel._beforeUnloadHandler);
     },
     '{pubSub} attributeModified'(pubSub, {assessmentData}) {
       this.viewModel.isAttributeModified = true;
