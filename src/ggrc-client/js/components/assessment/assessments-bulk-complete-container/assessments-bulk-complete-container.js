@@ -12,10 +12,26 @@ import {request} from '../../../plugins/utils/request-utils';
 import {getFiltersForCompletion} from '../../../plugins/utils/bulk-update-service';
 import {buildParam} from '../../../plugins/utils/query-api-utils';
 import {isMyAssessments} from '../../../plugins/utils/current-page-utils';
-import '../assessments-bulk-complete-table/assessments-bulk-complete-table';
 import './assessments-bulk-complete-popover/assessments-bulk-complete-popover';
 import './assessments-bulk-complete-popover/assessments-bulk-complete-popover-content';
 import {confirm} from '../../../plugins/utils/modals';
+import '../assessments-bulk-complete-table/assessments-bulk-complete-table-header/assessments-bulk-complete-table-header';
+import '../assessments-bulk-complete-table/assessments-bulk-complete-table-row/assessments-bulk-complete-table-row';
+import '../../required-info-modal/required-info-modal';
+import {getCustomAttributeType} from '../../../plugins/utils/ca-utils';
+import {backendGdriveClient} from '../../../plugins/ggrc-gapi-client';
+import {ggrcPost} from '../../../plugins/ajax-extensions';
+import {notifier} from '../../../plugins/utils/notifiers-utils';
+import {trackStatus} from '../../../plugins/utils/background-task-utils';
+
+const COMPLETION_MESSAGES = {
+  start: `Completing certifications is in progress.
+   Once it is done you will get a notification. 
+   You can continue working with the app.`,
+  success: 'Certifications are completed successfully.',
+  fail: `Failed to complete certifications in bulk. 
+   Please refresh the page and start bulk complete again.`,
+};
 
 const ViewModel = canDefineMap.extend({
   currentFilter: {
@@ -39,9 +55,6 @@ const ViewModel = canDefineMap.extend({
   isLoading: {
     value: false,
   },
-  isDataLoaded: {
-    value: false,
-  },
   pubSub: {
     value: () => pubSub,
   },
@@ -50,14 +63,164 @@ const ViewModel = canDefineMap.extend({
   },
   isCompleteButtonEnabled: {
     get() {
-      return this.countAssessmentsToComplete > 0;
+      return this.assessmentsCountsToComplete > 0
+      && !this.isBackgroundTaskInProgress;
     },
   },
   assessmentIdsToComplete: {
     value: () => new Set(),
   },
-  countAssessmentsToComplete: {
+  assessmentsCountsToComplete: {
     value: 0,
+  },
+  isGridEmpty: {
+    value: false,
+  },
+  headersData: {
+    value: () => [],
+  },
+  rowsData: {
+    value: () => [],
+  },
+  isBackgroundTaskInProgress: {
+    value: false,
+  },
+  requiredInfoModal: {
+    value: () => ({
+      title: '',
+      state: {
+        open: false,
+      },
+      content: {
+        attribute: null,
+        requiredInfo: null,
+        comment: null,
+        urls: [],
+        files: [],
+      },
+    }),
+  },
+  onCompleteClick() {
+    confirm({
+      modal_title: 'Confirmation',
+      modal_description: `Please confirm the bulk completion request 
+      for ${this.assessmentsCountsToComplete} highlighted assessment(s).<br>
+      Answers to all other assessments will be saved.`,
+      button_view: '/modals/confirm-cancel-buttons.stache',
+      modal_confirm: 'Proceed',
+    }, () => this.completeAssessments());
+  },
+  completeAssessments() {
+    backendGdriveClient.withAuth(
+      () => ggrcPost(
+        '/api/bulk_operations/complete',
+        this.buildBulkRequest()),
+      {responseJSON: {message: 'Unable to Authorize'}})
+      .then(({id}) => {
+        if (id) {
+          this.assessmentsCountsToComplete = 0;
+          this.isBackgroundTaskInProgress = true;
+          this.isAttributeModified = false;
+          this.trackBackgroundTask(id, COMPLETION_MESSAGES);
+          this.cleanUpGridAfterCompletion();
+        } else {
+          notifier('error', COMPLETION_MESSAGES.fail);
+        }
+      });
+  },
+  buildBulkRequest(isSaveAnswersRequest = false) {
+    const attributesListToSave = [];
+    this.rowsData.forEach(({asmtId, asmtSlug, attributes}) => {
+      const attributesList = [];
+
+      attributes.forEach((attribute) => {
+        if (attribute.isApplicable && attribute.modified) {
+          let extra = {};
+          const {attachments} = attribute;
+          if (attachments) {
+            const urls = attachments.urls.serialize();
+            const files = attachments.files.serialize().map((file) => ({
+              title: file.title,
+              source_gdrive_id: file.id,
+            }));
+            const comment = attachments.comment ? {
+              description: attachments.comment,
+              modified_by: {type: 'Person', id: GGRC.current_user.id},
+            } : {};
+            extra = {
+              urls,
+              files,
+              comment,
+            };
+          }
+          attributesList.push({
+            value: this.getValForCompleteRequest(
+              attribute.type,
+              attribute.value),
+            title: attribute.title,
+            type: attribute.type,
+            definition_id: asmtId,
+            id: attribute.id,
+            extra,
+          });
+        }
+      });
+
+      if (attributesList.length || this.assessmentIdsToComplete.has(asmtId)) {
+        const assessmentAttributes = {
+          assessment: {id: asmtId, slug: asmtSlug},
+          values: attributesList,
+        };
+        attributesListToSave.push(assessmentAttributes);
+      }
+    });
+
+    return {
+      assessments_ids: isSaveAnswersRequest
+        ? []: [...this.assessmentIdsToComplete],
+      attributes: attributesListToSave,
+    };
+  },
+  getValForCompleteRequest(type, value) {
+    switch (type) {
+      case 'checkbox':
+        return value ? '1' : '0';
+      case 'date':
+        return value || '';
+      default:
+        return value;
+    }
+  },
+  cleanUpGridAfterCompletion() {
+    const rowsData = this.rowsData.filter(
+      (item) => !this.assessmentIdsToComplete.has(item.asmtId))
+      .forEach((asmt) => {
+        asmt.attributes = asmt.attributes.attr().map((attr) => {
+          attr.modified = false;
+          attr.validation.hasUnsavedAttachments = false;
+          return attr;
+        });
+      });
+    if (!rowsData.length) {
+      this.isGridEmpty = true;
+    }
+
+    this.assessmentIdsToComplete = new Set();
+    this.rowsData = rowsData;
+  },
+  trackBackgroundTask(taskId, messages) {
+    notifier('progress', messages.start);
+    const url = `/api/background_tasks/${taskId}`;
+    trackStatus(
+      url,
+      () => {
+        notifier('success', messages.success);
+        this.isBackgroundTaskInProgress = false;
+      },
+      () => {
+        notifier('error', messages.fail);
+        this.isBackgroundTaskInProgress = false;
+      });
   },
   buildAsmtListRequest() {
     let relevant = null;
@@ -83,7 +246,138 @@ const ViewModel = canDefineMap.extend({
     this.assessmentsList = assessments;
     this.attributesList = attributes;
     this.isLoading = false;
-    this.isDataLoaded = true;
+    this.headersData = this.buildHeadersData();
+    this.rowsData = this.buildRowsData();
+  },
+  buildHeadersData() {
+    return this.attributesList.map((attribute) => ({
+      title: attribute.title,
+      mandatory: attribute.mandatory,
+    }));
+  },
+  buildRowsData() {
+    const rowsData = [];
+
+    this.assessmentsList.forEach((assessment) => {
+      const assessmentData = {
+        asmtId: assessment.id,
+        asmtTitle: assessment.title,
+        asmtStatus: assessment.status,
+        asmtSlug: assessment.slug,
+        asmtType: assessment.assessment_type,
+        urlsCount: assessment.urls_count,
+        filesCount: assessment.files_count,
+        isReadyToComplete: false,
+      };
+      const attributesData = [];
+
+      this.attributesList.forEach((attribute) => {
+        let id = null;
+        let value = null;
+        let optionsList = [];
+        let optionsConfig = new Map();
+        let isApplicable = false;
+        let errorsMap = {
+          attachment: false,
+          url: false,
+          comment: false,
+        };
+        const type = getCustomAttributeType(attribute.attribute_type);
+        const defaultValue = this.prepareAttributeValue(type,
+          attribute.default_value);
+
+        const assessmentAttributeData = attribute.values[assessment.id];
+        if (assessmentAttributeData) {
+          id = assessmentAttributeData.attribute_definition_id;
+          value = this.prepareAttributeValue(type,
+            assessmentAttributeData.value,
+            assessmentAttributeData.attribute_person_id);
+          ({optionsList, optionsConfig} = this.prepareMultiChoiceOptions(
+            assessmentAttributeData.multi_choice_options,
+            assessmentAttributeData.multi_choice_mandatory)
+          );
+          isApplicable = true;
+
+          if (assessmentAttributeData.preconditions_failed) {
+            const errors =
+              assessmentAttributeData.preconditions_failed.serialize();
+            errorsMap = {
+              attachment: errors.includes('evidence'),
+              url: errors.includes('url'),
+              comment: errors.includes('comment'),
+            };
+          }
+        }
+
+        attributesData.push({
+          id,
+          type,
+          value,
+          defaultValue,
+          isApplicable,
+          errorsMap,
+          title: attribute.title,
+          mandatory: attribute.mandatory,
+          multiChoiceOptions: {
+            values: optionsList,
+            config: optionsConfig,
+          },
+          attachments: {
+            files: [],
+            urls: [],
+            comment: null,
+          },
+          modified: false,
+          validation: {
+            mandatory: attribute.mandatory,
+            valid: (isApplicable ? !attribute.mandatory : true),
+            requiresAttachment: false,
+            hasMissingInfo: false,
+            hasUnsavedAttachments: false,
+          },
+        });
+      });
+
+      rowsData.push({attributes: attributesData, ...assessmentData});
+    });
+
+    return rowsData;
+  },
+  prepareAttributeValue(type, value, personId = null) {
+    switch (type) {
+      case 'checkbox':
+        return value === '1';
+      case 'date':
+        return value || null;
+      case 'dropdown':
+        return value || '';
+      case 'multiselect':
+        return value || '';
+      case 'person':
+        return personId
+          ? [{
+            id: personId,
+            type: 'Person',
+            href: `/api/people/${personId}`,
+            context_id: null,
+          }]
+          : null;
+      default:
+        return value;
+    }
+  },
+  prepareMultiChoiceOptions(multiChoiceOptions, multiChoiceMandatory) {
+    const optionsList = this.convertToArray(multiChoiceOptions);
+    const optionsStates = this.convertToArray(multiChoiceMandatory);
+    const optionsConfig = optionsStates.reduce((config, state, index) => {
+      const optionValue = optionsList[index];
+      return config.set(optionValue, Number(state));
+    }, new Map());
+
+    return {optionsList, optionsConfig};
+  },
+  convertToArray(value) {
+    return typeof value === 'string' ? value.split(',') : [];
   },
   exitBulkCompletionMode() {
     const disableBulkCompletionMode = () => pubSub.dispatch({
@@ -136,12 +430,12 @@ export default canComponent.extend({
         this.viewModel.assessmentIdsToComplete.delete(assessmentData.asmtId);
       }
 
-      this.viewModel.countAssessmentsToComplete =
+      this.viewModel.assessmentsCountsToComplete =
         this.viewModel.assessmentIdsToComplete.size;
     },
     '{pubSub} assessmentReadyToComplete'(pubSub, {assessmentId}) {
       this.viewModel.assessmentIdsToComplete.add(assessmentId);
-      this.viewModel.countAssessmentsToComplete =
+      this.viewModel.assessmentsCountsToComplete =
         this.viewModel.assessmentIdsToComplete.size;
     },
   },
