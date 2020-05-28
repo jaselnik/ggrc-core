@@ -31,17 +31,29 @@ describe('assessments-bulk-complete-container component', () => {
   });
 
   describe('buildAsmtListRequest() method', () => {
+    let page;
+
     beforeEach(() => {
       viewModel.parentInstance = {
         type: 'Audit',
         id: '1',
+      };
+      viewModel.sortingInfo = {
+        sortBy: 'desc',
+        sortDirection: 'title',
+      };
+      page = {
+        sort: [{
+          key: 'desc',
+          direction: 'title',
+        }],
       };
     });
     it('sets asmtListRequest on My Assessment page', () => {
       spyOn(CurrentPageUtils, 'isMyAssessments').and.returnValue(true);
 
       spyOn(QueryApiUtils, 'buildParam')
-        .withArgs('Assessment', {}, null, [], filter)
+        .withArgs('Assessment', page, null, [], filter)
         .and.returnValue(param);
       viewModel.buildAsmtListRequest();
       param.type = 'ids';
@@ -58,7 +70,7 @@ describe('assessments-bulk-complete-container component', () => {
       };
 
       spyOn(QueryApiUtils, 'buildParam')
-        .withArgs('Assessment', {}, relevant, [], filter)
+        .withArgs('Assessment', page, relevant, [], filter)
         .and.returnValue(param);
 
       viewModel.buildAsmtListRequest();
@@ -115,6 +127,19 @@ describe('assessments-bulk-complete-container component', () => {
       expect(viewModel.isLoading).toBe(false);
     });
   });
+
+  describe('onSaveAnswersClick() method', () => {
+    it('sets "isAttributeModified" to false', async () => {
+      viewModel.isAttributeModified = true;
+      spyOn(backendGdriveClient, 'withAuth')
+        .and.returnValue(Promise.resolve({id: 1}));
+      spyOn(viewModel, 'trackBackgroundTask');
+      await viewModel.onSaveAnswersClick();
+
+      expect(viewModel.isAttributeModified).toBeFalsy();
+    });
+  });
+
   describe('onCompleteClick() method', () => {
     beforeEach(() => {
       spyOn(ModalsUtils, 'confirm');

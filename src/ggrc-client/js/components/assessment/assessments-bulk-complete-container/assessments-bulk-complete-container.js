@@ -32,6 +32,27 @@ const COMPLETION_MESSAGES = {
   fail: `Failed to complete certifications in bulk. 
    Please refresh the page and start bulk complete again.`,
 };
+const SAVE_ANSWERS_MESSAGES = {
+  start: `Saving answers to the certifications. 
+   Once it is done you will get a notification. 
+   You can continue working with the app.`,
+  success: 'Answers to the certifications are saved successfully.',
+  fail: `Failed to save certifications' answers.
+   Please try to save them again.`,
+};
+
+/**
+ * Map of types from FE to BE format
+ */
+const attributesType = {
+  input: 'input',
+  text: 'text',
+  person: 'map:person',
+  date: 'date',
+  checkbox: 'checkbox',
+  multiselect: 'multiselect',
+  dropdown: 'dropdown',
+};
 
 const ViewModel = canDefineMap.extend({
   currentFilter: {
@@ -45,6 +66,9 @@ const ViewModel = canDefineMap.extend({
   },
   asmtListRequest: {
     value: null,
+  },
+  sortingInfo: {
+    value: () => {},
   },
   assessmentsList: {
     value: () => [],
@@ -60,6 +84,12 @@ const ViewModel = canDefineMap.extend({
   },
   isAttributeModified: {
     value: false,
+  },
+  isSaveAnswersButtonEnabled: {
+    get() {
+      return this.isAttributeModified
+      && !this.isBackgroundTaskInProgress;
+    },
   },
   isCompleteButtonEnabled: {
     get() {
@@ -100,6 +130,23 @@ const ViewModel = canDefineMap.extend({
       },
     }),
   },
+  onSaveAnswersClick() {
+    backendGdriveClient.withAuth(
+      () => ggrcPost(
+        '/api/bulk_operations/cavs/save',
+        this.buildBulkRequest(true)),
+      {responseJSON: {message: 'Unable to Authorize'}})
+      .then(({id}) => {
+        if (id) {
+          this.isAttributeModified = false;
+          this.isBackgroundTaskInProgress = true;
+          this.trackBackgroundTask(id, SAVE_ANSWERS_MESSAGES);
+          this.cleanUpGridAfterSaveAnswers();
+        } else {
+          notifier('error', SAVE_ANSWERS_MESSAGES.fail);
+        }
+      });
+  },
   onCompleteClick() {
     confirm({
       modal_title: 'Confirmation',
@@ -119,6 +166,7 @@ const ViewModel = canDefineMap.extend({
       .then(({id}) => {
         if (id) {
           this.assessmentsCountsToComplete = 0;
+          this.isAttributeModified = false;
           this.isBackgroundTaskInProgress = true;
           this.isAttributeModified = false;
           this.trackBackgroundTask(id, COMPLETION_MESSAGES);
@@ -158,7 +206,7 @@ const ViewModel = canDefineMap.extend({
               attribute.type,
               attribute.value),
             title: attribute.title,
-            type: attribute.type,
+            type: attributesType[attribute.type],
             definition_id: asmtId,
             id: attribute.id,
             extra,
@@ -166,7 +214,8 @@ const ViewModel = canDefineMap.extend({
         }
       });
 
-      if (attributesList.length || this.assessmentIdsToComplete.has(asmtId)) {
+      if (attributesList.length ||
+        (!isSaveAnswersRequest && this.assessmentIdsToComplete.has(asmtId))) {
         const assessmentAttributes = {
           assessment: {id: asmtId, slug: asmtSlug},
           values: attributesList,
@@ -185,6 +234,8 @@ const ViewModel = canDefineMap.extend({
     switch (type) {
       case 'checkbox':
         return value ? '1' : '0';
+      case 'person':
+        return value[0] ? value[0].id : '';
       case 'date':
         return value || '';
       default:
@@ -206,6 +257,17 @@ const ViewModel = canDefineMap.extend({
     }
 
     this.assessmentIdsToComplete = new Set();
+    this.rowsData = rowsData;
+  },
+  cleanUpGridAfterSaveAnswers() {
+    const rowsData = this.rowsData
+      .forEach((asmt) => {
+        asmt.attributes = asmt.attributes.attr().map((attr) => {
+          attr.modified = false;
+          attr.validation.hasUnsavedAttachments = false;
+          return attr;
+        });
+      });
     this.rowsData = rowsData;
   },
   trackBackgroundTask(taskId, messages) {
@@ -234,7 +296,13 @@ const ViewModel = canDefineMap.extend({
     }
     const filter =
       getFiltersForCompletion(this.currentFilter, relevant);
-    const param = buildParam('Assessment', {}, relevant, [], filter);
+    const page = {
+      sort: [{
+        key: this.sortingInfo.sortBy,
+        direction: this.sortingInfo.sortDirection,
+      }],
+    };
+    const param = buildParam('Assessment', page, relevant, [], filter);
     param.type = 'ids';
     this.asmtListRequest = param;
   },

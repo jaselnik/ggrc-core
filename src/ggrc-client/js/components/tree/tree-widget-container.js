@@ -205,7 +205,10 @@ const ViewModel = canDefineMap.extend({
       ? getMegaObjectRelation(this.options.widgetId).relation
       : null;
 
-    this.pubSub.dispatch(BEFORE_LOAD_ITEMS);
+    this.pubSub.dispatch({
+      ...BEFORE_LOAD_ITEMS,
+      modelName,
+    });
 
     return TreeViewUtils
       .loadFirstTierItems(

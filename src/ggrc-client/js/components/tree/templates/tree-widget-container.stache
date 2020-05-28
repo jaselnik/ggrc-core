@@ -6,7 +6,8 @@
 {{#if bulkCompleteModeEnabled}}
   <assessments-bulk-complete-container
     currentFilter:from="currentFilter" 
-    parentInstance:from="parent_instance">
+    parentInstance:from="parent_instance"
+    sortingInfo:from="sortingInfo">
   </assessments-bulk-complete-container>
 {{else}}
 <div class="flex-box flex-col {{cssClasses}}">
