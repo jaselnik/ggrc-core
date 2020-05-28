@@ -455,6 +455,7 @@ describe('assessments-bulk-complete-container component', () => {
               url: false,
               comment: false,
             },
+            isCommentObligatoryToShow: false,
           }],
         }, {
           asmtId: 2,
@@ -495,6 +496,7 @@ describe('assessments-bulk-complete-container component', () => {
               url: false,
               comment: false,
             },
+            isCommentObligatoryToShow: false,
           }],
         }]);
       });

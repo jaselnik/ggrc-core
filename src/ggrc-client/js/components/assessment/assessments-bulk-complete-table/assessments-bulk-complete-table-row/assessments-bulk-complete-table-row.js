@@ -20,7 +20,7 @@ const ViewModel = canDefineMap.extend({seal: false}, {
   pubSub: {
     value: () => pubSub,
   },
-  isFileRequired: {
+  isFileMissing: {
     get() {
       const requiredFilesCount = this.getRequiredInfoCountByType('attachment');
       const currentFilesCount = this.getCurrentFilesCount();
@@ -28,7 +28,7 @@ const ViewModel = canDefineMap.extend({seal: false}, {
       return requiredFilesCount > currentFilesCount;
     },
   },
-  isUrlRequired: {
+  isUrlMissing: {
     get() {
       const requiredUrlsCount = this.getRequiredInfoCountByType('url');
       const currentUrlsCount = this.getCurrentUrlsCount();
@@ -38,6 +38,11 @@ const ViewModel = canDefineMap.extend({seal: false}, {
   },
   requiredInfoModal: {
     value: () => ({}),
+  },
+  isCommentMissing(attribute) {
+    return attribute.isCommentObligatoryToShow
+      ? attribute.attachments.comment === null
+      : false;
   },
   getRequiredInfoCountByType(requiredInfoType) {
     return this.getApplicableDropdownAttributes().reduce((count, attribute) => {
@@ -72,17 +77,24 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     });
   },
   performDropdownValidation(attribute) {
-    const {comment, attachment, url} = this.getRequiredInfoStates(attribute);
-    const requiresAttachment = comment || attachment || url;
+    const {
+      comment: isCommentRequired,
+      attachment: isFileRequired,
+      url: isUrlRequired,
+    } = this.getRequiredInfoStates(attribute);
+    const requiresAttachment = isCommentRequired
+      || isFileRequired
+      || isUrlRequired;
 
     canBatch.start();
 
     const validation = attribute.validation;
     validation.requiresAttachment = requiresAttachment;
 
-    const hasMissingFile = attachment && this.isFileRequired;
-    const hasMissingUrl = url && this.isUrlRequired;
-    const hasMissingComment = comment && attribute.errorsMap.comment;
+    const hasMissingFile = isFileRequired && this.isFileMissing;
+    const hasMissingUrl = isUrlRequired && this.isUrlMissing;
+    const hasMissingComment = isCommentRequired
+      && this.isCommentMissing(attribute);
 
     if (requiresAttachment) {
       const hasMissingInfo = hasMissingFile
@@ -155,6 +167,7 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     if (attribute.type === 'dropdown'
       && this.getRequiredInfoStates(attribute).comment) {
       attribute.errorsMap.comment = true;
+      attribute.isCommentObligatoryToShow = true;
     }
 
     this.validateAllAttributes();
@@ -205,7 +218,6 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     attachments.files.replace(changes.files);
 
     attribute.modified = true;
-    attribute.errorsMap.comment = attachments.comment === null;
 
     canBatch.stop();
 
@@ -218,15 +230,19 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     });
   },
   getRequiredInfoConfig(attribute) {
-    const {comment, attachment, url} = this.getRequiredInfoStates(attribute);
+    const {
+      comment: isCommentRequired,
+      attachment: isFileRequired,
+      url: isUrlRequired,
+    } = this.getRequiredInfoStates(attribute);
 
-    const showFile = attachment
-      ? this.isFileRequired || attribute.attachments.files.length !== 0
+    const showFile = isFileRequired
+      ? this.isFileMissing || attribute.attachments.files.length !== 0
       : false;
-    const showUrl = url
-      ? this.isUrlRequired || attribute.attachments.urls.length !== 0
+    const showUrl = isUrlRequired
+      ? this.isUrlMissing || attribute.attachments.urls.length !== 0
       : false;
-    const showComment = comment
+    const showComment = isCommentRequired
       ? attribute.errorsMap.comment || attribute.attachments.comment !== null
       : false;
 
