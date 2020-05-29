@@ -21,7 +21,7 @@
   }
 }
 
-.assessments-bulk-complete-table{
+.assessments-bulk-complete-table {
   @include reset-default-table-styles;
   margin: 8px 40px;
   padding-bottom: 8px;
@@ -39,15 +39,25 @@
 
   .assessments-bulk-complete-table__row {
     display: flex;
+
+    .assessments-bulk-complete-table__column_sticky .assessments-bulk-complete-table__cell {
+      &:first-child {
+        width: 300px;
+      }
+
+      &:last-child {
+        width: 150px;
+      }
+    }
   }
 
   .assessments-bulk-complete-table__cell {
     display: flex;
     position: relative;
-    min-width: 270px;
-    max-width: 270px;
+    width: 200px;
     padding: 15px 20px 15px 30px;
     word-break: break-word;
+    box-sizing: border-box;
 
     .ui-autocomplete,
     .dropdown-wrap-text__body,
