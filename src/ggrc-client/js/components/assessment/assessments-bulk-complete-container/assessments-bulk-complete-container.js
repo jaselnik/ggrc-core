@@ -235,7 +235,7 @@ const ViewModel = canDefineMap.extend({
       case 'checkbox':
         return value ? '1' : '0';
       case 'person':
-        return value[0] ? value[0].id : '';
+        return value[0] ? value[0].id : '-';
       case 'date':
         return value || '';
       default:
