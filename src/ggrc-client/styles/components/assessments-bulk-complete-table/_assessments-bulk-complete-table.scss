@@ -21,7 +21,7 @@
   }
 }
 
-.assessments-bulk-complete-table{
+.assessments-bulk-complete-table {
   @include reset-default-table-styles;
   margin: 8px 40px;
   padding-bottom: 8px;
@@ -39,15 +39,26 @@
 
   .assessments-bulk-complete-table__row {
     display: flex;
+
+    .assessments-bulk-complete-table__column_sticky .assessments-bulk-complete-table__cell {
+      &:first-child {
+        width: 300px;
+      }
+
+      &:last-child {
+        width: 150px;
+      }
+    }
   }
 
   .assessments-bulk-complete-table__cell {
     display: flex;
     position: relative;
-    min-width: 270px;
-    max-width: 270px;
+    width: 200px;
     padding: 15px 20px 15px 30px;
+    border-bottom: 1px solid $itemBorder;
     word-break: break-word;
+    box-sizing: border-box;
 
     .ui-autocomplete,
     .dropdown-wrap-text__body,
@@ -72,10 +83,8 @@ assessments-bulk-complete-table-header {
     display: flex;
     position: sticky;
     left: 0;
-    background: linear-gradient(90deg,
-      rgba(224, 224, 224, 1) 99%,
-      rgba(204, 204, 204, 0.9) 99%,
-      rgba(224, 224, 224, 1) 100%);
+    background-color: $contentBgnd;
+    border-right: 2px solid #ccc;
     z-index: 50;
   }
 
@@ -90,28 +99,22 @@ assessments-bulk-complete-table-header {
 assessments-bulk-complete-table-row {
   display: table-row;
   line-height: 16px;
-  border-bottom: 1px solid $itemBorder;
 
   .assessments-bulk-complete-table {
     &__row_ready {
-    background-color: #f6fafd;
+      background-color: #f6fafd;
 
-    .assessments-bulk-complete-table__column_sticky {
-      background: linear-gradient(90deg,
-      rgba(246, 250, 253, 1) 99%,
-      rgba(204, 204, 204, 0.9) 99%,
-      rgba(246, 250, 253, 1) 100%);
-    }
+      .assessments-bulk-complete-table__column_sticky {
+        background-color: #f6fafd;
+      }
   }
 
     &__column_sticky {
       display: flex;
       position: sticky;
       left: 0;
-      background: linear-gradient(90deg,
-        rgba(255, 255, 255, 1) 99%,
-        rgba(204, 204, 204, 0.9) 99%,
-        rgba(255, 255, 255, 1) 100%);
+      background-color: $white;
+      border-right: 2px solid $itemBorder;
       z-index: 50;
     }
   }
