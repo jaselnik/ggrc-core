@@ -16,7 +16,7 @@ describe('assessments-bulk-complete-table-row component', () => {
     viewModel = getComponentVM(Component);
   });
 
-  describe('isFileRequired getter', () => {
+  describe('isFileMissing getter', () => {
     it('returns true if required files count is more than current files count',
       () => {
         spyOn(viewModel, 'getRequiredInfoCountByType')
@@ -24,7 +24,7 @@ describe('assessments-bulk-complete-table-row component', () => {
           .and.returnValue(2);
         spyOn(viewModel, 'getCurrentFilesCount').and.returnValue(0);
 
-        expect(viewModel.isFileRequired).toBe(true);
+        expect(viewModel.isFileMissing).toBe(true);
       });
 
     it('returns false if required files count is less than current files count',
@@ -34,11 +34,11 @@ describe('assessments-bulk-complete-table-row component', () => {
           .and.returnValue(1);
         spyOn(viewModel, 'getCurrentFilesCount').and.returnValue(2);
 
-        expect(viewModel.isFileRequired).toBe(false);
+        expect(viewModel.isFileMissing).toBe(false);
       });
   });
 
-  describe('isUrlRequired getter', () => {
+  describe('isUrlMissing getter', () => {
     it('returns true if required urls count is more than current urls count',
       () => {
         spyOn(viewModel, 'getRequiredInfoCountByType')
@@ -46,7 +46,7 @@ describe('assessments-bulk-complete-table-row component', () => {
           .and.returnValue(2);
         spyOn(viewModel, 'getCurrentUrlsCount').and.returnValue(0);
 
-        expect(viewModel.isUrlRequired).toBe(true);
+        expect(viewModel.isUrlMissing).toBe(true);
       });
 
     it('returns false if required urls count is less than current urls count',
@@ -56,8 +56,45 @@ describe('assessments-bulk-complete-table-row component', () => {
           .and.returnValue(1);
         spyOn(viewModel, 'getCurrentUrlsCount').and.returnValue(2);
 
-        expect(viewModel.isUrlRequired).toBe(false);
+        expect(viewModel.isUrlMissing).toBe(false);
       });
+  });
+
+  describe('isCommentMissing() method', () => {
+    it('returns true if comment is obligatory to show and comment ' +
+    'is empty', () => {
+      const attribute = {
+        isCommentObligatoryToShow: true,
+        attachments: {
+          comment: null,
+        },
+      };
+
+      expect(viewModel.isCommentMissing(attribute)).toBe(true);
+    });
+
+    it('returns false if comment is obligatory to show and comment ' +
+    'is not empty', () => {
+      const attribute = {
+        isCommentObligatoryToShow: true,
+        attachments: {
+          comment: 'Some comment',
+        },
+      };
+
+      expect(viewModel.isCommentMissing(attribute)).toBe(false);
+    });
+
+    it('returns false if comment is not obligatory to show', () => {
+      const attribute = {
+        isCommentObligatoryToShow: false,
+        attachments: {
+          comment: null,
+        },
+      };
+
+      expect(viewModel.isCommentMissing(attribute)).toBe(false);
+    });
   });
 
   describe('getRequiredInfoCountByType() method', () => {
@@ -202,8 +239,8 @@ describe('assessments-bulk-complete-table-row component', () => {
           },
           validation: {
             requiresAttachment: false,
-            valid: true,
-            hasMissingInfo: false,
+            valid: false,
+            hasMissingInfo: true,
             hasUnsavedAttachments: false,
           },
           errorsMap: {
@@ -211,6 +248,7 @@ describe('assessments-bulk-complete-table-row component', () => {
             url: false,
             comment: true,
           },
+          isCommentObligatoryToShow: true,
         };
 
         getRequiredInfoStatesSpy.and.returnValue({
@@ -218,6 +256,8 @@ describe('assessments-bulk-complete-table-row component', () => {
           attachment: false,
           url: false,
         });
+
+        spyOn(viewModel, 'isCommentMissing').and.returnValue(false);
       });
 
       it('should set true to requiresAttachment attribute', () => {
@@ -226,16 +266,16 @@ describe('assessments-bulk-complete-table-row component', () => {
         expect(attribute.validation.requiresAttachment).toBe(true);
       });
 
-      it('should set valid attribute to false', () => {
+      it('should set valid attribute to true', () => {
         viewModel.performDropdownValidation(attribute);
 
-        expect(attribute.validation.valid).toBe(false);
+        expect(attribute.validation.valid).toBe(true);
       });
 
-      it('should set hasMissingInfo attribute to true', () => {
+      it('should set hasMissingInfo attribute to false', () => {
         viewModel.performDropdownValidation(attribute);
 
-        expect(attribute.validation.hasMissingInfo).toBe(true);
+        expect(attribute.validation.hasMissingInfo).toBe(false);
       });
 
       it('should set hasUnsavedAttachments attribute to true', () => {
@@ -266,7 +306,7 @@ describe('assessments-bulk-complete-table-row component', () => {
         expect(attribute.validation.requiresAttachment).toBe(false);
       });
 
-      it('should set false to has missing info', () => {
+      it('should set false to hasMissingInfo attribute', () => {
         const attribute = {
           validation: {
             hasMissingInfo: true,
@@ -564,6 +604,7 @@ describe('assessments-bulk-complete-table-row component', () => {
           errorsMap: {
             comment: false,
           },
+          isCommentObligatoryToShow: false,
         }],
       };
       spyOn(viewModel, 'getRequiredInfoStates').and.returnValue({
@@ -602,6 +643,14 @@ describe('assessments-bulk-complete-table-row component', () => {
       viewModel.attributeValueChanged('New value', 0);
 
       expect(viewModel.rowData.attributes[0].errorsMap.comment).toBe(true);
+    });
+
+    it('sets isCommentObligatoryToShow attribute to true if attribute type ' +
+    'is dropdown and getRequiredInfoStates().comment returns true', () => {
+      viewModel.attributeValueChanged('New value', 0);
+
+      expect(viewModel.rowData.attributes[0].isCommentObligatoryToShow)
+        .toBe(true);
     });
 
     it('calls validateAllAttributes()', () => {
@@ -761,27 +810,6 @@ describe('assessments-bulk-complete-table-row component', () => {
       expect(viewModel.rowData.attributes[0].modified).toBe(true);
     });
 
-    it('sets errorsMap.comment to false if comment was added', () => {
-      viewModel.rowData.attributes[0].errorsMap.comment = true;
-      viewModel.updateRequiredInfo(1, {
-        comment: 'Some comment',
-        urls: [],
-        files: [],
-      });
-
-      expect(viewModel.rowData.attributes[0].errorsMap.comment).toBe(false);
-    });
-
-    it('sets errorsMap.comment to true if comment was not added', () => {
-      viewModel.updateRequiredInfo(1, {
-        comment: null,
-        urls: [],
-        files: [],
-      });
-
-      expect(viewModel.rowData.attributes[0].errorsMap.comment).toBe(true);
-    });
-
     it('calls validateAllAttributes()', () => {
       viewModel.updateRequiredInfo(1, {
         comment: null,
@@ -821,7 +849,7 @@ describe('assessments-bulk-complete-table-row component', () => {
     describe('returns config with required information needed to show ' +
     'in Required Info modal', () => {
       describe('if getRequiredInfoStates().attachment is true', () => {
-        let isFileRequiredGetSpy;
+        let isFileMissingGetSpy;
 
         beforeEach(() => {
           spyOn(viewModel, 'getRequiredInfoStates').and.returnValue({
@@ -829,8 +857,8 @@ describe('assessments-bulk-complete-table-row component', () => {
             url: false,
             comment: false,
           });
-          isFileRequiredGetSpy =
-            spyOnProperty(viewModel, 'isFileRequired', 'get');
+          isFileMissingGetSpy =
+            spyOnProperty(viewModel, 'isFileMissing', 'get');
         });
 
         it('and file is required', () => {
@@ -841,7 +869,7 @@ describe('assessments-bulk-complete-table-row component', () => {
             },
           };
 
-          isFileRequiredGetSpy.and.returnValue(true);
+          isFileMissingGetSpy.and.returnValue(true);
 
           expect(viewModel.getRequiredInfoConfig(attribute)).toEqual({
             attachment: true,
@@ -859,7 +887,7 @@ describe('assessments-bulk-complete-table-row component', () => {
               },
             };
 
-            isFileRequiredGetSpy.and.returnValue(false);
+            isFileMissingGetSpy.and.returnValue(false);
 
             expect(viewModel.getRequiredInfoConfig(attribute)).toEqual({
               attachment: true,
@@ -876,7 +904,7 @@ describe('assessments-bulk-complete-table-row component', () => {
             },
           };
 
-          isFileRequiredGetSpy.and.returnValue(false);
+          isFileMissingGetSpy.and.returnValue(false);
 
           expect(viewModel.getRequiredInfoConfig(attribute)).toEqual({
             attachment: false,
@@ -887,7 +915,7 @@ describe('assessments-bulk-complete-table-row component', () => {
       });
 
       describe('if getRequiredInfoStates().url is true', () => {
-        let isUrlRequiredGetSpy;
+        let isUrlMissingGetSpy;
 
         beforeEach(() => {
           spyOn(viewModel, 'getRequiredInfoStates').and.returnValue({
@@ -895,8 +923,8 @@ describe('assessments-bulk-complete-table-row component', () => {
             url: true,
             comment: false,
           });
-          isUrlRequiredGetSpy =
-            spyOnProperty(viewModel, 'isUrlRequired', 'get');
+          isUrlMissingGetSpy =
+            spyOnProperty(viewModel, 'isUrlMissing', 'get');
         });
 
         it('and url is required', () => {
@@ -907,7 +935,7 @@ describe('assessments-bulk-complete-table-row component', () => {
             },
           };
 
-          isUrlRequiredGetSpy.and.returnValue(true);
+          isUrlMissingGetSpy.and.returnValue(true);
 
           expect(viewModel.getRequiredInfoConfig(attribute)).toEqual({
             attachment: false,
@@ -925,7 +953,7 @@ describe('assessments-bulk-complete-table-row component', () => {
               },
             };
 
-            isUrlRequiredGetSpy.and.returnValue(false);
+            isUrlMissingGetSpy.and.returnValue(false);
 
             expect(viewModel.getRequiredInfoConfig(attribute)).toEqual({
               attachment: false,
@@ -942,7 +970,7 @@ describe('assessments-bulk-complete-table-row component', () => {
             },
           };
 
-          isUrlRequiredGetSpy.and.returnValue(false);
+          isUrlMissingGetSpy.and.returnValue(false);
 
           expect(viewModel.getRequiredInfoConfig(attribute)).toEqual({
             attachment: false,

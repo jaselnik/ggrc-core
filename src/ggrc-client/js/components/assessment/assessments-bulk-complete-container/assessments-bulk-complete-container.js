@@ -350,6 +350,8 @@ const ViewModel = canDefineMap.extend({
           url: false,
           comment: false,
         };
+        let isCommentObligatoryToShow = false;
+
         const type = getCustomAttributeType(attribute.attribute_type);
         const defaultValue = this.prepareAttributeValue(type,
           attribute.default_value);
@@ -374,6 +376,7 @@ const ViewModel = canDefineMap.extend({
               url: errors.includes('url'),
               comment: errors.includes('comment'),
             };
+            isCommentObligatoryToShow = errorsMap.comment;
           }
         }
 
@@ -384,6 +387,7 @@ const ViewModel = canDefineMap.extend({
           defaultValue,
           isApplicable,
           errorsMap,
+          isCommentObligatoryToShow,
           title: attribute.title,
           mandatory: attribute.mandatory,
           multiChoiceOptions: {
