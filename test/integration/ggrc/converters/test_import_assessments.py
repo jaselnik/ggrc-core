@@ -1836,6 +1836,121 @@ class TestAssessmentImport(TestCase):
     self._check_csv_response(response, {})
     self.assertEqual(updated_cav.attribute_value, value_lca)
 
+  def test_delete_person_lca_value(self):
+    """Test set LCA Person type value and import with '-' (null) value"""
+    with factories.single_commit():
+      asmt = factories.AssessmentFactory()
+      cad = factories.CustomAttributeDefinitionFactory(
+          title='person lca',
+          definition_type='assessment',
+          definition_id=asmt.id,
+          attribute_type='Map:Person',
+          multi_choice_options=None,
+          mandatory=False
+      )
+      cav_id = factories.CustomAttributeValueFactory(
+          custom_attribute=cad,
+          attributable=asmt,
+          attribute_value='user@example.com',
+      ).id
+    response = self.import_data(collections.OrderedDict([
+        ("object_type", "Assessment"),
+        ("Code*", asmt.slug),
+        ("person lca", "-"),
+    ]))
+    self.assertIsNone(
+        db.session.query(all_models.CustomAttributeValue).get(cav_id),
+    )
+    self._check_csv_response(response, {})
+
+  @ddt.data(
+      ("Dropdown", "1,2,3", "1"),
+      ("Checkbox", None, "1"),
+      ("Multiselect", "1,2,3", "1"),
+  )
+  @ddt.unpack
+  def test_update_lca_null_value_warning(
+      self,
+      attribute_type,
+      multi_choice_options,
+      value_lca,
+  ):
+    """Test set LCA with '-' (null) value and receive wrong value warning"""
+    with factories.single_commit():
+      asmt = factories.AssessmentFactory()
+      cad = factories.CustomAttributeDefinitionFactory(
+          title='test_null_set_lca',
+          definition_type='assessment',
+          definition_id=asmt.id,
+          attribute_type=attribute_type,
+          multi_choice_options=multi_choice_options,
+          mandatory=False,
+      )
+      cav_id = factories.CustomAttributeValueFactory(
+          custom_attribute=cad,
+          attributable=asmt,
+          attribute_value=value_lca,
+      ).id
+    response = self.import_data(collections.OrderedDict([
+        ("object_type", "Assessment"),
+        ("Code*", asmt.slug),
+        ("test_null_set_lca", "-"),
+    ]))
+    expected_warnings = {
+        'Assessment': {
+            'row_warnings': {
+                errors.WRONG_VALUE.format(
+                    line=3,
+                    column_name="test_null_set_lca",
+                ),
+            },
+        },
+    }
+    self._check_csv_response(response, expected_warnings)
+
+    self.assertEqual(
+        all_models.CustomAttributeValue.query.get(cav_id).attribute_value,
+        value_lca,
+    )
+
+  def test_set_null_lca_change_state(self):
+    """Test import Completed asmt with '-' lca value changed asmt status"""
+    with factories.single_commit():
+      asmt = factories.AssessmentFactory(status='Completed')
+      asmt_id = asmt.id
+      cad = factories.CustomAttributeDefinitionFactory(
+          title='person lca',
+          definition_type='assessment',
+          definition_id=asmt_id,
+          attribute_type='Map:Person',
+          multi_choice_options=None,
+          mandatory=True,
+      )
+      factories.CustomAttributeValueFactory(
+          custom_attribute=cad,
+          attributable=asmt,
+          attribute_value='user@example.com',
+      )
+    response = self.import_data(collections.OrderedDict([
+        ("object_type", "Assessment"),
+        ("Code*", asmt.slug),
+        ("person lca", "-"),
+    ]))
+    self._check_csv_response(
+        response,
+        {
+            'Assessment': {
+                'row_warnings': {
+                    errors.STATE_SET_IN_PROGRESS.format(line=3),
+                },
+            },
+        },
+    )
+    self.assertEqual(
+        all_models.Assessment.query.get(asmt_id).status,
+        "In Progress",
+    )
+
   @ddt.data(
       ("Date", None, "date", True),
       ("Date", None, "date", False),
