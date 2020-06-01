@@ -562,6 +562,48 @@ class TestBulkOperations(ggrc.TestCase):
         "test value",
     )
 
+  def test_bulk_save_person_lca_null(self):
+    """Test set person type lca to null with bulk"""
+    with factories.single_commit():
+      asmt = factories.AssessmentFactory()
+      asmt_id = asmt.id
+      cad = factories.CustomAttributeDefinitionFactory(
+          title='person_lca',
+          attribute_type='Map:Person',
+          definition_type='assessment',
+          definition_id=asmt_id,
+      )
+      cad_id = cad.id
+      factories.CustomAttributeValueFactory(
+          custom_attribute=cad,
+          attributable=asmt,
+          attribute_value="user@example.com",
+      )
+    data = {
+        "assessments_ids": [],
+        "attributes": [{
+            "assessment": {"id": asmt_id, "slug": asmt.slug},
+            "values": [{
+                "value": "-",
+                "title": "person_lca",
+                "type": "map:person",
+                "definition_id": asmt_id,
+                "extra": {},
+            }],
+        }],
+    }
+    self.client.post(
+        "/api/bulk_operations/cavs/save",
+        data=json.dumps(data),
+        headers=self.headers,
+    )
+    self.assertEqual(
+        models.CustomAttributeValue.query.filter_by(
+            custom_attribute_id=cad_id,
+        ).all(),
+        [],
+    )
+
   @mock.patch('ggrc.gdrive.file_actions.process_gdrive_file')
   @mock.patch('ggrc.gdrive.file_actions.get_gdrive_file_link')
   @mock.patch('ggrc.gdrive.get_http_auth')

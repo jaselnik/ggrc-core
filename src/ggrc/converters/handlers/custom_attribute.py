@@ -7,6 +7,7 @@ import re
 from datetime import datetime
 from dateutil.parser import parse
 
+from ggrc import db
 from ggrc import models
 from ggrc import utils
 from ggrc.converters import errors
@@ -266,7 +267,27 @@ class ObjectCaColumnHandler(CustomAttributeColumnHandler):
     values have already been set.
     """
     self.value = self.parse_item()
+    if self.value_explicitly_empty(self.value) and self._delete_unset_values():
+      return
     super(ObjectCaColumnHandler, self).set_obj_attr()
+
+  def _delete_unset_values(self):
+    """
+    Check if CAD need to deleted from object and delete if need it
+
+    Returns:
+       bool: True if old value from cav has been deleted.
+        False if no need to delete old cav value
+    """
+    ca_definition = self.get_ca_definition()
+    if ca_definition.attribute_type.split(":")[0] == _types.MAP:
+      if not self.row_converter.obj or not ca_definition:
+        return False
+      for ca_value in self.row_converter.obj.custom_attribute_values:
+        if ca_value.custom_attribute_id == ca_definition.id:
+          db.session.delete(ca_value)
+      return True
+    return False
 
   def get_ca_definition(self):
     """Get custom attribute definition for a specific object."""
@@ -339,7 +360,7 @@ class ObjectCaColumnHandler(CustomAttributeColumnHandler):
 
     if not is_valid_values:
       self.add_warning(errors.WRONG_VALUE, column_name=self.display_name)
-    return valid_values
+    return valid_values or None
 
   def get_dropdown_value(self):
     """Get valid value of the dropdown field."""
@@ -374,6 +395,8 @@ class ObjectCaColumnHandler(CustomAttributeColumnHandler):
     Returns:
         Person model instance
     """
+    if self.value_explicitly_empty(self.raw_value):
+      return self.raw_value
     if self.raw_value == "":
       return None  # ignore empty fields
     value = models.Person.query.filter_by(email=self.raw_value).first()

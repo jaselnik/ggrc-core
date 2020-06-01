@@ -273,6 +273,8 @@ STATE_WILL_BE_IGNORED = (u"Line {line}: State will be set to 'In progress' "
                          u"due to change of verifier/creator/assignee. "
                          u"Column 'State' will be ignored.")
 
+STATE_SET_IN_PROGRESS = (u"Line {line}: State will be set to 'In progress' due"
+                         u" to some required info was not added to answers.")
 
 SNAPSHOT_IMPORT_ERROR = (u"Line {line}: Import for Snapshot object is not "
                          u"available in GGRC.")

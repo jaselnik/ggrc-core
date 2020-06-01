@@ -9,6 +9,8 @@ import datetime
 from ggrc import db
 from ggrc import models
 
+from ggrc.converters.handlers import handlers
+
 
 class AssessmentStub(object):
   """Class stores assessment attributes needed for builders"""
@@ -111,6 +113,7 @@ class VerifyCsvBuilder(AbstractCsvBuilder):
 
 class MatrixCsvBuilder(AbstractCsvBuilder):
   """Handle data and build csv for bulk assessment operations."""
+
   def __init__(self, *args, **kwargs):
     """
       Args:
@@ -190,7 +193,8 @@ class MatrixCsvBuilder(AbstractCsvBuilder):
     people_ids = []
     for asmt in self.attr_data:
       for cav in asmt["values"]:
-        if cav["type"] == "Map:Person":
+        if cav["type"].lower() == "map:person" and \
+           cav["value"] not in handlers.ColumnHandler.EXPLICIT_EMPTY_VALUE:
           people_ids.append(cav["value"])
     self._people_cache = dict(
         db.session.query(models.Person.id, models.Person.email).filter(
@@ -241,7 +245,8 @@ class MatrixCsvBuilder(AbstractCsvBuilder):
     """Populate values to be applicable for our import"""
     if cav_type.lower() == "checkbox":
       return "yes" if raw_value == "1" else "no"
-    if cav_type.lower() == "map:person":
+    if cav_type.lower() == "map:person" and \
+       raw_value not in handlers.ColumnHandler.EXPLICIT_EMPTY_VALUE:
       return self._people_cache.get(raw_value, "")
     return raw_value if raw_value else ""
 
