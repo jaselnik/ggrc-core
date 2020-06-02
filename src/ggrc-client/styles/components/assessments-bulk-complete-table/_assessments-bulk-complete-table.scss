@@ -48,6 +48,11 @@
       &:last-child {
         width: 150px;
       }
+
+      .assessment__title,
+      .state-value-dot {
+        height: min-content;
+      }
     }
   }
 
