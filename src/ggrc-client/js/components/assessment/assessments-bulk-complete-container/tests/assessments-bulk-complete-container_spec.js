@@ -82,8 +82,8 @@ describe('assessments-bulk-complete-container component', () => {
   describe('loadItems() method', () => {
     beforeEach(() => {
       viewModel.asmtListRequest = new canMap();
-      spyOn(viewModel, 'buildHeadersData');
-      spyOn(viewModel, 'buildRowsData');
+      spyOn(viewModel, 'buildHeadersData').and.returnValue([1]);
+      spyOn(viewModel, 'buildRowsData').and.returnValue([2]);
     });
 
     it('sets "isLoading" attr to true before request', () => {
@@ -119,13 +119,44 @@ describe('assessments-bulk-complete-container component', () => {
     });
 
     it('sets "isLoading" attr to false after request', async () => {
+      const response = {
+        assessments: [1],
+        attributes: [2],
+      };
       viewModel.isLoading = true;
       spyOn(RequestUtils, 'request')
-        .and.returnValue(Promise.resolve({}));
+        .and.returnValue(Promise.resolve(response));
       await viewModel.loadItems();
 
       expect(viewModel.isLoading).toBe(false);
     });
+
+    it('sets "isGridEmpty" attr to true when assessments list is empty',
+      async () => {
+        const response = {
+          assessments: [],
+          attributes: [],
+        };
+        spyOn(RequestUtils, 'request')
+          .and.returnValue(Promise.resolve(response));
+        await viewModel.loadItems();
+
+        expect(viewModel.isGridEmpty).toBe(true);
+      });
+
+    it('sets table data for "headersData" and "rowsData" attrs',
+      async () => {
+        const response = {
+          assessments: [1],
+          attributes: [2],
+        };
+        spyOn(RequestUtils, 'request')
+          .and.returnValue(Promise.resolve(response));
+        await viewModel.loadItems();
+
+        expect(viewModel.headersData.serialize()).toEqual([1]);
+        expect(viewModel.rowsData.serialize()).toEqual([2]);
+      });
   });
 
   describe('onSaveAnswersClick() method', () => {
