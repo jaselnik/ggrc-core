@@ -14,6 +14,7 @@ import {
 } from '../../../../plugins/utils/query-api-utils';
 import popoverRelObjectsHeader from './templates/popover-related-objects-header.stache';
 import popoverRelObjectsContent from './templates/popover-related-objects-content.stache';
+import * as businessModels from '../../../../models/business-models';
 
 const ViewModel = canDefineMap.extend({seal: false}, {
   rowData: {
@@ -26,8 +27,8 @@ const ViewModel = canDefineMap.extend({seal: false}, {
     },
   },
   initRelatedObjectsPopover() {
-    const assessmentType = this.rowData.asmtType.toLowerCase();
-
+    const assessmentType =
+      businessModels[this.rowData.asmtType].title_plural.toLowerCase();
     this.popovers.relObjectsHeader = () => () => {
       return canStache(popoverRelObjectsHeader)({
         assessmentType,
