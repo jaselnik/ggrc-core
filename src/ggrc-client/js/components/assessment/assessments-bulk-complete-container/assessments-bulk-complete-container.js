@@ -151,8 +151,8 @@ const ViewModel = canDefineMap.extend({
     confirm({
       modal_title: 'Confirmation',
       modal_description: `Please confirm the bulk completion request 
-      for ${this.assessmentsCountsToComplete} highlighted assessment(s).<br>
-      Answers to all other assessments will be saved.`,
+      for ${this.assessmentsCountsToComplete} highlighted certification(s).<br>
+      Answers to all other certifications will be saved.`,
       button_view: '/modals/confirm-cancel-buttons.stache',
       modal_confirm: 'Proceed',
     }, () => this.completeAssessments());
