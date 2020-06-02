@@ -314,6 +314,7 @@ const ViewModel = canDefineMap.extend({
     this.assessmentsList = assessments;
     this.attributesList = attributes;
     this.isLoading = false;
+    this.isGridEmpty = !this.assessmentsList.length;
     this.headersData = this.buildHeadersData();
     this.rowsData = this.buildRowsData();
   },
