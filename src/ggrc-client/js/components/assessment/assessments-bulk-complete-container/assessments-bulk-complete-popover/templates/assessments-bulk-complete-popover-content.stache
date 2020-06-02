@@ -23,6 +23,6 @@
       </div>
     {{/relatedObjects}}
   {{else}}
-    <span class="empty-message">No mapped {{assessmentType}}s</span>
+    <span class="empty-message">No mapped {{assessmentType}}</span>
   {{/if}}
 {{/if}}

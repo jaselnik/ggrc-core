@@ -4,5 +4,5 @@
 }}
 
 <header>
-  <h2 class="popover-title__header">Related {{assessmentType}}s</h2>
+  <h2 class="popover-title__header">Related {{assessmentType}}</h2>
 </header>
