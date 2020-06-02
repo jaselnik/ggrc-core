@@ -44,7 +44,8 @@ def _query_all_cads_asmt_matches(asmt_ids):
 
 def _generate_unique_cad_key(cad):
   """
-  Generate unique CAD key by `title`, `attribute_type` and `mandatory` fields.
+  Generate unique CAD key by `title`, `attribute_type`, `mandatory`,
+   `default_value`, `multi_choice_options` and `multi_choice_mandatory` fields.
 
   Args:
     cad: specific custom attribute
@@ -56,6 +57,8 @@ def _generate_unique_cad_key(cad):
       cad.attribute_type,
       cad.mandatory,
       cad.default_value,
+      cad.multi_choice_options,
+      cad.multi_choice_mandatory,
   )
 
 
