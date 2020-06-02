@@ -353,6 +353,67 @@ class TestMatrix(ggrc.TestCase):
     }
     self.assert_request(expected_response)
 
+  @ddt.data(
+      ("multi_choice_options", "yes,no"),
+      ("multi_choice_mandatory", "1,1"),
+  )
+  @ddt.unpack
+  def test_diff_cads_multi_choice_fields(self, attribute, value):
+    # pylint: disable=invalid-name
+    """Test CADs with diff multi choice fields collected as 2 different"""
+    with factories.single_commit():
+      cad_payload = self._get_payload("Multiselect")
+      cad1 = factories.CustomAttributeDefinitionFactory(
+          definition_id=self.asmt1.id,
+          **cad_payload
+      )
+      cad_payload[attribute] = value
+      asmt2 = factories.AssessmentFactory(
+          assessment_type="Control",
+          sox_302_enabled=True,
+      )
+      cad2 = factories.CustomAttributeDefinitionFactory(
+          definition_id=asmt2.id,
+          **cad_payload
+      )
+    expected_response = {
+        "attributes": [{
+            "title": cad1.title,
+            "mandatory": cad1.mandatory,
+            "attribute_type": cad1.attribute_type,
+            "default_value": cad1.default_value,
+            "values": {
+                str(self.asmt1.id): {
+                    "value": None,
+                    "attribute_person_id": None,
+                    "preconditions_failed": None,
+                    "definition_id": self.asmt1.id,
+                    "attribute_definition_id": cad1.id,
+                    "multi_choice_options": cad1.multi_choice_options,
+                    "multi_choice_mandatory": cad1.multi_choice_mandatory,
+                },
+            },
+        }, {
+            "title": cad2.title,
+            "mandatory": cad2.mandatory,
+            "attribute_type": cad2.attribute_type,
+            "default_value": cad2.default_value,
+            "values": {
+                str(asmt2.id): {
+                    "value": None,
+                    "attribute_person_id": None,
+                    "preconditions_failed": None,
+                    "definition_id": asmt2.id,
+                    "attribute_definition_id": cad2.id,
+                    "multi_choice_options": cad2.multi_choice_options,
+                    "multi_choice_mandatory": cad2.multi_choice_mandatory,
+                }
+            },
+        }],
+        "assessments": self._generate_assessment_response(self.asmt1, asmt2),
+    }
+    self.assert_request(expected_response)
+
   def test_diff_cads_by_attribute_type(self):
     # pylint: disable=invalid-name
     """Test query 2 diff cads with diff attribute types"""
