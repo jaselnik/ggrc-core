@@ -9,7 +9,12 @@
       {{#if rowData.isReadyToComplete}}
         <i class="fa fa-check blue field__ready"></i>
       {{/if}}
-      <a href="/assessments/{{rowData.asmtId}}" target="_blank">
+      <a href="/assessments/{{rowData.asmtId}}" target="_blank"
+        class="assessment__title"
+        rel="tooltip"
+        data-placement="bottom"
+        data-original-title="Open in a new tab"
+      >
         {{rowData.asmtTitle}}
       </a>
       <assessments-bulk-complete-popover rowData:from="rowData"/>
