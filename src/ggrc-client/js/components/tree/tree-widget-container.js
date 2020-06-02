@@ -326,6 +326,10 @@ const ViewModel = canDefineMap.extend({
       this.loadItems();
       this.refetch = false;
     }
+    // Bulk Complete mode should be disabled for all tabs besides Assessments tab
+    if (router.attr('widget') !== 'assessment') {
+      this.bulkCompleteModeEnabled = false;
+    }
   },
   _needToRefreshAfterRelRemove(relationship) {
     const parentInstance = this.parent_instance;
