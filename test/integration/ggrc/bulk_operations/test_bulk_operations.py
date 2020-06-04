@@ -702,6 +702,63 @@ class TestBulkOperations(ggrc.TestCase):
     ).one()
     self.assertIn("comment descr1", comment.description)
 
+  def test_no_override_evidence(self):
+    """Test save evidence on assessment twice returns 2 evidences"""
+    with factories.single_commit():
+      asmt = factories.AssessmentFactory(status="Not Started")
+      asmt_id = asmt.id
+      factories.CustomAttributeDefinitionFactory(
+          definition_id=asmt_id,
+          title="dd_lca",
+          definition_type="assessment",
+          attribute_type="Dropdown",
+          multi_choice_options="x,y",
+          multi_choice_mandatory="4,4",
+      )
+
+    data = {
+        "assessments_ids": [],
+        "attributes": [{
+            "assessment": {"id": asmt_id, "slug": asmt.slug},
+            "values": [{
+                "value": "x",
+                "title": "dd_lca",
+                "type": "Dropdown",
+                "definition_id": asmt_id,
+                "extra": {
+                    "comment": None,
+                    "urls": ["url1"],
+                    "files": [],
+                },
+            }],
+        }],
+    }
+    self.client.post(
+        "/api/bulk_operations/cavs/save",
+        headers=self.headers,
+        data=json.dumps(data),
+    )
+    self.assertEqual(
+        {
+            url.title for url in
+            models.Assessment.query.get(asmt_id).evidences_url
+        },
+        {"url1"},
+    )
+    data["attributes"][0]["values"][0]["extra"]["urls"] = ["url2"]
+    self.client.post(
+        "/api/bulk_operations/cavs/save",
+        data=json.dumps(data),
+        headers=self.headers,
+    )
+    self.assertEqual(
+        {
+            url.title for url in
+            models.Assessment.query.get(asmt_id).evidences_url
+        },
+        {"url1", "url2"},
+    )
+
   def test_save_validate_params(self):
     """Test request /save endpoint with invalid assessments_ids param.
 

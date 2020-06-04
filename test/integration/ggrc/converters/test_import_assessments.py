@@ -296,11 +296,17 @@ class TestAssessmentImport(TestCase):
     assessment = all_models.Assessment.query.filter_by(
         slug=assessment_slug
     ).first()
-    self.assertEqual(len(assessment.evidences_file), 1)
-    for evidence in assessment.evidences_file:
-      self.assertEqual(evidence.gdrive_id, "mock_id2")
-      self.assertEqual(evidence.link, "mock_link2")
-      self.assertEqual(evidence.title, "mock_name2")
+    self.assertEqual(len(assessment.evidences_file), 2)
+    self.assertEqual(
+        {
+            (evidence.gdrive_id, evidence.title, evidence.link)
+            for evidence in assessment.evidences_file
+        },
+        {
+            ("mock_id", "some title", "mock_link"),
+            ("mock_id2", "mock_name2", "mock_link2"),
+        }
+    )
 
   def _test_assessment_users(self, asmt, users):
     """ Test that all users have correct roles on specified Assessment"""

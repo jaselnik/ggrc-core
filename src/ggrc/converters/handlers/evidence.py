@@ -115,6 +115,10 @@ class EvidenceUrlHandler(EvidenceHandler, handlers.ColumnHandler):
       else:
         db.session.expunge(new_evidence)
 
+    # Import in bulk mode has an option to replace Evidences, add only
+    if self.row_converter.block_converter.converter.is_bulk_import():
+      return
+
     for old_link, old_evidence in old_link_map.iteritems():
       if old_link in new_link_map:
         continue
@@ -180,6 +184,10 @@ class EvidenceFileHandler(EvidenceHandler, FileHandler,
     for new_link, new_gdrive_id in new_link_map.iteritems():
       if new_link not in old_link_map:
         self.setup_evidence(new_gdrive_id, user_id)
+
+    # Import in bulk mode has an option to replace Evidences, add only
+    if self.row_converter.block_converter.converter.is_bulk_import():
+      return
 
     for old_link, old_evidence in old_link_map.iteritems():
       if old_link in new_link_map:
